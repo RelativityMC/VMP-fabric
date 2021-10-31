@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.ishland.leafticket.mixins",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "MixinChunkTicketManager",
+    "access.IChunkHolder",
+    "access.IThreadedAnvilChunkStorage"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
