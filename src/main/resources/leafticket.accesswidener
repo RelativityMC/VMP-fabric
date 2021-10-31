@@ -4,3 +4,4 @@ accessible    class    net/minecraft/server/world/ChunkTicketManager$TicketDista
 accessible    class    net/minecraft/server/world/ChunkTicketManager$DistanceFromNearestPlayerTracker
 accessible    class    net/minecraft/server/world/ChunkTicketManager$NearbyChunkTicketUpdater
 
+extendable    class    net/minecraft/server/world/ChunkTicket

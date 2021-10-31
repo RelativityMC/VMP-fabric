@@ -1,11 +1,15 @@
 package com.ishland.leafticket.mixins;
 
 import com.ishland.leafticket.mixins.access.IChunkHolder;
+import com.ishland.leafticket.mixins.access.IChunkTicket;
 import com.ishland.leafticket.mixins.access.IThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTaskPrioritySystem;
 import net.minecraft.server.world.ChunkTicket;
@@ -30,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 @Mixin(ChunkTicketManager.class)
 public abstract class MixinChunkTicketManager {
@@ -50,6 +55,14 @@ public abstract class MixinChunkTicketManager {
     @Shadow protected abstract SortedArraySet<ChunkTicket<?>> getTicketSet(long position);
 
     @Shadow @Final private MessageListener<ChunkTaskPrioritySystem.UnblockingMessage> playerTicketThrottlerUnblocker;
+    @Shadow private long age;
+    @Shadow @Final private Long2ObjectOpenHashMap<SortedArraySet<ChunkTicket<?>>> ticketsByPosition;
+
+    @Shadow
+    protected static int getLevel(SortedArraySet<ChunkTicket<?>> sortedArraySet) {
+        throw new AbstractMethodError();
+    }
+
     // Paper start - replace ticket level propagator
     @Unique
     protected Long2IntLinkedOpenHashMap ticketLevelUpdates;
@@ -112,8 +125,29 @@ public abstract class MixinChunkTicketManager {
         this.updateTicketLevel(l, i); // Paper - replace ticket level propagator
     }
 
-    @Unique
-    protected long ticketLevelUpdateCount; // Paper - replace ticket level propagator
+    /**
+     * @author ishland
+     * @reason workaround for lithium compat
+     */
+    @Overwrite
+    public void purge() {
+        ++this.age;
+
+        final Predicate<ChunkTicket<?>> predicate = chunkTicket -> ((IChunkTicket) chunkTicket).invokeIsExpired1(this.age);
+        ObjectIterator<Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>>> objectIterator = this.ticketsByPosition.long2ObjectEntrySet().fastIterator();
+
+        while(objectIterator.hasNext()) {
+            Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>> entry = objectIterator.next();
+            if (entry.getValue().removeIf(predicate)) {
+                this.distanceFromTicketTracker.updateLevel(entry.getLongKey(), getLevel(entry.getValue()), false);
+            }
+
+            if (entry.getValue().isEmpty()) {
+                objectIterator.remove();
+            }
+        }
+
+    }
 
     /**
      * @author ishland
@@ -170,7 +204,7 @@ public abstract class MixinChunkTicketManager {
         }
 
         if (!this.chunkHolders.isEmpty()) {
-            this.chunkHolders.forEach(holder -> ((IChunkHolder) holder).invokeTick(threadedAnvilChunkStorage, this.mainThreadExecutor));
+            this.chunkHolders.forEach(holder -> ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, Runnable::run));
             this.chunkHolders.clear();
         } else {
             if (!this.chunkPositions.isEmpty()) {
