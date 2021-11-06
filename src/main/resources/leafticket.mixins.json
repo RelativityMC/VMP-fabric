@@ -8,7 +8,8 @@
     "MixinChunkTicketManager",
     "access.IChunkHolder",
     "access.IChunkTicket",
-    "access.IThreadedAnvilChunkStorage"
+    "access.IThreadedAnvilChunkStorage",
+    "general.collections.MixinTypeFilterableList"
   ],
   "injectors": {
     "defaultRequire": 1
