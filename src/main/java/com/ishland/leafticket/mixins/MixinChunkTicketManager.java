@@ -1,24 +1,20 @@
 package com.ishland.leafticket.mixins;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ishland.leafticket.mixins.access.IChunkHolder;
 import com.ishland.leafticket.mixins.access.IChunkTicket;
-import com.ishland.leafticket.mixins.access.IThreadedAnvilChunkStorage;
-import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTaskPrioritySystem;
 import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.collection.SortedArraySet;
 import net.minecraft.util.thread.MessageListener;
-import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,8 +27,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
@@ -69,6 +65,9 @@ public abstract class MixinChunkTicketManager {
 
     @Unique
     protected io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D ticketLevelPropagator;
+
+    @Unique
+    private ArrayList<ChunkHolder> pendingChunkHolderUpdates;
 
     // function for converting between ticket levels and propagator levels and vice versa
     // the problem is the ticket level propagator will propagate from a set source down to zero, whereas mojang expects
@@ -117,6 +116,7 @@ public abstract class MixinChunkTicketManager {
                     this.ticketLevelUpdates.putAndMoveToLast(coordinate, convertBetweenTicketLevels(newLevel));
                 }
         );
+        this.pendingChunkHolderUpdates = new ArrayList<>();
         // Paper end - replace ticket level propagator
     }
 
@@ -149,15 +149,8 @@ public abstract class MixinChunkTicketManager {
 
     }
 
-    /**
-     * @author ishland
-     * @reason reimplement
-     */
-    @Overwrite
-    public boolean tick(ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
-        this.distanceFromNearestPlayerTracker.updateLevels();
-        this.nearbyChunkTicketUpdater.updateLevels();
-//        int i = Integer.MAX_VALUE - this.distanceFromTicketTracker.update(Integer.MAX_VALUE);
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
+    public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
         boolean flag = this.ticketLevelPropagator.propagateUpdates();
         if (flag) {
         }
@@ -166,69 +159,37 @@ public abstract class MixinChunkTicketManager {
         while (!this.ticketLevelUpdates.isEmpty()) {
             flag = true;
 
-//            boolean oldPolling = this.pollingPendingChunkUpdates;
-//            this.pollingPendingChunkUpdates = true;
-            try {
-//                long recursiveCheck = ++this.ticketLevelUpdateCount;
-                while (!this.ticketLevelUpdates.isEmpty()) {
-                    long key = this.ticketLevelUpdates.firstLongKey();
-                    int newLevel = this.ticketLevelUpdates.removeFirstInt();
+            while (!this.ticketLevelUpdates.isEmpty()) {
+                long key = this.ticketLevelUpdates.firstLongKey();
+                int newLevel = this.ticketLevelUpdates.removeFirstInt();
 
-                    ChunkHolder holder = this.getChunkHolder(key);
-                    int currentLevel = holder == null ? ThreadedAnvilChunkStorage.MAX_LEVEL + 1 : holder.getLevel();
+                ChunkHolder holder = this.getChunkHolder(key);
+                int currentLevel = holder == null ? ThreadedAnvilChunkStorage.MAX_LEVEL + 1 : holder.getLevel();
 
-                    if (newLevel == currentLevel) {
-                        continue; // nothing to do
-                    }
-
-                    holder = this.setLevel(key, newLevel, holder, currentLevel);
-
-                    if (holder == null) {
-                        if (newLevel <= ThreadedAnvilChunkStorage.MAX_LEVEL) {
-                            throw new IllegalStateException("Expected chunk holder to be created");
-                        }
-                        // not loaded and it shouldn't be loaded!
-                        continue;
-                    }
-
-                    this.chunkHolders.add(holder);
-//                    if (recursiveCheck != this.ticketLevelUpdateCount) {
-//                        // back to the start, we must create player chunks and update the ticket level fields before
-//                        // processing the actual level updates
-//                        continue ticket_update_loop;
-//                    }
+                if (newLevel == currentLevel) {
+                    continue; // nothing to do
                 }
-            } finally {
-//                this.pollingPendingChunkUpdates = oldPolling;
+
+                holder = this.setLevel(key, newLevel, holder, currentLevel);
+
+                if (holder == null) {
+                    if (newLevel <= ThreadedAnvilChunkStorage.MAX_LEVEL) {
+                        throw new IllegalStateException("Expected chunk holder to be created");
+                    }
+                    // not loaded and it shouldn't be loaded!
+                    continue;
+                }
+
+                this.pendingChunkHolderUpdates.add(holder);
             }
         }
 
-        if (!this.chunkHolders.isEmpty()) {
-            this.chunkHolders.forEach(holder -> ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, Runnable::run));
-            this.chunkHolders.clear();
-        } else {
-            if (!this.chunkPositions.isEmpty()) {
-                LongIterator longIterator = this.chunkPositions.iterator();
-
-                while(longIterator.hasNext()) {
-                    long l = longIterator.nextLong();
-                    if (this.getTicketSet(l).stream().anyMatch(chunkTicket -> chunkTicket.getType() == ChunkTicketType.PLAYER)) {
-                        ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).invokeGetCurrentChunkHolder(l);
-                        if (chunkHolder == null) {
-                            throw new IllegalStateException();
-                        }
-
-                        CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> completableFuture = chunkHolder.getEntityTickingFuture();
-                        completableFuture.thenAccept(either -> this.mainThreadExecutor.execute(() -> this.playerTicketThrottlerUnblocker.send(ChunkTaskPrioritySystem.createUnblockingMessage(() -> {
-                        }, l, false))));
-                    }
-                }
-
-                this.chunkPositions.clear();
-            }
+        for (ChunkHolder holder : this.pendingChunkHolderUpdates) {
+            ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, MoreExecutors.directExecutor());
         }
+        this.pendingChunkHolderUpdates.clear();
 
-        return flag;
+        return flag ? distance - 1 : distance;
         // Paper end - replace level propagator
     }
 
