@@ -1,4 +1,4 @@
-package com.ishland.leafticket.mixins;
+package com.ishland.leafticket.mixins.ticketsystem.ticketpropagator;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ishland.leafticket.mixins.access.IChunkHolder;
@@ -42,7 +42,6 @@ public abstract class MixinChunkTicketManager {
 
     @Shadow protected @Nullable abstract ChunkHolder setLevel(long pos, int level, @Nullable ChunkHolder holder, int i);
 
-    @Shadow @Final private ChunkTicketManager.DistanceFromNearestPlayerTracker distanceFromNearestPlayerTracker;
     @Shadow @Final private ChunkTicketManager.NearbyChunkTicketUpdater nearbyChunkTicketUpdater;
     @Shadow @Final private Set<ChunkHolder> chunkHolders;
     @Shadow @Final private Executor mainThreadExecutor;
@@ -79,11 +78,6 @@ public abstract class MixinChunkTicketManager {
     @Unique
     private static int convertBetweenTicketLevels(final int level) {
         return ThreadedAnvilChunkStorage.MAX_LEVEL - level + 1;
-    }
-
-    @Unique
-    protected final int getPropagatedTicketLevel(final long coordinate) {
-        return convertBetweenTicketLevels(this.ticketLevelPropagator.getLevel(coordinate));
     }
 
     @Unique
@@ -185,7 +179,7 @@ public abstract class MixinChunkTicketManager {
         }
 
         for (ChunkHolder holder : this.pendingChunkHolderUpdates) {
-            ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, MoreExecutors.directExecutor());
+            ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, this.mainThreadExecutor);
         }
         this.pendingChunkHolderUpdates.clear();
 
