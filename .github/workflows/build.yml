@@ -12,6 +12,15 @@ jobs:
     steps:
       - name: checkout repository
         uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ./.gradle/loom-cache
+          key: ${{ runner.os }}-gradle0-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle0-
       - name: validate gradle wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: setup jdk 17
