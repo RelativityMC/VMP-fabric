@@ -3,5 +3,6 @@ accessWidener	v1	named
 accessible    class    net/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator
 accessible    class    net/minecraft/server/world/ChunkTicketManager$DistanceFromNearestPlayerTracker
 accessible    class    net/minecraft/server/world/ChunkTicketManager$NearbyChunkTicketUpdater
+accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
 
 extendable    class    net/minecraft/server/world/ChunkTicket

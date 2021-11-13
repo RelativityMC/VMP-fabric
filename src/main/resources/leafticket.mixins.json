@@ -8,6 +8,7 @@
     "access.IChunkHolder",
     "access.IChunkTicket",
     "access.IThreadedAnvilChunkStorage",
+    "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.collections.MixinTypeFilterableList",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],
