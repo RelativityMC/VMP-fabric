@@ -26,7 +26,9 @@ jobs:
       - name: setup jdk 17
         uses: actions/setup-java@v2
         with:
+          distribution: 'zulu'
           java-version: 17
+          java-package: jdk
       - name: make gradle wrapper executable
         run: chmod +x ./gradlew
       - name: build
