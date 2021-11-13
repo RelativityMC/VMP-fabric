@@ -9,7 +9,6 @@
     "access.IChunkTicket",
     "access.IThreadedAnvilChunkStorage",
     "general.collections.MixinTypeFilterableList",
-    "ticketsystem.playertracker.MixinChunkTicketManager",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],
   "injectors": {
