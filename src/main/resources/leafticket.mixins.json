@@ -10,6 +10,7 @@
     "access.IThreadedAnvilChunkStorage",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.collections.MixinTypeFilterableList",
+    "general.ingredient_matching.MixinIngredient",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],
   "injectors": {
