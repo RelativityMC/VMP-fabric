@@ -1,5 +1,6 @@
 package io.papermc.paper.util.misc;
 
+import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.bytes.ByteArrayFIFOQueue;
 import it.unimi.dsi.fastutil.longs.Long2ByteOpenHashMap;

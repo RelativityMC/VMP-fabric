@@ -29,14 +29,17 @@ public class MixinIngredient {
     @Unique
     private Set<Item> matchingItems = Collections.emptySet();
 
+    @Unique
+    private boolean isEmptyMatch = false;
+
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
-        @SuppressWarnings("FuseStreamOperations") Set<Item> matchingItems = Arrays.stream(this.entries)
+        this.matchingItems = Arrays.stream(this.entries)
                 .flatMap(entry -> entry.getStacks().stream())
                 .filter(itemStack -> !itemStack.isEmpty())
                 .map(ItemStack::getItem)
                 .collect(Collectors.toCollection(HashSet::new));
-        this.matchingItems = Collections.unmodifiableSet(matchingItems);
+        this.isEmptyMatch = this.matchingItems.isEmpty();
     }
 
     /**
@@ -49,7 +52,7 @@ public class MixinIngredient {
             return false;
         } else {
             if (itemStack.isEmpty()) {
-                return this.matchingItems.isEmpty();
+                return this.isEmptyMatch;
             }
             return this.matchingItems.contains(itemStack.getItem());
         }

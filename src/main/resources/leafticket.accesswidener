@@ -7,3 +7,4 @@ accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$Enti
 accessible    class    net/minecraft/recipe/Ingredient$Entry
 
 extendable    class    net/minecraft/server/world/ChunkTicket
+extendable    class    net/minecraft/server/world/PlayerChunkWatchingManager

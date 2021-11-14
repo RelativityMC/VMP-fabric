@@ -8,9 +8,11 @@
     "access.IChunkHolder",
     "access.IChunkTicket",
     "access.IThreadedAnvilChunkStorage",
+    "core.areamap.MixinServerPlayerEntity",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
+    "playerwatching.MixinThreadedAnvilChunkStorage",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],
   "injectors": {
