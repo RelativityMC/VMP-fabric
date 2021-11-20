@@ -1,8 +1,8 @@
 package com.ishland.leafticket.mixins.ticketsystem.ticketpropagator;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import com.ishland.leafticket.mixins.access.IChunkHolder;
 import com.ishland.leafticket.mixins.access.IChunkTicket;
+import io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -94,29 +94,26 @@ public abstract class MixinChunkTicketManager {
     private void onInit(Executor workerExecutor, Executor mainThreadExecutor, CallbackInfo ci) {
         this.distanceFromTicketTracker = null; // fail-fast incompatibility
 
-        // Paper start - replace ticket level propagator
         this.ticketLevelUpdates = new Long2IntLinkedOpenHashMap() {
             @Override
             protected void rehash(int newN) {
-                // no downsizing allowed
                 if (newN < this.n) {
                     return;
                 }
                 super.rehash(newN);
             }
         };
-        this.ticketLevelPropagator = new io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D(
+        this.ticketLevelPropagator = new Delayed8WayDistancePropagator2D(
                 (long coordinate, byte oldLevel, byte newLevel) -> {
                     this.ticketLevelUpdates.putAndMoveToLast(coordinate, convertBetweenTicketLevels(newLevel));
                 }
         );
         this.pendingChunkHolderUpdates = new ArrayList<>();
-        // Paper end - replace ticket level propagator
     }
 
     @Redirect(method = {"purge", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 3, expect = 3)
     private void redirectUpdate(ChunkTicketManager.TicketDistanceLevelPropagator instance, long l, int i, boolean b) {
-        this.updateTicketLevel(l, i); // Paper - replace ticket level propagator
+        this.updateTicketLevel(l, i);
     }
 
     /**
@@ -133,7 +130,7 @@ public abstract class MixinChunkTicketManager {
         while(objectIterator.hasNext()) {
             Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>> entry = objectIterator.next();
             if (entry.getValue().removeIf(predicate)) {
-                this.distanceFromTicketTracker.updateLevel(entry.getLongKey(), getLevel(entry.getValue()), false);
+                this.distanceFromTicketTracker.updateLevel(entry.getLongKey(), getLevel(entry.getValue()), false); // modified
             }
 
             if (entry.getValue().isEmpty()) {
@@ -145,37 +142,30 @@ public abstract class MixinChunkTicketManager {
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
     public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
-        boolean flag = this.ticketLevelPropagator.propagateUpdates();
-        if (flag) {
+        boolean hasUpdates = this.ticketLevelPropagator.propagateUpdates();
+        if (hasUpdates) {
         }
 
-        // Paper start - replace level propagator - modified
         while (!this.ticketLevelUpdates.isEmpty()) {
-            flag = true;
+            hasUpdates = true;
 
-            while (!this.ticketLevelUpdates.isEmpty()) {
-                long key = this.ticketLevelUpdates.firstLongKey();
-                int newLevel = this.ticketLevelUpdates.removeFirstInt();
+            long key = this.ticketLevelUpdates.firstLongKey();
+            int newLevel = this.ticketLevelUpdates.removeFirstInt();
 
-                ChunkHolder holder = this.getChunkHolder(key);
-                int currentLevel = holder == null ? ThreadedAnvilChunkStorage.MAX_LEVEL + 1 : holder.getLevel();
+            ChunkHolder holder = this.getChunkHolder(key);
+            int currentLevel = holder == null ? ThreadedAnvilChunkStorage.MAX_LEVEL + 1 : holder.getLevel();
+            if (newLevel == currentLevel) continue;
 
-                if (newLevel == currentLevel) {
-                    continue; // nothing to do
+            holder = this.setLevel(key, newLevel, holder, currentLevel);
+
+            if (holder == null) {
+                if (newLevel <= ThreadedAnvilChunkStorage.MAX_LEVEL) {
+                    throw new IllegalStateException("Chunk holder not created");
                 }
-
-                holder = this.setLevel(key, newLevel, holder, currentLevel);
-
-                if (holder == null) {
-                    if (newLevel <= ThreadedAnvilChunkStorage.MAX_LEVEL) {
-                        throw new IllegalStateException("Expected chunk holder to be created");
-                    }
-                    // not loaded and it shouldn't be loaded!
-                    continue;
-                }
-
-                this.pendingChunkHolderUpdates.add(holder);
+                continue;
             }
+
+            this.pendingChunkHolderUpdates.add(holder);
         }
 
         for (ChunkHolder holder : this.pendingChunkHolderUpdates) {
@@ -183,8 +173,7 @@ public abstract class MixinChunkTicketManager {
         }
         this.pendingChunkHolderUpdates.clear();
 
-        return flag ? distance - 1 : distance;
-        // Paper end - replace level propagator
+        return hasUpdates ? distance - 1 : distance;
     }
 
 }
