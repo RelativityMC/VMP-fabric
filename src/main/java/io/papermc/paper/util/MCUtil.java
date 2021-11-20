@@ -1,3 +1,7 @@
+/*
+ * Licensed under https://github.com/PaperMC/Paper/blob/master/licenses/MIT.md
+ */
+
 package io.papermc.paper.util;
 
 import net.minecraft.util.math.ChunkPos;

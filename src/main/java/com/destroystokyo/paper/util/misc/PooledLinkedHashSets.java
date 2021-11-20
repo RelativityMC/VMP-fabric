@@ -1,3 +1,7 @@
+/*
+ * Licensed under https://github.com/PaperMC/Paper/blob/master/licenses/MIT.md
+ */
+
 package com.destroystokyo.paper.util.misc;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
