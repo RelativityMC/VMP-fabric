@@ -1,32 +1,31 @@
 {
   "schemaVersion": 1,
-  "id": "leafticket",
+  "id": "vmp",
   "version": "${version}",
 
-  "name": "Leaf Ticket Propagator",
-  "description": "Replace ticket level propagator on Fabric",
+  "name": "Very Many Players",
+  "description": "A Fabric mod designed to improve server performance at high playercounts",
   "authors": [
-    "ishland",
-    "Spottedleaf"
+    "ishland"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "sources": "https://github.com/ishlandbukkit/VMP-fabric",
+    "issues": "https://github.com/ishlandbukkit/VMP-fabric/issues"
   },
 
-  "license": "GPL-3.0",
+  "license": "MIT",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.ishland.leafticket.LeafTicketMod"
+      "com.ishland.vmp.VMPMod"
     ]
   },
   "mixins": [
-    "leafticket.mixins.json"
+    "vmp.mixins.json"
   ],
 
-  "accessWidener": "leafticket.accesswidener",
+  "accessWidener": "vmp.accesswidener",
 
   "depends": {
     "fabricloader": ">=0.12.5",

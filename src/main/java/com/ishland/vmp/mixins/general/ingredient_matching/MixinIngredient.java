@@ -1,4 +1,4 @@
-package com.ishland.leafticket.mixins.general.ingredient_matching;
+package com.ishland.vmp.mixins.general.ingredient_matching;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

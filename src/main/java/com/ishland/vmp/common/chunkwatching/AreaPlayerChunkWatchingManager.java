@@ -1,4 +1,4 @@
-package com.ishland.leafticket.common.chunkwatching;
+package com.ishland.vmp.common.chunkwatching;
 
 import com.destroystokyo.paper.util.misc.PlayerAreaMap;
 import com.destroystokyo.paper.util.misc.PooledLinkedHashSets;
@@ -8,17 +8,13 @@ import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 
-import java.util.Arrays;
-import java.util.function.Function;
 import java.util.function.LongFunction;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {

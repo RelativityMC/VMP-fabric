@@ -1,7 +1,7 @@
-package com.ishland.leafticket.mixins.ticketsystem.ticketpropagator;
+package com.ishland.vmp.mixins.ticketsystem.ticketpropagator;
 
-import com.ishland.leafticket.mixins.access.IChunkHolder;
-import com.ishland.leafticket.mixins.access.IChunkTicket;
+import com.ishland.vmp.mixins.access.IChunkHolder;
+import com.ishland.vmp.mixins.access.IChunkTicket;
 import io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;

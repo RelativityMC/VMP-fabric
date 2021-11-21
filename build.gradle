@@ -20,7 +20,7 @@ repositories {
 }
 
 loom {
-	accessWidenerPath = file("src/main/resources/leafticket.accesswidener")
+	accessWidenerPath = file("src/main/resources/vmp.accesswidener")
 }
 
 dependencies {

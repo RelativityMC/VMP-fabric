@@ -1,6 +1,6 @@
-package com.ishland.leafticket.mixins.playerwatching;
+package com.ishland.vmp.mixins.playerwatching;
 
-import com.ishland.leafticket.common.chunkwatching.AreaPlayerChunkWatchingManager;
+import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;

@@ -1,6 +1,6 @@
-package com.ishland.leafticket.mixins.entitytracker;
+package com.ishland.vmp.mixins.entitytracker;
 
-import com.ishland.leafticket.mixins.access.IThreadedAnvilChunkStorage;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

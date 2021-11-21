@@ -1,4 +1,4 @@
-package com.ishland.leafticket.mixins.access;
+package com.ishland.vmp.mixins.access;
 
 import net.minecraft.server.world.ChunkTicket;
 import org.spongepowered.asm.mixin.Mixin;
