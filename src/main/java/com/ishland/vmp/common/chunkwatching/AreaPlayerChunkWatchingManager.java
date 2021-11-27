@@ -19,6 +19,8 @@ import java.util.stream.Stream;
 
 public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
+    private static final Object[] EMPTY = new Object[0];
+
     private final Long2ObjectOpenHashMap<ObjectSet<ServerPlayerEntity>> map = new Long2ObjectOpenHashMap<>();
     private final LongFunction<ObjectSet<ServerPlayerEntity>> setSupplier = unused -> new ObjectArraySet<>();
     private final PooledLinkedHashSets<ServerPlayerEntity> pooledLinkedPlayerHashSets = new PooledLinkedHashSets<>();
@@ -52,11 +54,25 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         }
     }
 
+    public int getWatchDistance() {
+        return watchDistance;
+    }
+
     @Override
     public Stream<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
         final ObjectSet<ServerPlayerEntity> serverPlayerEntities = map.get(l);
         if (serverPlayerEntities == null) return Stream.empty();
         return serverPlayerEntities.stream();
+    }
+
+    public Object[] getPlayersWatchingChunkArray(long l) {
+        final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> objectsInRange = this.playerAreaMap.getObjectsInRange(l);
+        if (objectsInRange != null) return objectsInRange.getBackingSet();
+        else return EMPTY;
+    }
+
+    public ObjectSet<ServerPlayerEntity> getPlayerWatchingChunkSet(long l) {
+        return map.get(l);
     }
 
     @Override

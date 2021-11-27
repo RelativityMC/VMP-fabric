@@ -1,6 +1,7 @@
 package com.ishland.vmp.mixins.access;
 
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,5 +16,8 @@ public interface IThreadedAnvilChunkStorage {
 
     @Accessor
     ServerWorld getWorld();
+
+    @Accessor
+    PlayerChunkWatchingManager getPlayerChunkWatchingManager();
 
 }

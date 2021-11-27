@@ -13,6 +13,7 @@
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
     "playerwatching.MixinThreadedAnvilChunkStorage",
+    "playerwatching.optimize_nearby_player_lookups.MixinServerWorld",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],
   "injectors": {

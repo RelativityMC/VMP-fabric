@@ -18,13 +18,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.stream.Stream;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public class MixinThreadedAnvilChunkStorage {
+public abstract class MixinThreadedAnvilChunkStorage {
 
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
 
     @Shadow private int watchDistance;
 
     @Shadow @Final private static Logger LOGGER;
+
+    @Shadow
+    private static int getChebyshevDistance(ChunkPos pos, ServerPlayerEntity player, boolean useWatchedPosition) {
+        throw new AbstractMethodError();
+    }
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/server/world/PlayerChunkWatchingManager"))
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
@@ -47,7 +52,11 @@ public class MixinThreadedAnvilChunkStorage {
      */
     @Overwrite
     public Stream<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
-        return this.playerChunkWatchingManager.getPlayersWatchingChunk(chunkPos.toLong());
+        final Stream<ServerPlayerEntity> playersWatchingChunk = this.playerChunkWatchingManager.getPlayersWatchingChunk(chunkPos.toLong());
+        if (!onlyOnWatchDistanceEdge)
+            return playersWatchingChunk;
+        else
+            return playersWatchingChunk.filter(player -> getChebyshevDistance(chunkPos, player, true) == this.watchDistance);
     }
 
 }
