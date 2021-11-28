@@ -36,6 +36,12 @@ dependencies {
 	// You may need to force-disable transitiveness on them.
 }
 
+afterEvaluate {
+	migrateMappings.configure {
+		outputDir = project.file("src/main/java")
+	}
+}
+
 processResources {
 	inputs.property "version", project.version
 
