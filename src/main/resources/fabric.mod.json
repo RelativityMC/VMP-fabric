@@ -22,7 +22,7 @@
     ]
   },
   "mixins": [
-
+    "vmp.mixins.json"
   ],
 
   "accessWidener": "vmp.accesswidener",

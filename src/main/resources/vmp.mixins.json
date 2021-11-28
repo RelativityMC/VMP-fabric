@@ -8,7 +8,6 @@
     "access.IChunkHolder",
     "access.IChunkTicket",
     "access.IThreadedAnvilChunkStorage",
-    "carpet.MixinEntityPlayerMPFake",
     "core.areamap.MixinServerPlayerEntity",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.collections.MixinTypeFilterableList",

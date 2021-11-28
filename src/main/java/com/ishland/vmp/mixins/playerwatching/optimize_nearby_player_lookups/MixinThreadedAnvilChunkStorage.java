@@ -23,23 +23,23 @@ public abstract class MixinThreadedAnvilChunkStorage {
         throw new AbstractMethodError();
     }
 
-    /**
-     * @author ishland
-     * @reason optimize nearby player lookups
-     */
-    @Overwrite
-    public boolean isTooFarFromPlayersToSpawnMobs(ChunkPos chunkPos) {
-        long l = chunkPos.toLong();
-        if (!this.ticketManager.method_20800(l)) return true;
-        final AreaPlayerChunkWatchingManager chunkWatchingManager = (AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager;
-        final Object[] array = chunkWatchingManager.getPlayersWatchingChunkArray(chunkPos.toLong());
-
-        for (Object __player : array) {
-            if (__player instanceof ServerPlayerEntity player) {
-                if (!player.isSpectator() && getSquaredDistance(chunkPos, player) < 16384.0) return false;
-            }
-        }
-        return true;
-    }
+//    /**
+//     * @author ishland
+//     * @reason optimize nearby player lookups
+//     */
+//    @Overwrite
+//    public boolean isTooFarFromPlayersToSpawnMobs(ChunkPos chunkPos) {
+//        long l = chunkPos.toLong();
+//        if (!this.ticketManager.shouldTick(l)) return true;
+//        final AreaPlayerChunkWatchingManager chunkWatchingManager = (AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager;
+//        final Object[] array = chunkWatchingManager.getPlayersWatchingChunkArray(chunkPos.toLong());
+//
+//        for (Object __player : array) {
+//            if (__player instanceof ServerPlayerEntity player) {
+//                if (!player.isSpectator() && getSquaredDistance(chunkPos, player) < 16384.0) return false;
+//            }
+//        }
+//        return true;
+//    }
 
 }

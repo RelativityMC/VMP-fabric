@@ -14,6 +14,7 @@ import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.Set;
 import java.util.function.LongFunction;
 import java.util.stream.Stream;
 
@@ -58,20 +59,14 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         return watchDistance;
     }
 
-    @Override
-    public Stream<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
-        final ObjectSet<ServerPlayerEntity> serverPlayerEntities = map.get(l);
-        if (serverPlayerEntities == null) return Stream.empty();
-        return serverPlayerEntities.stream();
-    }
-
     public Object[] getPlayersWatchingChunkArray(long l) {
         final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> objectsInRange = this.playerAreaMap.getObjectsInRange(l);
         if (objectsInRange != null) return objectsInRange.getBackingSet();
         else return EMPTY;
     }
 
-    public ObjectSet<ServerPlayerEntity> getPlayerWatchingChunkSet(long l) {
+    @Override
+    public Set<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
         return map.get(l);
     }
 

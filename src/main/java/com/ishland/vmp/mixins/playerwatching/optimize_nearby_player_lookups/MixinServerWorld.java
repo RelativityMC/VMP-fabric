@@ -3,13 +3,11 @@ package com.ishland.vmp.mixins.playerwatching.optimize_nearby_player_lookups;
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.MCUtil;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -24,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -118,7 +117,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
         if (playerChunkWatchingManager.getWatchDistance() * 16 < range) // too far away for this to handle
             return super.isPlayerInRange(x, y, z, range);
 
-        final ObjectSet<ServerPlayerEntity> playerWatchingChunkSet = playerChunkWatchingManager.getPlayerWatchingChunkSet(MCUtil.getCoordinateKey(chunkX, chunkZ));
+        final Set<ServerPlayerEntity> playerWatchingChunkSet = playerChunkWatchingManager.getPlayersWatchingChunk(MCUtil.getCoordinateKey(chunkX, chunkZ));
         return playerWatchingChunkSet != null && !playerWatchingChunkSet.isEmpty();
     }
 }

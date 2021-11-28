@@ -1,5 +1,6 @@
 package com.ishland.vmp.mixins.playerwatching;
 
+import com.google.common.collect.ImmutableList;
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
@@ -15,6 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
@@ -27,9 +30,18 @@ public abstract class MixinThreadedAnvilChunkStorage {
     @Shadow @Final private static Logger LOGGER;
 
     @Shadow
-    private static int getChebyshevDistance(ChunkPos pos, ServerPlayerEntity player, boolean useWatchedPosition) {
+    private static boolean isOnDistanceEdge(ChunkPos chunkPos, ServerPlayerEntity player, boolean usePlayerWatchedSection, int distance) {
         throw new AbstractMethodError();
     }
+
+    @Shadow
+    private static boolean isWithinDistance(ChunkPos chunkPos, ServerPlayerEntity player, boolean usePlayerWatchedSection, int distance) {
+        throw new AbstractMethodError();
+    }
+
+    @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
+
+    @Shadow protected abstract boolean canTickChunk(ServerPlayerEntity player, ChunkPos pos);
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/server/world/PlayerChunkWatchingManager"))
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
@@ -48,15 +60,67 @@ public abstract class MixinThreadedAnvilChunkStorage {
 
     /**
      * @author ishland
-     * @reason no more filter (implemented by distance map)
+     * @reason use array for iteration
      */
     @Overwrite
-    public Stream<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
-        final Stream<ServerPlayerEntity> playersWatchingChunk = this.playerChunkWatchingManager.getPlayersWatchingChunk(chunkPos.toLong());
-        if (!onlyOnWatchDistanceEdge)
-            return playersWatchingChunk;
-        else
-            return playersWatchingChunk.filter(player -> getChebyshevDistance(chunkPos, player, true) == this.watchDistance);
+    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
+        Object[] set = ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(chunkPos.toLong());
+        ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+
+        for (Object __player : set) {
+            if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+                if (onlyOnWatchDistanceEdge && isOnDistanceEdge(chunkPos, serverPlayerEntity, true, this.watchDistance) || !onlyOnWatchDistanceEdge && isWithinDistance(chunkPos, serverPlayerEntity, true, this.watchDistance)) {
+                    builder.add(serverPlayerEntity);
+                }
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * @author ishland
+     * @reason use array for iteration
+     */
+    @Overwrite
+    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos pos) {
+        long l = pos.toLong();
+        if (!this.ticketManager.shouldTick(l)) {
+            return List.of();
+        } else {
+            ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+
+            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
+                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+                    if (this.canTickChunk(serverPlayerEntity, pos)) {
+                        builder.add(serverPlayerEntity);
+                    }
+                }
+            }
+
+            return builder.build();
+        }
+    }
+
+    /**
+     * @author ishland
+     * @reason use array for iteration
+     */
+    @Overwrite
+    public boolean shouldTick(ChunkPos pos) {
+        long l = pos.toLong();
+        if (!this.ticketManager.shouldTick(l)) {
+            return false;
+        } else {
+            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
+                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+                    if (this.canTickChunk(serverPlayerEntity, pos)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
 }
