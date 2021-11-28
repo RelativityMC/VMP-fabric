@@ -15,7 +15,8 @@
     "playerwatching.MixinThreadedAnvilChunkStorage",
     "playerwatching.optimize_nearby_player_lookups.MixinServerWorld",
     "playerwatching.optimize_nearby_player_lookups.MixinThreadedAnvilChunkStorage",
-    "ticketsystem.ticketpropagator.MixinChunkTicketManager"
+    "ticketsystem.ticketpropagator.MixinChunkTicketManager",
+    "timesource.MixinMinecraftServer"
   ],
   "injectors": {
     "defaultRequire": 1
