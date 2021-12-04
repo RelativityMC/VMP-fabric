@@ -58,7 +58,6 @@ public abstract class MixinChunkTicketManager {
         throw new AbstractMethodError();
     }
 
-    // Paper start - replace ticket level propagator
     @Unique
     protected Long2IntLinkedOpenHashMap ticketLevelUpdates;
 
@@ -68,13 +67,10 @@ public abstract class MixinChunkTicketManager {
     @Unique
     private ArrayList<ChunkHolder> pendingChunkHolderUpdates;
 
-    // function for converting between ticket levels and propagator levels and vice versa
-    // the problem is the ticket level propagator will propagate from a set source down to zero, whereas mojang expects
-    // levels to propagate from a set value up to a maximum value. so we need to convert the levels we put into the propagator
-    // and the levels we get out of the propagator
+    // Paper distance map propagates level from max to 0 while vanilla
+    // one propagate from 0 to max
+    // So there need a conversion between these values
 
-    // this maps so that GOLDEN_TICKET + 1 will be 0 in the propagator, GOLDEN_TICKET will be 1, and so on
-    // we need GOLDEN_TICKET+1 as 0 because anything >= GOLDEN_TICKET+1 should be unloaded
     @Unique
     private static int convertBetweenTicketLevels(final int level) {
         return ThreadedAnvilChunkStorage.MAX_LEVEL - level + 1;
@@ -88,7 +84,6 @@ public abstract class MixinChunkTicketManager {
             this.ticketLevelPropagator.setSource(coordinate, convertBetweenTicketLevels(ticketLevel));
         }
     }
-    // Paper end - replace ticket level propagator
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(Executor workerExecutor, Executor mainThreadExecutor, CallbackInfo ci) {
