@@ -2,12 +2,13 @@ plugins {
 	id 'fabric-loom' version '0.9-SNAPSHOT'
 	id 'io.github.juuxel.loom-quiltflower' version '1.3.0'
 	id 'maven-publish'
+	id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_16
 targetCompatibility = JavaVersion.VERSION_16
 
-archivesBaseName = project.archives_base_name
+archivesBaseName = "${project.archives_base_name}-mc${project.minecraft_version}"
 version = project.mod_version
 group = project.maven_group
 
@@ -21,6 +22,12 @@ repositories {
 
 loom {
 	accessWidenerPath = file("src/main/resources/vmp.accesswidener")
+}
+
+configurations {
+	api.extendsFrom includeApi
+	implementation.extendsFrom shadowImpl
+	runtimeOnly.extendsFrom shadowRuntime
 }
 
 dependencies {
@@ -56,9 +63,6 @@ tasks.withType(JavaCompile).configureEach {
 	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
-
-	// Minecraft 1.17 (21w19a) upwards uses Java 16.
-	it.options.release = 16
 }
 
 java {
@@ -73,6 +77,21 @@ jar {
 		rename { "${it}_${project.archivesBaseName}"}
 	}
 }
+
+shadowJar {
+	archiveClassifier = "all-dev"
+	configurations = [ project.configurations.shadowImpl, project.configurations.shadowRuntime ]
+}
+
+//noinspection UnnecessaryQualifiedReference
+task("remapShadowJar", type: net.fabricmc.loom.task.RemapJarTask, dependsOn: shadowJar) {
+	input = shadowJar.archiveFile
+	archiveFileName = shadowJar.archiveFileName.get().replaceAll("-dev\\.jar\$", ".jar")
+	addNestedDependencies = true
+	remapAccessWidener = true
+}
+
+assemble.dependsOn(remapShadowJar)
 
 // configure the maven publication
 publishing {
