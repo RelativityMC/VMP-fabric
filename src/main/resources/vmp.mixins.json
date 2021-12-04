@@ -10,10 +10,12 @@
     "access.IThreadedAnvilChunkStorage",
     "core.areamap.MixinServerPlayerEntity",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
+    "general.cache_ops.fluid_state.MixinAbstractBlockAbstractBlockState",
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
     "playerwatching.MixinThreadedAnvilChunkStorage",
     "playerwatching.optimize_nearby_player_lookups.MixinServerWorld",
+    "playerwatching.optimize_nearby_player_lookups.MixinSpawnDensityCapper",
     "playerwatching.optimize_nearby_player_lookups.MixinThreadedAnvilChunkStorage",
     "ticketsystem.ticketpropagator.MixinChunkTicketManager"
   ],

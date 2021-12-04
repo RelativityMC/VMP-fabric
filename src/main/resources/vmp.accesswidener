@@ -6,6 +6,9 @@ accessible    class    net/minecraft/server/world/ChunkTicketManager$NearbyChunk
 accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker
 accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$TicketManager
 accessible    class    net/minecraft/recipe/Ingredient$Entry
+accessible    class    net/minecraft/world/SpawnDensityCapper$DensityCap
 
 extendable    class    net/minecraft/server/world/ChunkTicket
 extendable    class    net/minecraft/server/world/PlayerChunkWatchingManager
+
+accessible    method    net/minecraft/world/SpawnDensityCapper$DensityCap    <init>    ()V

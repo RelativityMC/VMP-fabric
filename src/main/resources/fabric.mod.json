@@ -29,8 +29,8 @@
 
   "depends": {
     "fabricloader": ">=0.12.5",
-    "minecraft": ">=1.17.1",
-    "java": ">=16"
+    "minecraft": ">=1.18",
+    "java": ">=17"
   },
   "recommends": {
     "c2me": ">=0.2.0+alpha.5.0"
