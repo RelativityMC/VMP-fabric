@@ -25,8 +25,9 @@ public abstract class MixinEntityPlayerMPFake extends ServerPlayerEntity {
     @Unique private double vmp_lastY = Double.NaN;
     @Unique private double vmp_lastZ = Double.NaN;
 
+    @SuppressWarnings("DefaultAnnotationParam")
     @Dynamic
-    @Redirect(method = {"tick", "method_5773"}, remap = false, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkManager;updatePosition(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+    @Redirect(method = {"tick", "method_5773"}, remap = false, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkManager;updatePosition(Lnet/minecraft/server/network/ServerPlayerEntity;)V", remap = true))
     private void redirectUpdatePosition(ServerChunkManager serverChunkManager, ServerPlayerEntity __unused) {
         final Vec3d pos = this.getPos();
         if (pos.x != vmp_lastX || pos.y != vmp_lastY || pos.z != vmp_lastZ) { // only do update when position changes
