@@ -36,12 +36,12 @@ public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> {
         this.allElements = new ObjectArrayList<>();
     }
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;"))
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Maps;newHashMap()Ljava/util/HashMap;", remap = false))
     private HashMap<?, ?> redirectNewHashMap() {
         return null; // avoid unnecessary alloc
     }
 
-    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;"))
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Lists;newArrayList()Ljava/util/ArrayList;", remap = false))
     private ArrayList<?> redirectNewArrayList() {
         return null;
     }
