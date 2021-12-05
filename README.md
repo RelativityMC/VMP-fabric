@@ -10,7 +10,7 @@ A Fabric mod designed to improve server performance at high playercounts.
 
 ## So what is VMP? 
 Very Many Players, or VMP for short, is a Fabric mod designed to improve general server performance at high playercount 
-**without** sacrificing vanilla functionality or behavior.  
+**without sacrificing vanilla functionality or behavior**.  
 For the best performance it is recommended to use VMP with [Lithium](https://modrinth.com/mod/lithium).
 
 ## Support
