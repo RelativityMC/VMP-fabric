@@ -6,6 +6,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -29,19 +30,19 @@ public abstract class MixinThreadedAnvilChunkStorage {
 
     @Shadow @Final private static Logger LOGGER;
 
-    @Shadow
-    private static boolean isOnDistanceEdge(ChunkPos chunkPos, ServerPlayerEntity player, boolean usePlayerWatchedSection, int distance) {
-        throw new AbstractMethodError();
-    }
-
-    @Shadow
-    private static boolean isWithinDistance(ChunkPos chunkPos, ServerPlayerEntity player, boolean usePlayerWatchedSection, int distance) {
-        throw new AbstractMethodError();
-    }
-
     @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
 
     @Shadow protected abstract boolean canTickChunk(ServerPlayerEntity player, ChunkPos pos);
+
+    @Shadow
+    private static boolean method_39976(int i, int j, int k, int l, int m) {
+        throw new AbstractMethodError();
+    }
+
+    @Shadow
+    public static boolean method_39975(int i, int j, int k, int l, int m) {
+        throw new AbstractMethodError();
+    }
 
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/server/world/PlayerChunkWatchingManager"))
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
@@ -69,7 +70,8 @@ public abstract class MixinThreadedAnvilChunkStorage {
 
         for (Object __player : set) {
             if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
-                if (onlyOnWatchDistanceEdge && isOnDistanceEdge(chunkPos, serverPlayerEntity, true, this.watchDistance) || !onlyOnWatchDistanceEdge && isWithinDistance(chunkPos, serverPlayerEntity, true, this.watchDistance)) {
+                ChunkSectionPos chunkSectionPos = serverPlayerEntity.getWatchedSection();
+                if (onlyOnWatchDistanceEdge && method_39976(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance) || !onlyOnWatchDistanceEdge && method_39975(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance)) {
                     builder.add(serverPlayerEntity);
                 }
             }
