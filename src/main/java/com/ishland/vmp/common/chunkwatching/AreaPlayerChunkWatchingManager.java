@@ -89,14 +89,14 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     @Override
     public void disableWatch(ServerPlayerEntity player) {
         super.disableWatch(player);
-        this.playerAreaMap.remove(player);
+//        this.playerAreaMap.remove(player);
     }
 
     @Override
     public void enableWatch(ServerPlayerEntity player) {
         super.enableWatch(player);
-        final long pos = this.positions.getLong(player);
-        this.playerAreaMap.add(player, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos), this.watchDistance);
+//        final long pos = this.positions.getLong(player);
+//        this.playerAreaMap.add(player, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos), this.watchDistance);
     }
 
     @Override
@@ -111,6 +111,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void movePlayer(long prevPos, long currentPos, ServerPlayerEntity player) {
+//        if (!this.isWatchDisabled(player))
         this.playerAreaMap.update(player, ChunkPos.getPackedX(currentPos), ChunkPos.getPackedZ(currentPos), this.watchDistance);
     }
 }
