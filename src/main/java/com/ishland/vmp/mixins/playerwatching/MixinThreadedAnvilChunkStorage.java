@@ -59,70 +59,70 @@ public abstract class MixinThreadedAnvilChunkStorage {
         }
     }
 
-    /**
-     * @author ishland
-     * @reason use array for iteration
-     */
-    @Overwrite
-    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
-        Object[] set = ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(chunkPos.toLong());
-        ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+//    /**
+//     * @author ishland
+//     * @reason use array for iteration
+//     */
+//    @Overwrite
+//    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
+//        Set<ServerPlayerEntity> set = ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunk(chunkPos.toLong());
+//        ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+//
+//        for (Object __player : set) {
+//            if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+//                ChunkSectionPos chunkSectionPos = serverPlayerEntity.getWatchedSection();
+//                if (onlyOnWatchDistanceEdge && method_39976(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance) || !onlyOnWatchDistanceEdge && method_39975(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance)) {
+//                    builder.add(serverPlayerEntity);
+//                }
+//            }
+//        }
+//
+//        return builder.build();
+//    }
 
-        for (Object __player : set) {
-            if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
-                ChunkSectionPos chunkSectionPos = serverPlayerEntity.getWatchedSection();
-                if (onlyOnWatchDistanceEdge && method_39976(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance) || !onlyOnWatchDistanceEdge && method_39975(chunkPos.x, chunkPos.z, chunkSectionPos.getSectionX(), chunkSectionPos.getSectionZ(), this.watchDistance)) {
-                    builder.add(serverPlayerEntity);
-                }
-            }
-        }
+//    /**
+//     * @author ishland
+//     * @reason use array for iteration
+//     */
+//    @Overwrite
+//    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos pos) {
+//        long l = pos.toLong();
+//        if (!this.ticketManager.shouldTick(l)) {
+//            return List.of();
+//        } else {
+//            ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+//
+//            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
+//                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+//                    if (this.canTickChunk(serverPlayerEntity, pos)) {
+//                        builder.add(serverPlayerEntity);
+//                    }
+//                }
+//            }
+//
+//            return builder.build();
+//        }
+//    }
 
-        return builder.build();
-    }
-
-    /**
-     * @author ishland
-     * @reason use array for iteration
-     */
-    @Overwrite
-    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos pos) {
-        long l = pos.toLong();
-        if (!this.ticketManager.shouldTick(l)) {
-            return List.of();
-        } else {
-            ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
-
-            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
-                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
-                    if (this.canTickChunk(serverPlayerEntity, pos)) {
-                        builder.add(serverPlayerEntity);
-                    }
-                }
-            }
-
-            return builder.build();
-        }
-    }
-
-    /**
-     * @author ishland
-     * @reason use array for iteration
-     */
-    @Overwrite
-    public boolean shouldTick(ChunkPos pos) {
-        long l = pos.toLong();
-        if (!this.ticketManager.shouldTick(l)) {
-            return false;
-        } else {
-            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
-                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
-                    if (this.canTickChunk(serverPlayerEntity, pos)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    }
+//    /**
+//     * @author ishland
+//     * @reason use array for iteration
+//     */
+//    @Overwrite
+//    public boolean shouldTick(ChunkPos pos) {
+//        long l = pos.toLong();
+//        if (!this.ticketManager.shouldTick(l)) {
+//            return false;
+//        } else {
+//            for (Object __player : ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(l)) {
+//                if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
+//                    if (this.canTickChunk(serverPlayerEntity, pos)) {
+//                        return true;
+//                    }
+//                }
+//            }
+//            return false;
+//        }
+//    }
 
 }
