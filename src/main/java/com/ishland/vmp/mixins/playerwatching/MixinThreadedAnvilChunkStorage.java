@@ -59,6 +59,29 @@ public abstract class MixinThreadedAnvilChunkStorage {
         }
     }
 
+    /**
+     * @author ishland
+     * @reason well why not just use square as cylinder shapes are expensive
+     */
+    @Overwrite
+    public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
+        Set<ServerPlayerEntity> set = this.playerChunkWatchingManager.getPlayersWatchingChunk(chunkPos.toLong());
+        ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
+
+        for(ServerPlayerEntity serverPlayerEntity : set) {
+            ChunkSectionPos watchedPos = serverPlayerEntity.getWatchedSection();
+            int chebyshevDistance = Math.max(Math.abs(watchedPos.getSectionX() - chunkPos.x), Math.abs(watchedPos.getSectionZ() - chunkPos.z));
+            if (chebyshevDistance > this.watchDistance) {
+                continue;
+            }
+            if (!onlyOnWatchDistanceEdge || chebyshevDistance == this.watchDistance) {
+                builder.add(serverPlayerEntity);
+            }
+        }
+
+        return builder.build();
+    }
+
 //    /**
 //     * @author ishland
 //     * @reason use array for iteration

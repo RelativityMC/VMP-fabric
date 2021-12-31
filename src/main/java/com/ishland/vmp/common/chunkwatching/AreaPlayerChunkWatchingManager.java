@@ -27,7 +27,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     private int watchDistance = 5;
 
     public void setWatchDistance(int watchDistance) {
-        this.watchDistance = MathHelper.clamp(watchDistance, 3, 33);
+        this.watchDistance = Math.max(3, watchDistance);
         final ObjectIterator<Object2LongMap.Entry<ServerPlayerEntity>> iterator = positions.object2LongEntrySet().fastIterator();
         while (iterator.hasNext()) {
             final Object2LongMap.Entry<ServerPlayerEntity> entry = iterator.next();
