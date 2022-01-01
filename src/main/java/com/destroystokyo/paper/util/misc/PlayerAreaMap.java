@@ -7,8 +7,6 @@ package com.destroystokyo.paper.util.misc;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.Objects;
-
 /**
  * @author Spottedleaf
  */
@@ -34,7 +32,7 @@ public final class PlayerAreaMap extends AreaMap<ServerPlayerEntity> {
 
     @Override
     protected PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> getEmptySetFor(final ServerPlayerEntity player) {
-        return Objects.requireNonNull(((PlayerCachedSingleHashSetAccessor) player).getCachedSingleHashSet());
+        return ((PlayerCachedSingleHashSetAccessor) player).getCachedSingleHashSet();
     }
 
     public interface PlayerCachedSingleHashSetAccessor {

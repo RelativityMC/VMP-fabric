@@ -116,7 +116,7 @@ public abstract class AreaMap<E> {
             this.updateObject(object, oldPos, newPos, oldViewDistance, viewDistance);
             this.updateObjectCallback(object, oldPos, newPos, oldViewDistance, viewDistance);
         }
-//        this.validate(object, viewDistance);
+        //this.validate(object, viewDistance);
         return true;
     }
 
