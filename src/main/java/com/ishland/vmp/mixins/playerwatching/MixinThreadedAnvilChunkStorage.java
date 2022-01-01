@@ -136,9 +136,4 @@ public abstract class MixinThreadedAnvilChunkStorage {
         }
     }
 
-//    @Inject(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/ChunkSectionPos;getSectionX()I", shift = At.Shift.BEFORE), cancellable = true)
-//    private void beforeWatchPackets(CallbackInfo ci) {
-//        ci.cancel(); // Stop packet sending, handled by distance map
-//    }
-
 }
