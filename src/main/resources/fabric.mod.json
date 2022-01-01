@@ -31,5 +31,12 @@
     "fabricloader": ">=0.12.5",
     "minecraft": ">=1.18",
     "java": ">=17"
+  },
+
+  "custom": {
+    "_lithium_toggle_comment": "We disable the player_chunk_tick mixin as we handle chunk sending on our own",
+    "lithium:options": {
+      "mixin.world.player_chunk_tick": false
+    }
   }
 }
