@@ -2,26 +2,38 @@ package com.ishland.vmp.common.maps;
 
 import com.ishland.vmp.common.util.SimpleObjectPool;
 import io.papermc.paper.util.MCUtil;
+import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 
 import java.util.Collections;
 import java.util.Set;
 
 public class AreaMap<T> {
 
-    private final SimpleObjectPool<ObjectLinkedOpenHashSet<T>> pooledHashSets = new SimpleObjectPool<>(unused -> new ObjectLinkedOpenHashSet<>(), ObjectLinkedOpenHashSet::clear, 8192);
-    private final Long2ObjectFunction<ObjectLinkedOpenHashSet<T>> allocHashSet = unused -> pooledHashSets.alloc();
-    private final Long2ObjectOpenHashMap<ObjectLinkedOpenHashSet<T>> map = new Long2ObjectOpenHashMap<>();
-    private final Object2IntOpenHashMap<T> viewDistances = new Object2IntOpenHashMap<>();
-    private final Object2LongOpenHashMap<T> lastCenters = new Object2LongOpenHashMap<>();
+    private final Hash.Strategy<T> hashStrategy = new Hash.Strategy<T>() { // identity hash map strategy
+        @Override
+        public int hashCode(T o) {
+            return System.identityHashCode(o);
+        }
+
+        @Override
+        public boolean equals(T a, T b) {
+            return a == b;
+        }
+    };
+
+    private final SimpleObjectPool<ObjectLinkedOpenCustomHashSet<T>> pooledHashSets = new SimpleObjectPool<>(unused -> new ObjectLinkedOpenCustomHashSet<>(hashStrategy), ObjectLinkedOpenCustomHashSet::clear, 8192);
+    private final Long2ObjectFunction<ObjectLinkedOpenCustomHashSet<T>> allocHashSet = unused -> pooledHashSets.alloc();
+    private final Long2ObjectOpenHashMap<ObjectLinkedOpenCustomHashSet<T>> map = new Long2ObjectOpenHashMap<>();
+    private final Object2IntOpenCustomHashMap<T> viewDistances = new Object2IntOpenCustomHashMap<>(hashStrategy);
+    private final Object2LongOpenCustomHashMap<T> lastCenters = new Object2LongOpenCustomHashMap<>(hashStrategy);
 
     public Set<T> getObjectsInRange(long coordinateKey) {
-        final ObjectLinkedOpenHashSet<T> set = map.get(coordinateKey);
+        final ObjectLinkedOpenCustomHashSet<T> set = map.get(coordinateKey);
         return set != null ? set : Collections.emptySet();
     }
 
@@ -31,12 +43,12 @@ public class AreaMap<T> {
         lastCenters.put(object, MCUtil.getCoordinateKey(x, z));
         for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
             for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
-                final ObjectLinkedOpenHashSet<T> set = map.computeIfAbsent(MCUtil.getCoordinateKey(xx, zz), allocHashSet);
+                final ObjectLinkedOpenCustomHashSet<T> set = map.computeIfAbsent(MCUtil.getCoordinateKey(xx, zz), allocHashSet);
                 set.add(object);
             }
         }
 
-//        validate(object, x, z, viewDistance);
+        validate(object, x, z, viewDistance);
     }
 
     public void remove(T object) {
@@ -48,7 +60,7 @@ public class AreaMap<T> {
         for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
             for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
                 final long coordinateKey = MCUtil.getCoordinateKey(xx, zz);
-                final ObjectLinkedOpenHashSet<T> set = map.get(coordinateKey);
+                final ObjectLinkedOpenCustomHashSet<T> set = map.get(coordinateKey);
                 if (set == null)
                     throw new IllegalStateException("Expect non-null set in [%d,%d]".formatted(xx, zz));
                 if (!set.remove(object))
@@ -73,7 +85,7 @@ public class AreaMap<T> {
         updateAdds(object, oldX, oldZ, oldViewDistance, x, z, viewDistance);
         updateRemovals(object, oldX, oldZ, oldViewDistance, x, z, viewDistance);
 
-//        validate(object, x, z, viewDistance);
+        validate(object, x, z, viewDistance);
     }
 
     private void updateAdds(T object, int oldX, int oldZ, int oldViewDistance, int newX, int newZ, int newViewDistance) {
@@ -85,7 +97,7 @@ public class AreaMap<T> {
         for (int xx = newX - newViewDistance; xx <= newX + newViewDistance; xx ++) {
             for (int zz = newZ - newViewDistance; zz <= newZ + newViewDistance; zz ++) {
                 if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
-                    final ObjectLinkedOpenHashSet<T> set = map.computeIfAbsent(MCUtil.getCoordinateKey(xx, zz), allocHashSet);
+                    final ObjectLinkedOpenCustomHashSet<T> set = map.computeIfAbsent(MCUtil.getCoordinateKey(xx, zz), allocHashSet);
                     set.add(object);
                 }
             }
@@ -102,7 +114,7 @@ public class AreaMap<T> {
             for (int zz = oldZ - oldViewDistance; zz <= oldZ + oldViewDistance; zz ++) {
                 if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
                     final long coordinateKey = MCUtil.getCoordinateKey(xx, zz);
-                    final ObjectLinkedOpenHashSet<T> set = map.get(coordinateKey);
+                    final ObjectLinkedOpenCustomHashSet<T> set = map.get(coordinateKey);
                     if (set == null)
                         throw new IllegalStateException("Expect non-null set in [%d,%d]".formatted(xx, zz));
                     if (!set.remove(object))
@@ -125,7 +137,7 @@ public class AreaMap<T> {
         for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
             for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
                 final long coordinateKey = MCUtil.getCoordinateKey(xx, zz);
-                final ObjectLinkedOpenHashSet<T> set = map.get(coordinateKey);
+                final ObjectLinkedOpenCustomHashSet<T> set = map.get(coordinateKey);
                 if (set == null)
                     throw new IllegalStateException("Expect non-null set in [%d,%d]".formatted(xx, zz));
                 if (!set.contains(object))
