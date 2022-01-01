@@ -27,20 +27,10 @@ public class MixinIngredient {
     private Ingredient.Entry[] entries;
 
     @Unique
-    private Set<Item> matchingItems = Collections.emptySet();
+    private Set<Item> matchingItems = null;
 
     @Unique
     private boolean isEmptyMatch = false;
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(CallbackInfo ci) {
-        this.matchingItems = Arrays.stream(this.entries)
-                .flatMap(entry -> entry.getStacks().stream())
-                .filter(itemStack -> !itemStack.isEmpty())
-                .map(ItemStack::getItem)
-                .collect(Collectors.toCollection(HashSet::new));
-        this.isEmptyMatch = this.matchingItems.isEmpty();
-    }
 
     /**
      * @author ishland
@@ -51,10 +41,20 @@ public class MixinIngredient {
         if (itemStack == null) {
             return false;
         } else {
-            if (itemStack.isEmpty()) {
-                return this.isEmptyMatch;
+            Set<Item> matchingItems = this.matchingItems;
+            boolean isEmptyMatch = this.isEmptyMatch;
+            if (matchingItems == null) {
+                matchingItems = this.matchingItems = Arrays.stream(this.entries)
+                        .flatMap(entry -> entry.getStacks().stream())
+                        .filter(itemStack1 -> !itemStack1.isEmpty())
+                        .map(ItemStack::getItem)
+                        .collect(Collectors.toCollection(HashSet::new));
+                isEmptyMatch = this.isEmptyMatch = this.matchingItems.isEmpty();
             }
-            return this.matchingItems.contains(itemStack.getItem());
+            if (itemStack.isEmpty()) {
+                return isEmptyMatch;
+            }
+            return matchingItems.contains(itemStack.getItem());
         }
     }
 
