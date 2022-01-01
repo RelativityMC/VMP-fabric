@@ -27,17 +27,30 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
             this.pooledLinkedPlayerHashSets,
             (player, rangeX, rangeZ, currPosX, currPosZ, prevPosX, prevPosZ, newState) -> { // add
                 map.computeIfAbsent(ChunkPos.toLong(rangeX, rangeZ), setSupplier).add(player);
+                if (this.addListener != null) this.addListener.accept(player, rangeX, rangeZ);
             },
             (player, rangeX, rangeZ, currPosX, currPosZ, prevPosX, prevPosZ, newState) -> { // remove
                 final long pos = ChunkPos.toLong(rangeX, rangeZ);
                 final ObjectSet<ServerPlayerEntity> set = map.computeIfAbsent(pos, setSupplier);
                 set.remove(player);
                 if (set.isEmpty()) map.remove(pos);
+                if (this.removeListener != null) this.removeListener.accept(player, rangeX, rangeZ);
             }
     );
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
+    private Listener addListener = null;
+    private Listener removeListener = null;
 
     private int watchDistance = 5;
+
+    public AreaPlayerChunkWatchingManager() {
+        this(null, null);
+    }
+
+    public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener) {
+        this.addListener = addListener;
+        this.removeListener = removeListener;
+    }
 
     public void setWatchDistance(int watchDistance) {
         this.watchDistance = Math.max(3, watchDistance);
@@ -111,5 +124,9 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     public void movePlayer(long prevPos, long currentPos, ServerPlayerEntity player) {
 //        if (!this.isWatchDisabled(player))
         this.playerAreaMap.update(player, ChunkPos.getPackedX(currentPos), ChunkPos.getPackedZ(currentPos), this.watchDistance);
+    }
+
+    public interface Listener {
+        void accept(ServerPlayerEntity player, int chunkX, int chunkZ);
     }
 }

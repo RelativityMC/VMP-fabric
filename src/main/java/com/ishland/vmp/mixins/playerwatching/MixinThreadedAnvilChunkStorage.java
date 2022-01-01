@@ -2,11 +2,13 @@ package com.ishland.vmp.mixins.playerwatching;
 
 import com.google.common.collect.ImmutableList;
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,9 +46,14 @@ public abstract class MixinThreadedAnvilChunkStorage {
         throw new AbstractMethodError();
     }
 
+    @Shadow protected abstract void sendWatchPackets(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance);
+
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/server/world/PlayerChunkWatchingManager"))
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
-        return new AreaPlayerChunkWatchingManager();
+        return new AreaPlayerChunkWatchingManager(
+                (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), false, true),
+                (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), true, false)
+        );
     }
 
     @Inject(method = "setViewDistance", at = @At("RETURN"))
@@ -127,6 +134,11 @@ public abstract class MixinThreadedAnvilChunkStorage {
             }
             return false;
         }
+    }
+
+    @Inject(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/ChunkSectionPos;getSectionX()I", shift = At.Shift.BEFORE), cancellable = true)
+    private void beforeWatchPackets(CallbackInfo ci) {
+        ci.cancel(); // Stop packet sending, handled by distance map
     }
 
 }
