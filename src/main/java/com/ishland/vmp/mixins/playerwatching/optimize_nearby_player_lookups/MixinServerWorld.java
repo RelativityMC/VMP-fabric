@@ -46,16 +46,18 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
         if (playerChunkWatchingManager.getWatchDistance() * 16 < maxDistance) // too far away for this to handle
             return super.getClosestPlayer(x, y, z, maxDistance, targetPredicate);
 
-        final Set<ServerPlayerEntity> playersWatchingChunkArray = playerChunkWatchingManager.getPlayersWatchingChunk(MCUtil.getCoordinateKey(chunkX, chunkZ));
+        final Object[] playersWatchingChunkArray = playerChunkWatchingManager.getPlayersWatchingChunkArray(MCUtil.getCoordinateKey(chunkX, chunkZ));
 
         ServerPlayerEntity nearestPlayer = null;
         double nearestDistance = maxDistance < 0.0 ? Double.MAX_VALUE : maxDistance * maxDistance;
-        for (ServerPlayerEntity player : playersWatchingChunkArray) {
-            if (targetPredicate == null || targetPredicate.test(player)) {
-                final double distance = player.squaredDistanceTo(x, y, z);
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestPlayer = player;
+        for (Object __player : playersWatchingChunkArray) {
+            if (__player instanceof ServerPlayerEntity player) {
+                if (targetPredicate == null || targetPredicate.test(player)) {
+                    final double distance = player.squaredDistanceTo(x, y, z);
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestPlayer = player;
+                    }
                 }
             }
         }
@@ -80,16 +82,18 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
         // no maxDistance here so just search within the range,
         // and hopefully it works
 
-        final Set<ServerPlayerEntity> playersWatchingChunkArray = playerChunkWatchingManager.getPlayersWatchingChunk(MCUtil.getCoordinateKey(chunkX, chunkZ));
+        final Object[] playersWatchingChunkArray = playerChunkWatchingManager.getPlayersWatchingChunkArray(MCUtil.getCoordinateKey(chunkX, chunkZ));
 
         ServerPlayerEntity nearestPlayer = null;
         double nearestDistance = Double.MAX_VALUE;
-        for (ServerPlayerEntity player : playersWatchingChunkArray) {
-            if (targetPredicate == null || targetPredicate.test(entity, player)) {
-                final double distance = player.squaredDistanceTo(x, y, z);
-                if (distance < nearestDistance) {
-                    nearestDistance = distance;
-                    nearestPlayer = player;
+        for (Object __player : playersWatchingChunkArray) {
+            if (__player instanceof ServerPlayerEntity player) {
+                if (targetPredicate == null || targetPredicate.test(entity, player)) {
+                    final double distance = player.squaredDistanceTo(x, y, z);
+                    if (distance < nearestDistance) {
+                        nearestDistance = distance;
+                        nearestPlayer = player;
+                    }
                 }
             }
         }

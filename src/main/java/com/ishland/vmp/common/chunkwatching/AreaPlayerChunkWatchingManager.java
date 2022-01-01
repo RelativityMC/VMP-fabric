@@ -21,7 +21,18 @@ import java.util.stream.Stream;
 
 public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
-    private final AreaMap<ServerPlayerEntity> playerAreaMap = new AreaMap<>();
+    private final AreaMap<ServerPlayerEntity> playerAreaMap = new AreaMap<>(
+            (object, x, z) -> {
+                if (this.addListener != null) {
+                    this.addListener.accept(object, x, z);
+                }
+            },
+            (object, x, z) -> {
+                if (this.removeListener != null) {
+                    this.removeListener.accept(object, x, z);
+                }
+            }
+    );
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
     private Listener addListener = null;
     private Listener removeListener = null;
@@ -58,6 +69,10 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     @Override
     public Set<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
         return this.playerAreaMap.getObjectsInRange(l);
+    }
+
+    public Object[] getPlayersWatchingChunkArray(long coordinateKey) {
+        return this.playerAreaMap.getObjectsInRangeArray(coordinateKey);
     }
 
     @Override
