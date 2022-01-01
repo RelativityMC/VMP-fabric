@@ -21,8 +21,6 @@ import java.util.stream.Stream;
 
 public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
-    private static final Object[] EMPTY = new Object[0];
-
     private final AreaMap<ServerPlayerEntity> playerAreaMap = new AreaMap<>();
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
     private Listener addListener = null;
@@ -64,7 +62,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void add(long l, ServerPlayerEntity player, boolean watchDisabled) {
-        System.out.println(String.format("addPlayer %s to %s", player, new ChunkPos(l)));
+//        System.out.println(String.format("addPlayer %s to %s", player, new ChunkPos(l)));
         super.add(l, player, watchDisabled);
         final int x = ChunkPos.getPackedX(l);
         final int z = ChunkPos.getPackedZ(l);
@@ -74,7 +72,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void remove(long l, ServerPlayerEntity player) {
-        System.out.println(String.format("removePlayer %s", player));
+//        System.out.println(String.format("removePlayer %s", player));
         super.remove(l, player);
         this.playerAreaMap.remove(player);
         this.positions.removeLong(player);
@@ -105,7 +103,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void movePlayer(long prevPos, long currentPos, ServerPlayerEntity player) {
-        System.out.println(String.format("movePlayer %s to %s", player, new ChunkPos(currentPos)));
+//        System.out.println(String.format("movePlayer %s to %s", player, new ChunkPos(currentPos)));
 //        if (!this.isWatchDisabled(player))
         this.playerAreaMap.update(player, ChunkPos.getPackedX(currentPos), ChunkPos.getPackedZ(currentPos), this.watchDistance);
     }
