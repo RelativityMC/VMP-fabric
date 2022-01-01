@@ -1,5 +1,6 @@
 package com.ishland.vmp.mixins.general.collections;
 
+import com.ishland.vmp.common.general.collections.ITypeFilterableList;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.util.collection.TypeFilterableList;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(TypeFilterableList.class)
-public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> {
+public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> implements ITypeFilterableList {
 
     @Mutable
     @Shadow @Final private Map<Class<?>, List<T>> elementsByType;
@@ -46,4 +47,8 @@ public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> {
         return null;
     }
 
+    @Override
+    public Object[] getBackingArray() {
+        return ((ObjectArrayList<T>) this.allElements).elements();
+    }
 }
