@@ -10,7 +10,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,26 +34,26 @@ public abstract class AreaMap<E> {
 
     // we use linked for better iteration.
     // map of: coordinate to set of objects in coordinate
-    protected final Long2ObjectOpenHashMap<PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E>> areaMap = new Long2ObjectOpenHashMap<>(1024, 0.7f);
-    protected final PooledLinkedHashSets<E> pooledHashSets;
+    protected final Long2ObjectOpenHashMap<PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E>> areaMap = new Long2ObjectOpenHashMap<>(1024, 0.7f);
+    protected final PooledLinkedIdentityHashSets<E> pooledHashSets;
 
     protected final ChangeCallback<E> addCallback;
     protected final ChangeCallback<E> removeCallback;
     protected final ChangeSourceCallback<E> changeSourceCallback;
 
     public AreaMap() {
-        this(new PooledLinkedHashSets<>());
+        this(new PooledLinkedIdentityHashSets<>());
     }
 
     // let users define a "global" or "shared" pooled sets if they wish
-    public AreaMap(final PooledLinkedHashSets<E> pooledHashSets) {
+    public AreaMap(final PooledLinkedIdentityHashSets<E> pooledHashSets) {
         this(pooledHashSets, null, null);
     }
 
-    public AreaMap(final PooledLinkedHashSets<E> pooledHashSets, final ChangeCallback<E> addCallback, final ChangeCallback<E> removeCallback) {
+    public AreaMap(final PooledLinkedIdentityHashSets<E> pooledHashSets, final ChangeCallback<E> addCallback, final ChangeCallback<E> removeCallback) {
         this(pooledHashSets, addCallback, removeCallback, null);
     }
-    public AreaMap(final PooledLinkedHashSets<E> pooledHashSets, final ChangeCallback<E> addCallback, final ChangeCallback<E> removeCallback, final ChangeSourceCallback<E> changeSourceCallback) {
+    public AreaMap(final PooledLinkedIdentityHashSets<E> pooledHashSets, final ChangeCallback<E> addCallback, final ChangeCallback<E> removeCallback, final ChangeSourceCallback<E> changeSourceCallback) {
         this.pooledHashSets = pooledHashSets;
         this.addCallback = addCallback;
         this.removeCallback = removeCallback;
@@ -62,17 +61,17 @@ public abstract class AreaMap<E> {
     }
 
     @Nullable
-    public final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> getObjectsInRange(final long key) {
+    public final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> getObjectsInRange(final long key) {
         return this.areaMap.get(key);
     }
 
     @Nullable
-    public final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> getObjectsInRange(final ChunkPos chunkPos) {
+    public final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> getObjectsInRange(final ChunkPos chunkPos) {
         return this.areaMap.get(MCUtil.getCoordinateKey(chunkPos));
     }
 
     @Nullable
-    public final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> getObjectsInRange(final int chunkX, final int chunkZ) {
+    public final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> getObjectsInRange(final int chunkX, final int chunkZ) {
         return this.areaMap.get(MCUtil.getCoordinateKey(chunkX, chunkZ));
     }
 
@@ -103,7 +102,7 @@ public abstract class AreaMap<E> {
             this.updateObject(object, oldPos, newPos, oldViewDistance, viewDistance);
             this.updateObjectCallback(object, oldPos, newPos, oldViewDistance, viewDistance);
         }
-        //this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
     }
 
     public final boolean update(final E object, final int chunkX, final int chunkZ, final int viewDistance) {
@@ -116,7 +115,7 @@ public abstract class AreaMap<E> {
             this.updateObject(object, oldPos, newPos, oldViewDistance, viewDistance);
             this.updateObjectCallback(object, oldPos, newPos, oldViewDistance, viewDistance);
         }
-        //this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
         return true;
     }
 
@@ -138,7 +137,7 @@ public abstract class AreaMap<E> {
         this.addObject(object, chunkX, chunkZ, Integer.MIN_VALUE, Integer.MIN_VALUE, viewDistance);
         this.addObjectCallback(object, chunkX, chunkZ, viewDistance);
 
-        //this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
 
         return true;
     }
@@ -159,14 +158,14 @@ public abstract class AreaMap<E> {
 
         this.removeObject(object, currentX, currentZ, currentX, currentZ, viewDistance);
         this.removeObjectCallback(object, currentX, currentZ, viewDistance);
-        //this.validate(object, -1);
+        this.validate(object, -1);
         return true;
     }
 
     // called after the distance map updates
     protected void removeObjectCallback(final E object, final int chunkX, final int chunkZ, final int viewDistance) {}
 
-    protected abstract PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> getEmptySetFor(final E object);
+    protected abstract PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> getEmptySetFor(final E object);
 
     // expensive op, only for debug
     protected void validate(final E object, final int viewDistance) {
@@ -182,12 +181,12 @@ public abstract class AreaMap<E> {
         final int centerX = MCUtil.getCoordinateX(currPosition);
         final int centerZ = MCUtil.getCoordinateZ(currPosition);
 
-        for (Iterator<Long2ObjectLinkedOpenHashMap.Entry<PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E>>> iterator = this.areaMap.long2ObjectEntrySet().fastIterator();
+        for (Iterator<Long2ObjectLinkedOpenHashMap.Entry<PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E>>> iterator = this.areaMap.long2ObjectEntrySet().fastIterator();
              iterator.hasNext();) {
 
-            final Long2ObjectLinkedOpenHashMap.Entry<PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E>> entry = iterator.next();
+            final Long2ObjectLinkedOpenHashMap.Entry<PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E>> entry = iterator.next();
             final long key = entry.getLongKey();
-            final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> map = entry.getValue();
+            final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> map = entry.getValue();
 
             if (map.referenceCount == 0) {
                 throw new IllegalStateException("Invalid map");
@@ -216,11 +215,11 @@ public abstract class AreaMap<E> {
                              final int currChunkZ, final int prevChunkX, final int prevChunkZ) {
         final long key = MCUtil.getCoordinateKey(chunkX, chunkZ);
 
-        PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> empty = this.getEmptySetFor(object);
-        PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> current = this.areaMap.putIfAbsent(key, empty);
+        PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> empty = this.getEmptySetFor(object);
+        PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> current = this.areaMap.putIfAbsent(key, empty);
 
         if (current != null) {
-            PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> next = this.pooledHashSets.findMapWith(current, object);
+            PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> next = this.pooledHashSets.findMapWith(current, object);
             if (next == current) {
                 throw new IllegalStateException("Expected different map: got " + next.toString());
             }
@@ -248,13 +247,13 @@ public abstract class AreaMap<E> {
                                   final int currChunkZ, final int prevChunkX, final int prevChunkZ) {
         final long key = MCUtil.getCoordinateKey(chunkX, chunkZ);
 
-        PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> current = this.areaMap.get(key);
+        PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> current = this.areaMap.get(key);
 
         if (current == null) {
             throw new IllegalStateException("Current map may not be null for " + object + ", (" + chunkX + "," + chunkZ + ")");
         }
 
-        PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> next = this.pooledHashSets.findMapWithout(current, object);
+        PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> next = this.pooledHashSets.findMapWithout(current, object);
 
         if (next == current) {
             throw new IllegalStateException("Current map [" + next.toString() + "] should have contained " + object + ", (" + chunkX + "," + chunkZ + ")");
@@ -451,7 +450,7 @@ public abstract class AreaMap<E> {
 
         // if there is no previous position, then prevPos = Integer.MIN_VALUE
         void accept(final E object, final int rangeX, final int rangeZ, final int currPosX, final int currPosZ, final int prevPosX, final int prevPosZ,
-                    final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<E> newState);
+                    final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<E> newState);
 
     }
 
