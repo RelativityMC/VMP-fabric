@@ -102,7 +102,7 @@ public abstract class AreaMap<E> {
             this.updateObject(object, oldPos, newPos, oldViewDistance, viewDistance);
             this.updateObjectCallback(object, oldPos, newPos, oldViewDistance, viewDistance);
         }
-//        this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
     }
 
     public final boolean update(final E object, final int chunkX, final int chunkZ, final int viewDistance) {
@@ -115,7 +115,7 @@ public abstract class AreaMap<E> {
             this.updateObject(object, oldPos, newPos, oldViewDistance, viewDistance);
             this.updateObjectCallback(object, oldPos, newPos, oldViewDistance, viewDistance);
         }
-//        this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
         return true;
     }
 
@@ -137,7 +137,7 @@ public abstract class AreaMap<E> {
         this.addObject(object, chunkX, chunkZ, Integer.MIN_VALUE, Integer.MIN_VALUE, viewDistance);
         this.addObjectCallback(object, chunkX, chunkZ, viewDistance);
 
-//        this.validate(object, viewDistance);
+        this.validate(object, viewDistance);
 
         return true;
     }
@@ -158,7 +158,7 @@ public abstract class AreaMap<E> {
 
         this.removeObject(object, currentX, currentZ, currentX, currentZ, viewDistance);
         this.removeObjectCallback(object, currentX, currentZ, viewDistance);
-//        this.validate(object, -1);
+        this.validate(object, -1);
         return true;
     }
 
