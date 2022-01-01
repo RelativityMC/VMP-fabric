@@ -1,7 +1,7 @@
 package com.ishland.vmp.common.chunkwatching;
 
 import com.destroystokyo.paper.util.misc.PlayerAreaMap;
-import com.destroystokyo.paper.util.misc.PooledLinkedIdentityHashSets;
+import com.destroystokyo.paper.util.misc.PooledLinkedHashSets;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -12,9 +12,11 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.Set;
 import java.util.function.LongFunction;
+import java.util.stream.Stream;
 
 public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
@@ -22,7 +24,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     private final Long2ObjectOpenHashMap<ObjectSet<ServerPlayerEntity>> map = new Long2ObjectOpenHashMap<>();
     private final LongFunction<ObjectSet<ServerPlayerEntity>> setSupplier = unused -> new ObjectArraySet<>();
-    private final PooledLinkedIdentityHashSets<ServerPlayerEntity> pooledLinkedPlayerHashSets = new PooledLinkedIdentityHashSets<>();
+    private final PooledLinkedHashSets<ServerPlayerEntity> pooledLinkedPlayerHashSets = new PooledLinkedHashSets<>();
     private final PlayerAreaMap playerAreaMap = new PlayerAreaMap(
             this.pooledLinkedPlayerHashSets,
             (player, rangeX, rangeZ, currPosX, currPosZ, prevPosX, prevPosZ, newState) -> { // add
@@ -71,7 +73,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     }
 
     public Object[] getPlayersWatchingChunkArray(long l) {
-        final PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<ServerPlayerEntity> objectsInRange = this.playerAreaMap.getObjectsInRange(l);
+        final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> objectsInRange = this.playerAreaMap.getObjectsInRange(l);
         if (objectsInRange != null) return objectsInRange.getBackingSet();
         else return EMPTY;
     }

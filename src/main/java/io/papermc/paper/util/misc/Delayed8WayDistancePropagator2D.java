@@ -47,15 +47,15 @@ public final class Delayed8WayDistancePropagator2D {
         int x;
         int z;
 
-        final com.destroystokyo.paper.util.misc.PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<Ticket> empty
-                = new com.destroystokyo.paper.util.misc.PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<>(this);
+        final com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<Ticket> empty
+                = new com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>(this);
 
     }
 
     public static void main(final String[] args) {
         com.destroystokyo.paper.util.misc.DistanceTrackingAreaMap<Ticket> reference = new com.destroystokyo.paper.util.misc.DistanceTrackingAreaMap<Ticket>() {
             @Override
-            protected com.destroystokyo.paper.util.misc.PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<Ticket> getEmptySetFor(Ticket object) {
+            protected com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<Ticket> getEmptySetFor(Ticket object) {
                 return object.empty;
             }
         };

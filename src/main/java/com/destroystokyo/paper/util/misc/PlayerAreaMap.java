@@ -16,26 +16,26 @@ public final class PlayerAreaMap extends AreaMap<ServerPlayerEntity> {
         super();
     }
 
-    public PlayerAreaMap(final PooledLinkedIdentityHashSets<ServerPlayerEntity> pooledHashSets) {
+    public PlayerAreaMap(final PooledLinkedHashSets<ServerPlayerEntity> pooledHashSets) {
         super(pooledHashSets);
     }
 
-    public PlayerAreaMap(final PooledLinkedIdentityHashSets<ServerPlayerEntity> pooledHashSets, final ChangeCallback<ServerPlayerEntity> addCallback,
+    public PlayerAreaMap(final PooledLinkedHashSets<ServerPlayerEntity> pooledHashSets, final ChangeCallback<ServerPlayerEntity> addCallback,
                          final ChangeCallback<ServerPlayerEntity> removeCallback) {
         this(pooledHashSets, addCallback, removeCallback, null);
     }
 
-    public PlayerAreaMap(final PooledLinkedIdentityHashSets<ServerPlayerEntity> pooledHashSets, final ChangeCallback<ServerPlayerEntity> addCallback,
+    public PlayerAreaMap(final PooledLinkedHashSets<ServerPlayerEntity> pooledHashSets, final ChangeCallback<ServerPlayerEntity> addCallback,
                          final ChangeCallback<ServerPlayerEntity> removeCallback, final ChangeSourceCallback<ServerPlayerEntity> changeSourceCallback) {
         super(pooledHashSets, addCallback, removeCallback, changeSourceCallback);
     }
 
     @Override
-    protected PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<ServerPlayerEntity> getEmptySetFor(final ServerPlayerEntity player) {
+    protected PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> getEmptySetFor(final ServerPlayerEntity player) {
         return ((PlayerCachedSingleHashSetAccessor) player).getCachedSingleHashSet();
     }
 
     public interface PlayerCachedSingleHashSetAccessor {
-        PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<ServerPlayerEntity> getCachedSingleHashSet();
+        PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> getCachedSingleHashSet();
     }
 }

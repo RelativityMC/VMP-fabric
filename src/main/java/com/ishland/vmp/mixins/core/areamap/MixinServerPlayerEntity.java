@@ -1,7 +1,7 @@
 package com.ishland.vmp.mixins.core.areamap;
 
 import com.destroystokyo.paper.util.misc.PlayerAreaMap;
-import com.destroystokyo.paper.util.misc.PooledLinkedIdentityHashSets;
+import com.destroystokyo.paper.util.misc.PooledLinkedHashSets;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinServerPlayerEntity implements PlayerAreaMap.PlayerCachedSingleHashSetAccessor {
 
     @Unique
-    private PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<ServerPlayerEntity> cachedSingleHashSet; // Paper
+    private PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> cachedSingleHashSet; // Paper
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo ci) {
-        this.cachedSingleHashSet = new PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<>((ServerPlayerEntity) (Object) this);
+        this.cachedSingleHashSet = new PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<>((ServerPlayerEntity) (Object) this);
     }
 
     @Override
-    public PooledLinkedIdentityHashSets.PooledObjectLinkedOpenIdentityHashSet<ServerPlayerEntity> getCachedSingleHashSet() {
+    public PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> getCachedSingleHashSet() {
         return this.cachedSingleHashSet;
     }
 }
