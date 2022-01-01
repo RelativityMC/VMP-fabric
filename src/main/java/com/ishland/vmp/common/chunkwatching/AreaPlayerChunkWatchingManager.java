@@ -2,6 +2,7 @@ package com.ishland.vmp.common.chunkwatching;
 
 import com.destroystokyo.paper.util.misc.PlayerAreaMap;
 import com.destroystokyo.paper.util.misc.PooledLinkedHashSets;
+import com.ishland.vmp.common.maps.AreaMap;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -22,23 +23,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     private static final Object[] EMPTY = new Object[0];
 
-    private final Long2ObjectOpenHashMap<ObjectSet<ServerPlayerEntity>> map = new Long2ObjectOpenHashMap<>();
-    private final LongFunction<ObjectSet<ServerPlayerEntity>> setSupplier = unused -> new ObjectArraySet<>();
-    private final PooledLinkedHashSets<ServerPlayerEntity> pooledLinkedPlayerHashSets = new PooledLinkedHashSets<>();
-    private final PlayerAreaMap playerAreaMap = new PlayerAreaMap(
-            this.pooledLinkedPlayerHashSets,
-            (player, rangeX, rangeZ, currPosX, currPosZ, prevPosX, prevPosZ, newState) -> { // add
-                map.computeIfAbsent(ChunkPos.toLong(rangeX, rangeZ), setSupplier).add(player);
-                if (this.addListener != null) this.addListener.accept(player, rangeX, rangeZ);
-            },
-            (player, rangeX, rangeZ, currPosX, currPosZ, prevPosX, prevPosZ, newState) -> { // remove
-                final long pos = ChunkPos.toLong(rangeX, rangeZ);
-                final ObjectSet<ServerPlayerEntity> set = map.computeIfAbsent(pos, setSupplier);
-                set.remove(player);
-                if (set.isEmpty()) map.remove(pos);
-                if (this.removeListener != null) this.removeListener.accept(player, rangeX, rangeZ);
-            }
-    );
+    private final AreaMap<ServerPlayerEntity> playerAreaMap = new AreaMap<>();
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
     private Listener addListener = null;
     private Listener removeListener = null;
@@ -72,19 +57,14 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         return watchDistance;
     }
 
-    public Object[] getPlayersWatchingChunkArray(long l) {
-        final PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayerEntity> objectsInRange = this.playerAreaMap.getObjectsInRange(l);
-        if (objectsInRange != null) return objectsInRange.getBackingSet();
-        else return EMPTY;
-    }
-
     @Override
     public Set<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
-        return map.get(l);
+        return this.playerAreaMap.getObjectsInRange(l);
     }
 
     @Override
     public void add(long l, ServerPlayerEntity player, boolean watchDisabled) {
+        System.out.println(String.format("addPlayer %s to %s", player, new ChunkPos(l)));
         super.add(l, player, watchDisabled);
         final int x = ChunkPos.getPackedX(l);
         final int z = ChunkPos.getPackedZ(l);
@@ -94,6 +74,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void remove(long l, ServerPlayerEntity player) {
+        System.out.println(String.format("removePlayer %s", player));
         super.remove(l, player);
         this.playerAreaMap.remove(player);
         this.positions.removeLong(player);
@@ -124,6 +105,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
 
     @Override
     public void movePlayer(long prevPos, long currentPos, ServerPlayerEntity player) {
+        System.out.println(String.format("movePlayer %s to %s", player, new ChunkPos(currentPos)));
 //        if (!this.isWatchDisabled(player))
         this.playerAreaMap.update(player, ChunkPos.getPackedX(currentPos), ChunkPos.getPackedZ(currentPos), this.watchDistance);
     }
