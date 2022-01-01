@@ -8,17 +8,23 @@ import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
+import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-@Mixin(TypeFilterableList.class)
+@Mixin(value = TypeFilterableList.class, priority = 1005) // priority compatibility hack for lithium
 public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> implements ITypeFilterableList {
 
     @Mutable
@@ -26,6 +32,8 @@ public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> i
 
     @Mutable
     @Shadow @Final private List<T> allElements;
+
+    @Shadow @Final private Class<T> elementType;
 
     @Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/util/collection/TypeFilterableList;elementsByType:Ljava/util/Map;", opcode = Opcodes.PUTFIELD))
     private void redirectSetElementsByType(TypeFilterableList<T> instance, Map<Class<?>, List<T>> value) {
@@ -50,5 +58,32 @@ public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> i
     @Override
     public Object[] getBackingArray() {
         return ((ObjectArrayList<T>) this.allElements).elements();
+    }
+
+    /**
+     * @author ishland
+     * @reason use fastutil array list for faster iteration & use array for filtering iteration
+     */
+    @Overwrite
+    public <S> Collection<S> getAllOfType(Class<S> type) {
+        List<T> cached = this.elementsByType.get(type);
+        if (cached != null) return (Collection<S>) cached;
+
+        if (!this.elementType.isAssignableFrom(type)) {
+            throw new IllegalArgumentException("Don't know how to search for " + type);
+        } else {
+            List<? extends T> list = this.elementsByType.computeIfAbsent(type,
+                    typeClass -> {
+                        ObjectArrayList<T> ts = new ObjectArrayList<>(this.allElements.size());
+                        for (Object _allElement : ((ObjectArrayList<T>) this.allElements).elements()) {
+                            if (typeClass.isInstance(_allElement)) {
+                                ts.add((T) _allElement);
+                            }
+                        }
+                        return ts;
+                    }
+            );
+            return (Collection<S>) list;
+        }
     }
 }
