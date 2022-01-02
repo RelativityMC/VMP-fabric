@@ -120,7 +120,10 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     public void movePlayer(long prevPos, long currentPos, ServerPlayerEntity player) {
 //        System.out.println(String.format("movePlayer %s to %s", player, new ChunkPos(currentPos)));
 //        if (!this.isWatchDisabled(player))
-        this.playerAreaMap.update(player, ChunkPos.getPackedX(currentPos), ChunkPos.getPackedZ(currentPos), this.watchDistance);
+        final int x = ChunkPos.getPackedX(currentPos);
+        final int z = ChunkPos.getPackedZ(currentPos);
+        this.playerAreaMap.update(player, x, z, this.watchDistance);
+        this.positions.put(player, MCUtil.getCoordinateKey(x, z));
     }
 
     public interface Listener {
