@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-@Mixin(EntityTrackingSection.class)
+@Mixin(value = EntityTrackingSection.class, priority = 990)
 public class MixinEntityTrackingSection<T extends EntityLike> {
 
     @Shadow
@@ -28,7 +28,8 @@ public class MixinEntityTrackingSection<T extends EntityLike> {
      */
     @Overwrite
     public void forEach(Box box, Consumer<T> action) {
-        if (this.collection instanceof ITypeFilterableList iTypeFilterableList) { // use array for iteration
+        final TypeFilterableList<T> collection = this.collection;
+        if (collection instanceof ITypeFilterableList iTypeFilterableList) { // use array for iteration
             for (Object _entityLike : iTypeFilterableList.getBackingArray()) {
                 if (_entityLike != null) {
                     @SuppressWarnings("unchecked") T entityLike = (T) _entityLike;
@@ -39,7 +40,7 @@ public class MixinEntityTrackingSection<T extends EntityLike> {
                 }
             }
         } else { // fallback
-            for (T entityLike : this.collection) {
+            for (T entityLike : collection) {
                 Box box1 = entityLike.getBoundingBox();
                 if (box1.minX < box.maxX && box1.maxX > box.minX && box1.minY < box.maxY && box1.maxY > box.minY && box1.minZ < box.maxZ && box1.maxZ > box.minZ) { // inline math
                     action.accept(entityLike);
