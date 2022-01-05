@@ -48,6 +48,8 @@ public abstract class MixinThreadedAnvilChunkStorage {
 
     @Shadow protected abstract void sendWatchPackets(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance);
 
+    @Shadow protected abstract ChunkSectionPos updateWatchedSection(ServerPlayerEntity player);
+
     @Redirect(method = "<init>", at = @At(value = "NEW", target = "net/minecraft/server/world/PlayerChunkWatchingManager"))
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
         return new AreaPlayerChunkWatchingManager(
@@ -134,6 +136,12 @@ public abstract class MixinThreadedAnvilChunkStorage {
             }
             return false;
         }
+    }
+
+    @Inject(method = "handlePlayerAddedOrRemoved", at = @At("HEAD"))
+    private void onHandlePlayerAddedOrRemoved(ServerPlayerEntity player, boolean added, CallbackInfo ci) {
+        if (added)
+            this.updateWatchedSection(player);
     }
 
 }
