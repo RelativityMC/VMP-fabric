@@ -60,7 +60,7 @@ public class AreaMap<T> {
     }
 
     public void add(T object, int x, int z, int rawViewDistance) {
-        int viewDistance = rawViewDistance - 1;
+        int viewDistance = rawViewDistance;
         viewDistances.put(object, viewDistance);
         lastCenters.put(object, MCUtil.getCoordinateKey(x, z));
         for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
@@ -89,7 +89,7 @@ public class AreaMap<T> {
     public void update(T object, int x, int z, int rawViewDistance) {
         if (!viewDistances.containsKey(object))
             throw new IllegalArgumentException("Tried to update %s when not in map".formatted(object));
-        final int viewDistance = rawViewDistance - 1;
+        final int viewDistance = rawViewDistance;
         final int oldViewDistance = viewDistances.replace(object, viewDistance);
         final long oldCenter = lastCenters.replace(object, MCUtil.getCoordinateKey(x, z));
         final int oldX = MCUtil.getCoordinateX(oldCenter);
