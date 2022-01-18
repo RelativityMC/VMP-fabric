@@ -109,6 +109,8 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
 
     @Override
     public boolean isPlayerInRange(double x, double y, double z, double range) {
+        if (range < 0.0) return true;
+
         final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
         final AreaPlayerChunkWatchingManager playerChunkWatchingManager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
@@ -123,9 +125,11 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
 
         for (Object __player : playersWatchingChunkArray) {
             if (__player instanceof ServerPlayerEntity player) {
-                final double distance = player.squaredDistanceTo(x, y, z);
-                if (distance <= rangeSquared) {
-                    return true;
+                if (!player.isSpectator() && player.isAlive()) {
+                    final double distance = player.squaredDistanceTo(x, y, z);
+                    if (distance < rangeSquared) {
+                        return true;
+                    }
                 }
             }
         }
