@@ -85,6 +85,9 @@ jar {
 shadowJar {
 	archiveClassifier = "all-dev"
 	configurations = [ project.configurations.shadowImpl, project.configurations.shadowRuntime ]
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
 }
 
 //noinspection UnnecessaryQualifiedReference
