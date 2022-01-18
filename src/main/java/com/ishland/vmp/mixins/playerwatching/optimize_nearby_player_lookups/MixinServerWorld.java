@@ -117,7 +117,18 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
         if (playerChunkWatchingManager.getWatchDistance() * 16 < range) // too far away for this to handle
             return super.isPlayerInRange(x, y, z, range);
 
-        final Set<ServerPlayerEntity> playerWatchingChunkSet = playerChunkWatchingManager.getPlayersWatchingChunk(MCUtil.getCoordinateKey(chunkX, chunkZ));
-        return playerWatchingChunkSet != null && !playerWatchingChunkSet.isEmpty();
+        final Object[] playersWatchingChunkArray = playerChunkWatchingManager.getPlayersWatchingChunkArray(MCUtil.getCoordinateKey(chunkX, chunkZ));
+
+        double rangeSquared = range * range;
+
+        for (Object __player : playersWatchingChunkArray) {
+            if (__player instanceof ServerPlayerEntity player) {
+                final double distance = player.squaredDistanceTo(x, y, z);
+                if (distance <= rangeSquared) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
