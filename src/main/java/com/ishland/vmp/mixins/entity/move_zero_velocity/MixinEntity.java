@@ -13,7 +13,7 @@ public class MixinEntity {
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void onMove(MovementType movementType, Vec3d movement, CallbackInfo ci) {
-        if (movement.equals(Vec3d.ZERO)) ci.cancel();
+//        if (movement.equals(Vec3d.ZERO)) ci.cancel();
     }
 
 }
