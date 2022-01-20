@@ -4,6 +4,7 @@
 
 package com.destroystokyo.paper.util.misc;
 
+import com.mojang.logging.LogUtils;
 import io.papermc.paper.util.IntegerUtil;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -13,15 +14,16 @@ import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.ChunkPos;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 
 /** @author Spottedleaf */
 public abstract class AreaMap<E> {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     /* Tested via https://gist.github.com/Spottedleaf/520419c6f41ef348fe9926ce674b7217 */
 

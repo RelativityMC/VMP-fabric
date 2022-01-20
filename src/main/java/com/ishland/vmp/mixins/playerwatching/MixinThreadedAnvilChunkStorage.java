@@ -9,7 +9,7 @@ import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -35,16 +35,6 @@ public abstract class MixinThreadedAnvilChunkStorage {
     @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
 
     @Shadow protected abstract boolean canTickChunk(ServerPlayerEntity player, ChunkPos pos);
-
-    @Shadow
-    private static boolean method_39976(int i, int j, int k, int l, int m) {
-        throw new AbstractMethodError();
-    }
-
-    @Shadow
-    public static boolean method_39975(int i, int j, int k, int l, int m) {
-        throw new AbstractMethodError();
-    }
 
     @Shadow protected abstract void sendWatchPackets(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance);
 
