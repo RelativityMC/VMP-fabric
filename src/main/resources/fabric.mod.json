@@ -14,7 +14,7 @@
   },
 
   "license": "MIT",
-
+  "icon": "assets/vmp/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
