@@ -19,6 +19,7 @@
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinThreadedAnvilChunkStorage",
+    "playerwatching.optimize_nearby_player_lookups.MixinMobEntity",
     "playerwatching.optimize_nearby_player_lookups.MixinServerWorld",
     "playerwatching.optimize_nearby_player_lookups.MixinSpawnDensityCapper",
     "playerwatching.optimize_nearby_player_lookups.MixinThreadedAnvilChunkStorage",
