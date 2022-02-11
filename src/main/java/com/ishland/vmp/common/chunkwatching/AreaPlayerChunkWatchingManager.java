@@ -31,10 +31,9 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
                 if (this.removeListener != null) {
                     this.removeListener.accept(object, x, z);
                 }
-            }
-    );
+            },
+            true);
     private final AreaMap<ServerPlayerEntity> generalPlayerAreaMap = new AreaMap<>();
-
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
     private Listener addListener = null;
     private Listener removeListener = null;

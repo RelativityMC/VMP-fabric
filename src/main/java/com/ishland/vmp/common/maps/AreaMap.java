@@ -6,11 +6,15 @@ import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongComparators;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 
 public class AreaMap<T> {
@@ -39,14 +43,16 @@ public class AreaMap<T> {
 
     private Listener<T> addListener = null;
     private Listener<T> removeListener = null;
+    private final boolean sortListenerCalls;
 
     public AreaMap() {
-        this(null, null);
+        this(null, null, false);
     }
 
-    public AreaMap(Listener<T> addListener, Listener<T> removeListener) {
+    public AreaMap(Listener<T> addListener, Listener<T> removeListener, boolean sortListenerCalls) {
         this.addListener = addListener;
         this.removeListener = removeListener;
+        this.sortListenerCalls = sortListenerCalls;
     }
 
     public Set<T> getObjectsInRange(long coordinateKey) {
@@ -63,9 +69,28 @@ public class AreaMap<T> {
         int viewDistance = rawViewDistance;
         viewDistances.put(object, viewDistance);
         lastCenters.put(object, MCUtil.getCoordinateKey(x, z));
-        for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
-            for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
-                add0(xx, zz, object);
+
+        final Listener<T> addListener = this.addListener;
+        if (this.sortListenerCalls && addListener != null) {
+            final int length = 2 * viewDistance + 1;
+            LongArrayList set = new LongArrayList(length * length);
+            for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
+                for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
+                    add0(xx, zz, object, false);
+                    set.add(MCUtil.getCoordinateKey(xx, zz));
+                }
+            }
+            set.sort(LongComparators.asLongComparator(Comparator.comparingLong(l -> chebyshevDistance(x, z, MCUtil.getCoordinateX(l), MCUtil.getCoordinateZ(l)))));
+            final LongIterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                final long pos = iterator.nextLong();
+                addListener.accept(object, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos));
+            }
+        } else {
+            for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
+                for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
+                    add0(xx, zz, object, true);
+                }
             }
         }
 
@@ -78,11 +103,31 @@ public class AreaMap<T> {
         final long lastCenter = lastCenters.removeLong(object);
         final int x = MCUtil.getCoordinateX(lastCenter);
         final int z = MCUtil.getCoordinateZ(lastCenter);
-        for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
-            for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
-                remove0(xx, zz, object);
+
+        final Listener<T> removeListener = this.removeListener;
+        if (this.sortListenerCalls && removeListener != null) {
+            final int length = 2 * viewDistance + 1;
+            LongArrayList set = new LongArrayList(length * length);
+            for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
+                for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
+                    remove0(xx, zz, object, false);
+                    set.add(MCUtil.getCoordinateKey(xx, zz));
+                }
+            }
+            set.sort(LongComparators.asLongComparator(Comparator.comparingLong(l -> chebyshevDistance(x, z, MCUtil.getCoordinateX(l), MCUtil.getCoordinateZ(l)))));
+            final LongIterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                final long pos = iterator.nextLong();
+                removeListener.accept(object, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos));
+            }
+        } else {
+            for (int xx = x - viewDistance; xx <= x + viewDistance; xx++) {
+                for (int zz = z - viewDistance; zz <= z + viewDistance; zz++) {
+                    remove0(xx, zz, object, true);
+                }
             }
         }
+
         validate(object, -1, -1, -1);
     }
 
@@ -107,10 +152,30 @@ public class AreaMap<T> {
         int zLower = oldZ - oldViewDistance;
         int zHigher = oldZ + oldViewDistance;
 
-        for (int xx = newX - newViewDistance; xx <= newX + newViewDistance; xx ++) {
-            for (int zz = newZ - newViewDistance; zz <= newZ + newViewDistance; zz ++) {
-                if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
-                    add0(xx, zz, object);
+        final Listener<T> addListener = this.addListener;
+        if (this.sortListenerCalls && addListener != null) {
+            final int length = 2 * newViewDistance + 1;
+            LongArrayList set = new LongArrayList(length * length);
+            for (int xx = newX - newViewDistance; xx <= newX + newViewDistance; xx ++) {
+                for (int zz = newZ - newViewDistance; zz <= newZ + newViewDistance; zz ++) {
+                    if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
+                        add0(xx, zz, object, false);
+                        set.add(MCUtil.getCoordinateKey(xx, zz));
+                    }
+                }
+            }
+            set.sort(LongComparators.asLongComparator(Comparator.comparingLong(l -> chebyshevDistance(newX, newZ, MCUtil.getCoordinateX(l), MCUtil.getCoordinateZ(l)))));
+            final LongIterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                final long pos = iterator.nextLong();
+                addListener.accept(object, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos));
+            }
+        } else {
+            for (int xx = newX - newViewDistance; xx <= newX + newViewDistance; xx ++) {
+                for (int zz = newZ - newViewDistance; zz <= newZ + newViewDistance; zz ++) {
+                    if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
+                        add0(xx, zz, object, true);
+                    }
                 }
             }
         }
@@ -122,22 +187,42 @@ public class AreaMap<T> {
         int zLower = newZ - newViewDistance;
         int zHigher = newZ + newViewDistance;
 
-        for (int xx = oldX - oldViewDistance; xx <= oldX + oldViewDistance; xx ++) {
-            for (int zz = oldZ - oldViewDistance; zz <= oldZ + oldViewDistance; zz ++) {
-                if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
-                    remove0(xx, zz, object);
+        final Listener<T> removeListener = this.removeListener;
+        if (this.sortListenerCalls && removeListener != null) {
+            final int length = 2 * oldViewDistance + 1;
+            LongArrayList set = new LongArrayList(length * length);
+            for (int xx = oldX - oldViewDistance; xx <= oldX + oldViewDistance; xx ++) {
+                for (int zz = oldZ - oldViewDistance; zz <= oldZ + oldViewDistance; zz ++) {
+                    if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
+                        remove0(xx, zz, object, false);
+                        set.add(MCUtil.getCoordinateKey(xx, zz));
+                    }
+                }
+            }
+            set.sort(LongComparators.asLongComparator(Comparator.comparingLong(l -> chebyshevDistance(newX, newZ, MCUtil.getCoordinateX(l), MCUtil.getCoordinateZ(l)))));
+            final LongIterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+                final long pos = iterator.nextLong();
+                removeListener.accept(object, MCUtil.getCoordinateX(pos), MCUtil.getCoordinateZ(pos));
+            }
+        } else {
+            for (int xx = oldX - oldViewDistance; xx <= oldX + oldViewDistance; xx ++) {
+                for (int zz = oldZ - oldViewDistance; zz <= oldZ + oldViewDistance; zz ++) {
+                    if (!isInRange(xLower, xHigher, zLower, zHigher, xx, zz)) {
+                        remove0(xx, zz, object, true);
+                    }
                 }
             }
         }
     }
 
-    private void add0(int xx, int zz, T object) {
+    private void add0(int xx, int zz, T object, boolean notifyListeners) {
         final RawObjectLinkedOpenIdentityHashSet<T> set = map.computeIfAbsent(MCUtil.getCoordinateKey(xx, zz), allocHashSet);
         set.add(object);
-        if (this.addListener != null) this.addListener.accept(object, xx, zz);
+        if (notifyListeners && this.addListener != null) this.addListener.accept(object, xx, zz);
     }
 
-    private void remove0(int xx, int zz, T object) {
+    private void remove0(int xx, int zz, T object, boolean notifyListeners) {
         final long coordinateKey = MCUtil.getCoordinateKey(xx, zz);
         final RawObjectLinkedOpenIdentityHashSet<T> set = map.get(coordinateKey);
         if (set == null)
@@ -148,11 +233,15 @@ public class AreaMap<T> {
             map.remove(coordinateKey);
             pooledHashSets.release(set);
         }
-        if (this.removeListener != null) this.removeListener.accept(object, xx, zz);
+        if (notifyListeners && this.removeListener != null) this.removeListener.accept(object, xx, zz);
     }
 
-    private boolean isInRange(int xLower, int xHigher, int zLower, int zHigher, int x, int z) {
+    private static boolean isInRange(int xLower, int xHigher, int zLower, int zHigher, int x, int z) {
         return x >= xLower && x <= xHigher && z >= zLower && z <= zHigher;
+    }
+
+    private static int chebyshevDistance(int x0, int z0, int x1, int z1) {
+        return Math.min(Math.abs(x0 - x1), Math.abs(z0 - z1));
     }
 
     // only for debugging
