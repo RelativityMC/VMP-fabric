@@ -10,6 +10,8 @@
     "access.IThreadedAnvilChunkStorage",
     "carpet.MixinEntityPlayerMPFake",
     "core.areamap.MixinServerPlayerEntity",
+    "entity.item.MixinEntity",
+    "entity.item.MixinItemEntity",
     "entity.iteration.MixinEntityTrackingSection",
     "entity.move_zero_velocity.MixinEntity",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
