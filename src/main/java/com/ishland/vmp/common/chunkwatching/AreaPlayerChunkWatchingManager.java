@@ -1,5 +1,6 @@
 package com.ishland.vmp.common.chunkwatching;
 
+import com.ishland.vmp.common.chunksending.PlayerChunkSendingSystem;
 import com.ishland.vmp.common.maps.AreaMap;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -35,6 +36,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
             true);
     private final AreaMap<ServerPlayerEntity> generalPlayerAreaMap = new AreaMap<>();
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
+    private final PlayerChunkSendingSystem playerChunkSendingSystem;
     private Listener addListener = null;
     private Listener removeListener = null;
 
@@ -47,6 +49,25 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener) {
         this.addListener = addListener;
         this.removeListener = removeListener;
+
+        if (PlayerChunkSendingSystem.ENABLED) {
+            this.playerChunkSendingSystem = new PlayerChunkSendingSystem(
+                    (player, pos) -> addListener.accept(player, pos.x, pos.z),
+                    (player, pos) -> removeListener.accept(player, pos.x, pos.z)
+            );
+            this.addListener = null;
+            this.removeListener = null;
+        } else {
+            this.playerChunkSendingSystem = null;
+        }
+    }
+
+    public void tick() {
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.tick();
+    }
+
+    public void onChunkLoaded(long pos) {
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.onChunkLoaded(pos);
     }
 
     public void setWatchDistance(int watchDistance) {
@@ -54,7 +75,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         final ObjectIterator<Object2LongMap.Entry<ServerPlayerEntity>> iterator = positions.object2LongEntrySet().fastIterator();
         while (iterator.hasNext()) {
             final Object2LongMap.Entry<ServerPlayerEntity> entry = iterator.next();
-            if (this.isWatchDisabled(entry.getKey())) continue;
+//            if (this.isWatchDisabled(entry.getKey())) continue;
 
             this.playerAreaMap.update(
                     entry.getKey(),
@@ -68,6 +89,8 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
                     MCUtil.getCoordinateZ(entry.getLongValue()),
                     GENERAL_PLAYER_AREA_MAP_DISTANCE);
         }
+
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.setWatchDistance(watchDistance);
     }
 
     public int getWatchDistance() {
@@ -98,6 +121,8 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         this.generalPlayerAreaMap.add(player, x, z, GENERAL_PLAYER_AREA_MAP_DISTANCE);
 
         this.positions.put(player, MCUtil.getCoordinateKey(x, z));
+
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.add(player, x, z);
     }
 
     @Override
@@ -109,6 +134,8 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         this.generalPlayerAreaMap.remove(player);
 
         this.positions.removeLong(player);
+
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.remove(player);
     }
 
     @Override
@@ -145,6 +172,8 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
         this.generalPlayerAreaMap.update(player, x, z, GENERAL_PLAYER_AREA_MAP_DISTANCE);
 
         this.positions.put(player, MCUtil.getCoordinateKey(x, z));
+
+        if (this.playerChunkSendingSystem != null) this.playerChunkSendingSystem.movePlayer(player, currentPos);
     }
 
     public interface Listener {

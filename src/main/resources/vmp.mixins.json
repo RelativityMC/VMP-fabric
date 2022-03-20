@@ -9,6 +9,8 @@
     "access.IChunkTicket",
     "access.IThreadedAnvilChunkStorage",
     "carpet.MixinEntityPlayerMPFake",
+    "chunksending.c2me_noapply.MixinThreadedAnvilChunkStorage",
+    "chunksending.c2me_notickvd_compat.MixinNoTickChunkSendingInterceptor",
     "core.areamap.MixinServerPlayerEntity",
     "entity.item.MixinEntity",
     "entity.item.MixinItemEntity",

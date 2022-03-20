@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
@@ -46,6 +47,15 @@ public abstract class MixinThreadedAnvilChunkStorage {
                 (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), false, true),
                 (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), true, false)
         );
+    }
+
+    @Inject(method = "tick", at = @At("RETURN"))
+    private void onTick(CallbackInfo ci) {
+        if (this.playerChunkWatchingManager instanceof AreaPlayerChunkWatchingManager areaPlayerChunkWatchingManager) {
+            areaPlayerChunkWatchingManager.tick();
+        } else {
+            throw new IllegalArgumentException("Not an instance of AreaPlayerChunkWatchingManager");
+        }
     }
 
     @Inject(method = "setViewDistance", at = @At("RETURN"))

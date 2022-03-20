@@ -12,6 +12,9 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,27 +22,13 @@ import java.util.Set;
 
 public class AreaMap<T> {
 
-    private static <E> Hash.Strategy<E> makeIdentityHashCodeStrategy() {
-        return new Hash.Strategy<>() {
-            @Override
-            public int hashCode(E o) {
-                return System.identityHashCode(o);
-            }
-
-            @Override
-            public boolean equals(E a, E b) {
-                return a == b;
-            }
-        };
-    }
-
     private static final Object[] EMPTY = new Object[0];
 
     private final SimpleObjectPool<RawObjectLinkedOpenIdentityHashSet<T>> pooledHashSets = new SimpleObjectPool<>(unused -> new RawObjectLinkedOpenIdentityHashSet<>(), RawObjectLinkedOpenIdentityHashSet::clear, 8192);
     private final Long2ObjectFunction<RawObjectLinkedOpenIdentityHashSet<T>> allocHashSet = unused -> pooledHashSets.alloc();
     private final Long2ObjectOpenHashMap<RawObjectLinkedOpenIdentityHashSet<T>> map = new Long2ObjectOpenHashMap<>();
-    private final Object2IntOpenCustomHashMap<T> viewDistances = new Object2IntOpenCustomHashMap<>(makeIdentityHashCodeStrategy());
-    private final Object2LongOpenCustomHashMap<T> lastCenters = new Object2LongOpenCustomHashMap<>(makeIdentityHashCodeStrategy());
+    private final Reference2IntOpenHashMap<T> viewDistances = new Reference2IntOpenHashMap<>();
+    private final Reference2LongOpenHashMap<T> lastCenters = new Reference2LongOpenHashMap<>();
 
     private Listener<T> addListener = null;
     private Listener<T> removeListener = null;
@@ -265,10 +254,9 @@ public class AreaMap<T> {
         }
     }
 
-    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ObjectLinkedOpenCustomHashSet<E> {
+    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ReferenceLinkedOpenHashSet<E> {
 
         public RawObjectLinkedOpenIdentityHashSet() {
-            super(makeIdentityHashCodeStrategy());
         }
 
         public Object[] getRawSet() {
