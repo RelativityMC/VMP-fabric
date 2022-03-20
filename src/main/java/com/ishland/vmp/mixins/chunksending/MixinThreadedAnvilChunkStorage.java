@@ -1,4 +1,4 @@
-package com.ishland.vmp.mixins.chunksending.c2me_noapply;
+package com.ishland.vmp.mixins.chunksending;
 
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(value = ThreadedAnvilChunkStorage.class, priority = 990)
 public class MixinThreadedAnvilChunkStorage {
 
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;

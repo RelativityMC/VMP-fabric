@@ -24,8 +24,6 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.carpet."))
             return FabricLoader.getInstance().isModLoaded("carpet");
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunksending.c2me_noapply."))
-            return PlayerChunkSendingSystem.ENABLED && FabricLoader.getInstance().isModLoaded("c2me-notickvd");
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunksending."))
             return PlayerChunkSendingSystem.ENABLED;
         return true;
