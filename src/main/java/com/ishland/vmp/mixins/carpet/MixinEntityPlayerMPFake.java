@@ -1,11 +1,13 @@
 package com.ishland.vmp.mixins.carpet;
 
 import com.mojang.authlib.GameProfile;
+import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Dynamic;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Pseudo;
@@ -17,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(targets = "carpet.patches.EntityPlayerMPFake")
 public abstract class MixinEntityPlayerMPFake extends ServerPlayerEntity {
 
-    public MixinEntityPlayerMPFake(MinecraftServer server, ServerWorld world, GameProfile profile) {
-        super(server, world, profile);
+    public MixinEntityPlayerMPFake(MinecraftServer server, ServerWorld world, GameProfile profile, @Nullable PlayerPublicKey publicKey) {
+        super(server, world, profile, publicKey);
     }
 
     @Unique private double vmp_lastX = Double.NaN;

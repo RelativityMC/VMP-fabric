@@ -34,7 +34,7 @@ public class PlayerChunkSendingSystem {
         if (FabricLoader.getInstance().isModLoaded("c2me")) {
             final VersionPredicate predicate;
             try {
-                predicate = VersionPredicate.parse(">=0.2.0+alpha.5.11");
+                predicate = VersionPredicate.parse(">=0.2.0+alpha.7.11");
             } catch (VersionParsingException e) {
                 throw new RuntimeException(e);
             }
