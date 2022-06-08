@@ -24,7 +24,12 @@ public class MixinTACSCancelSending {
     }
 
     @Dynamic("Compatibility hack for krypton")
-    @Inject(method = "sendChunks(Lnet/minecraft/util/math/ChunkSectionPos;Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At("HEAD"), cancellable = true, require = 0)
+    @Inject(method = {
+            "sendChunks(Lnet/minecraft/util/math/ChunkSectionPos;Lnet/minecraft/server/network/ServerPlayerEntity;)V",
+            "sendSpiralChunkWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V",
+            "unloadChunks(Lnet/minecraft/server/network/ServerPlayerEntity;III)V",
+            "sendChunkWatchPackets(Lnet/minecraft/util/math/ChunkSectionPos;Lnet/minecraft/server/network/ServerPlayerEntity;)V"
+    }, at = @At("HEAD"), cancellable = true, require = 0)
     private void preventExtraSendChunks(CallbackInfo ci) {
         ci.cancel();
     }
@@ -34,7 +39,7 @@ public class MixinTACSCancelSending {
         return Collections.emptyList(); // Stop packet sending, handled by distance map
     }
 
-    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/ChunkPos;Lorg/apache/commons/lang3/mutable/MutableObject;ZZ)V"))
+    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/util/math/ChunkPos;Lorg/apache/commons/lang3/mutable/MutableObject;ZZ)V"), require = 0)
     private void redirectWatchPacketOnPlayerChanges(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance) {
         // Stop packet sending, handled by distance map
     }
