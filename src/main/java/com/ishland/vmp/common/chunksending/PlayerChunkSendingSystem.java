@@ -1,6 +1,7 @@
 package com.ishland.vmp.common.chunksending;
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.ishland.vmp.common.chunkwatching.PlayerClientVDTracking;
 import com.ishland.vmp.common.maps.AreaMap;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -107,13 +108,13 @@ public class PlayerChunkSendingSystem {
                     entry.getKey(),
                     MCUtil.getCoordinateX(entry.getLongValue()),
                     MCUtil.getCoordinateZ(entry.getLongValue()),
-                    this.watchDistance
+                    getActualWatchDistance(entry.getKey())
             );
         }
     }
 
     public void add(ServerPlayerEntity player, int x, int z) {
-        this.areaMap.add(player, x, z, this.watchDistance);
+        this.areaMap.add(player, x, z, getActualWatchDistance(player));
         this.positions.put(player, MCUtil.getCoordinateKey(x, z));
     }
 
@@ -127,11 +128,17 @@ public class PlayerChunkSendingSystem {
         final int x = ChunkPos.getPackedX(currentPos);
         final int z = ChunkPos.getPackedZ(currentPos);
 
-        this.areaMap.update(player, x, z, this.watchDistance);
+        this.areaMap.update(player, x, z, getActualWatchDistance(player));
         this.positions.put(player, MCUtil.getCoordinateKey(x, z));
 
         final PlayerState state = this.players.get(player);
         if (state != null) state.updateQueue();
+    }
+
+    private int getActualWatchDistance(ServerPlayerEntity player) {
+        return (player instanceof PlayerClientVDTracking tracking && tracking.getClientViewDistance() != -1)
+                ? Math.min(tracking.getClientViewDistance() + 1, this.watchDistance)
+                : this.watchDistance;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -153,6 +160,11 @@ public class PlayerChunkSendingSystem {
         }
 
         public void tick() {
+            if (this.player instanceof PlayerClientVDTracking tracking) {
+                if (tracking.isClientViewDistanceChanged() && PlayerChunkSendingSystem.this.positions.containsKey(this.player)) {
+                    PlayerChunkSendingSystem.this.movePlayer(this.player, PlayerChunkSendingSystem.this.positions.getLong(this.player));
+                }
+            }
             ChunkPos pos;
             while ((pos = sendQueue.peek()) != null) {
                 if (rateLimiter.tryAcquire()) {

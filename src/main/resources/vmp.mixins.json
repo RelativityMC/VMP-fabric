@@ -21,6 +21,7 @@
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
+    "playerwatching.MixinServerPlayerEntity",
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinThreadedAnvilChunkStorage",
     "playerwatching.optimize_nearby_player_lookups.MixinMobEntity",
