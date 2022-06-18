@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MixinNoTickChunkSendingInterceptor {
 
     @Dynamic
-    @Inject(method = "onChunkSending", at = @At("RETURN"))
+    @Inject(method = "onChunkSending", at = @At("RETURN"), remap = false, cancellable = true)
     private static void onChunkSending(ServerPlayerEntity player, long pos, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) {
             final PlayerChunkWatchingManager playerChunkWatchingManager = ((IThreadedAnvilChunkStorage) player.getWorld().getChunkManager().threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
