@@ -2,6 +2,7 @@ package com.ishland.vmp.common.chunksending;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.ishland.vmp.common.chunkwatching.PlayerClientVDTracking;
+import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.maps.AreaMap;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerChunkSendingSystem {
 
@@ -27,7 +29,6 @@ public class PlayerChunkSendingSystem {
     public static final boolean ENABLED;
 
     //    private static final int MAX_CONCURRENT_SENDS = 4;
-    private static final int TARGET_CHUNK_SEND_RATE = 120;
 
     static {
         if (FabricLoader.getInstance().isModLoaded("c2me")) {
@@ -149,7 +150,7 @@ public class PlayerChunkSendingSystem {
         private final PriorityBlockingQueue<ChunkPos> sendQueue = new PriorityBlockingQueue<>(441, this::compare);
         private final LongOpenHashSet sentChunks = new LongOpenHashSet();
         //        private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_SENDS);
-        private final RateLimiter rateLimiter = RateLimiter.create(TARGET_CHUNK_SEND_RATE);
+        private final RateLimiter rateLimiter = RateLimiter.create(Config.TARGET_CHUNK_SEND_RATE, 2, TimeUnit.SECONDS);
 
         private final ServerPlayerEntity player;
         private ChunkPos center;

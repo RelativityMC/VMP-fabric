@@ -21,11 +21,9 @@ public class MixinNoTickChunkSendingInterceptor {
     private static void onChunkSending(ServerPlayerEntity player, long pos, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) {
             final PlayerChunkWatchingManager playerChunkWatchingManager = ((IThreadedAnvilChunkStorage) player.getWorld().getChunkManager().threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
-            if (playerChunkWatchingManager instanceof AreaPlayerChunkWatchingManager manager) {
+            if (playerChunkWatchingManager instanceof AreaPlayerChunkWatchingManager manager && PlayerChunkSendingSystem.ENABLED) {
                 manager.onChunkLoaded(pos);
-                cir.setReturnValue(PlayerChunkSendingSystem.ENABLED);
-            } else {
-                throw new IllegalArgumentException("Not an instance of AreaPlayerChunkWatchingManager");
+                cir.setReturnValue(false);
             }
         }
     }

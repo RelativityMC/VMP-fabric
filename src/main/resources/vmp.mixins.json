@@ -35,6 +35,7 @@
   "client": [
     "timesource.MixinMinecraftClient"
   ],
+  "plugin": "com.ishland.vmp.mixins.VMPMixinPlugin",
   "injectors": {
     "defaultRequire": 1
   }
