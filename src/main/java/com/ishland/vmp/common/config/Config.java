@@ -37,7 +37,7 @@ public class Config {
 
     private static int getInt(Properties properties, String key, int def) {
         try {
-            return Integer.parseUnsignedInt(properties.getProperty(key));
+            return Integer.parseInt(properties.getProperty(key));
         } catch (NumberFormatException e) {
             properties.setProperty(key, String.valueOf(def));
             return def;
