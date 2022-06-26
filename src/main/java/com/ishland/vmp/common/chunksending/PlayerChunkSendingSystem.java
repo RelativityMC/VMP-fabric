@@ -150,7 +150,10 @@ public class PlayerChunkSendingSystem {
         private final PriorityBlockingQueue<ChunkPos> sendQueue = new PriorityBlockingQueue<>(441, this::compare);
         private final LongOpenHashSet sentChunks = new LongOpenHashSet();
         //        private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_SENDS);
-        private final RateLimiter rateLimiter = RateLimiter.create(Config.TARGET_CHUNK_SEND_RATE, 2, TimeUnit.SECONDS);
+        private final RateLimiter rateLimiter =
+                Config.TARGET_CHUNK_SEND_RATE > 0 ?
+                        RateLimiter.create(Config.TARGET_CHUNK_SEND_RATE, 2, TimeUnit.SECONDS)
+                        : null;
 
         private final ServerPlayerEntity player;
         private ChunkPos center;
@@ -168,7 +171,7 @@ public class PlayerChunkSendingSystem {
             }
             ChunkPos pos;
             while ((pos = sendQueue.peek()) != null) {
-                if (rateLimiter.tryAcquire()) {
+                if (rateLimiter == null || rateLimiter.tryAcquire()) {
                     chunkSendingHandle.sendChunk(this.player, pos);
                     sendQueue.poll();
                 } else {
