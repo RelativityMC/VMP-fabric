@@ -23,6 +23,7 @@
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
     "networking.MixinMinecraftServer",
     "networking.MixinNetworkThreadUtils",
+    "networking.priority.MixinServerNetworkIo1",
     "playerwatching.MixinServerPlayerEntity",
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinThreadedAnvilChunkStorage",
