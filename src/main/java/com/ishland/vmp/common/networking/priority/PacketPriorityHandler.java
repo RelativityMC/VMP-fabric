@@ -11,8 +11,6 @@ import java.util.PriorityQueue;
 
 public class PacketPriorityHandler extends ChannelDuplexHandler {
 
-    private static final int ALLOWED_OVERHEAD_BYTES = 64 * 1024;
-
     private static final Comparator<PendingPacket> cmp =
             Comparator.comparingInt(PendingPacket::priority)
                     .thenComparingLong(PendingPacket::orderIndex);
@@ -36,7 +34,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         super.channelWritabilityChanged(ctx);
-        if (ctx.channel().isWritable()) tryFlushPackets(ctx);
+        if (ctx.channel().isWritable()) tryFlushPackets(ctx, false);
     }
 
 //    @Override
@@ -44,16 +42,28 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 //        if (ctx.channel().isWritable()) ctx.flush();
 //    }
 
-    private void tryFlushPackets(ChannelHandlerContext ctx) {
+    private void tryFlushPackets(ChannelHandlerContext ctx, boolean ignoreWritability) {
         PendingPacket pendingPacket;
-        while (writesAllowed(ctx) && (pendingPacket = this.queue.poll()) != null) {
+        while ((ignoreWritability || writesAllowed(ctx)) && (pendingPacket = this.queue.poll()) != null) {
             ctx.write(pendingPacket.msg, pendingPacket.promise);
         }
         ctx.flush();
     }
 
+    @Override
+    public void channelInactive(@NotNull ChannelHandlerContext ctx) throws Exception {
+        tryFlushPackets(ctx, true);
+        super.channelInactive(ctx);
+    }
+
+    @Override
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        tryFlushPackets(ctx, true);
+        super.close(ctx, promise);
+    }
+
     private boolean writesAllowed(ChannelHandlerContext ctx) {
-        return ctx.channel().isWritable() || ctx.channel().bytesBeforeWritable() <= ALLOWED_OVERHEAD_BYTES;
+        return ctx.channel().isWritable();
     }
 
     private record PendingPacket(Object msg, ChannelPromise promise, long orderIndex, int priority) {
