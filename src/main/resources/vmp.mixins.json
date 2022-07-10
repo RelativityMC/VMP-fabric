@@ -8,6 +8,8 @@
     "access.IChunkHolder",
     "access.IChunkTicket",
     "access.IClientConnection",
+    "access.INetworkState",
+    "access.INetworkStatePacketHandler",
     "access.IThreadedAnvilChunkStorage",
     "carpet.MixinEntityPlayerMPFake",
     "chunksending.MixinThreadedAnvilChunkStorage",
