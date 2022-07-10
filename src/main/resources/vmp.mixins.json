@@ -7,6 +7,7 @@
   "mixins": [
     "access.IChunkHolder",
     "access.IChunkTicket",
+    "access.IClientConnection",
     "access.IThreadedAnvilChunkStorage",
     "carpet.MixinEntityPlayerMPFake",
     "chunksending.MixinThreadedAnvilChunkStorage",
@@ -24,6 +25,8 @@
     "networking.MixinMinecraftServer",
     "networking.MixinNetworkThreadUtils",
     "networking.priority.MixinServerNetworkIo1",
+    "networking.priority.sync.MixinPlayerManager",
+    "networking.priority.sync.MixinServerPlayerEntity",
     "playerwatching.MixinServerPlayerEntity",
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinThreadedAnvilChunkStorage",
