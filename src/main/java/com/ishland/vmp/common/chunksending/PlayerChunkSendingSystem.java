@@ -151,9 +151,7 @@ public class PlayerChunkSendingSystem {
         private final LongOpenHashSet sentChunks = new LongOpenHashSet();
         //        private final Semaphore semaphore = new Semaphore(MAX_CONCURRENT_SENDS);
         private final RateLimiter rateLimiter =
-                Config.TARGET_CHUNK_SEND_RATE > 0 ?
-                        RateLimiter.create(Config.TARGET_CHUNK_SEND_RATE, 2, TimeUnit.SECONDS)
-                        : null;
+                null;
 
         private final ServerPlayerEntity player;
         private ChunkPos center;
