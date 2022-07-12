@@ -26,6 +26,7 @@
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
     "networking.MixinMinecraftServer",
     "networking.MixinNetworkThreadUtils",
+    "networking.priority.MixinClientConnection1",
     "networking.priority.MixinServerNetworkIo1",
     "networking.priority.sync.MixinPlayerManager",
     "networking.priority.sync.MixinServerPlayerEntity",

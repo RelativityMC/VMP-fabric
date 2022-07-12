@@ -13,6 +13,7 @@ import java.util.Properties;
 public class Config {
 
     public static final int TARGET_CHUNK_SEND_RATE;
+    public static final boolean USE_PACKET_PRIORITY_SYSTEM;
 
     static {
         final Properties properties = new Properties();
@@ -24,7 +25,8 @@ public class Config {
                 throw new RuntimeException(e);
             }
         }
-        TARGET_CHUNK_SEND_RATE = getInt(properties, "target_chunk_send_rate", 120);
+        TARGET_CHUNK_SEND_RATE = getInt(properties, "target_chunk_send_rate", -1);
+        USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, "use_packet_priority_system", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(out, "Configuration file for VMP");
         } catch (IOException e) {
@@ -42,6 +44,21 @@ public class Config {
             properties.setProperty(key, String.valueOf(def));
             return def;
         }
+    }
+
+    private static boolean getBoolean(Properties properties, String key, boolean def) {
+        try {
+            return parseBoolean(properties.getProperty(key));
+        } catch (NumberFormatException e) {
+            properties.setProperty(key, String.valueOf(def));
+            return def;
+        }
+    }
+
+    private static boolean parseBoolean(String string) {
+        if (string.trim().equalsIgnoreCase("true")) return true;
+        if (string.trim().equalsIgnoreCase("false")) return false;
+        throw new NumberFormatException(string);
     }
 
 }
