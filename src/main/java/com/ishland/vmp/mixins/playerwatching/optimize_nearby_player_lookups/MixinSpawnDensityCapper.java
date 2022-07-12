@@ -20,7 +20,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.function.IntFunction;
 
-@Mixin(SpawnDensityCapper.class)
+@Mixin(value = SpawnDensityCapper.class, priority = 950)
 public abstract class MixinSpawnDensityCapper {
 
     @Shadow
