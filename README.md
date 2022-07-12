@@ -6,7 +6,7 @@
 
 A Fabric mod designed to improve server performance at high playercounts. 
 
-**VMP is still in early development and things are expected to break. Please report any issues to our issue tracker.**
+**VMP is still in early development and things may break. Please report any issues to our issue tracker.**
 
 ## So what is VMP? 
 Very Many Players, or VMP for short, is a Fabric mod designed to improve general server performance at high playercount 
@@ -14,16 +14,27 @@ Very Many Players, or VMP for short, is a Fabric mod designed to improve general
 For the best performance it is recommended to use VMP with [Lithium](https://modrinth.com/mod/lithium).
 
 ## How VMP achieves its performance improvements?
-- Using area maps to optimize nearby packet sending and player lookups
-- Using cache to optimize entity trackers, fluid state lookups and ingredient matching for mob AIs
-- Optimize entity iteration for collisions and some other things
-- Optimize ticket propagator using MCUtil from Paper project (patch licensed under MIT)
-- Make clientside time source to use built-in Java time source instead of JNI calls
-- ... and more
+
+**Server-side game logic performance improvements:**  
+- Uses area maps to optimize nearby packet sending and player lookups
+- Uses cache to optimize entity trackers, fluid state lookups and ingredient matching
+- Optimizes entity iteration for collisions
+- Optimizes ticket propagator using MCUtil from the Paper project (patch licensed under MIT)
+
+**Client-side game logic performance improvements:**  
+- Makes time source to use built-in Java time source instead of GLFW via JNI calls
+
+**Networking performance & responsiveness improvements:**
+- Uses our own chunk sending mechanism (optionally with packet-level rate-limiting)
+- Adds packet-level per-player render distance
+- Makes vanilla tcp connections more responsive using packet priority from raknetify  
+  (works best when the server is connected **without reverse proxies such as velocity and ssh port forwarding**)
+
+**... and more**
 
 ## Support
 Our issue tracker: [link](https://github.com/RelativityMC/VMP-fabric/issues)  
-Our discord server: [link](https://discord.io/ishlandbukkit)
+Our discord server: [link](https://discord.gg/Kdy8NM5HW4)
 
 ## Building and setting up
 JDK 17+ is required to build and use VMP  
