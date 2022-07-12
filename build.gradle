@@ -154,13 +154,14 @@ if (System.getenv("CURSEFORGE_TOKEN")) {
 			id = '552542'
 			changelog = 'No changelog was specified.'
 			releaseType = 'beta'
-			displayName = project.version + " backport for 1.18.2"
 
 			addGameVersion "1.18.2"
 			addGameVersion "Fabric"
 			addGameVersion "Java 17"
 
-			mainArtifact(remapShadowJar)
+			mainArtifact(remapShadowJar) {
+				displayName = project.version + " backport for 1.18.2"
+			}
 		}
 		options {
 			forgeGradleIntegration = false
