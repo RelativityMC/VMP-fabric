@@ -22,18 +22,7 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
                     .reduce(0, Math::max) / 16.0
     );
 
-    private final AreaMap<ServerPlayerEntity> playerAreaMap = new AreaMap<>(
-            (object, x, z) -> {
-                if (this.addListener != null) {
-                    this.addListener.accept(object, x, z);
-                }
-            },
-            (object, x, z) -> {
-                if (this.removeListener != null) {
-                    this.removeListener.accept(object, x, z);
-                }
-            },
-            true);
+    private final AreaMap<ServerPlayerEntity> playerAreaMap;
     private final AreaMap<ServerPlayerEntity> generalPlayerAreaMap = new AreaMap<>();
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
     private final PlayerChunkSendingSystem playerChunkSendingSystem;
@@ -57,8 +46,21 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
             );
             this.addListener = null;
             this.removeListener = null;
+            this.playerAreaMap = new AreaMap<>(null, null, false);
         } else {
             this.playerChunkSendingSystem = null;
+            this.playerAreaMap = new AreaMap<>(
+                    (object, x, z) -> {
+                        if (this.addListener != null) {
+                            this.addListener.accept(object, x, z);
+                        }
+                    },
+                    (object, x, z) -> {
+                        if (this.removeListener != null) {
+                            this.removeListener.accept(object, x, z);
+                        }
+                    },
+                    true);
         }
     }
 

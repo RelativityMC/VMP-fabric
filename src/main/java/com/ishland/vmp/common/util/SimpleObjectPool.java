@@ -10,14 +10,16 @@ public class SimpleObjectPool<T> {
 
     private final Function<SimpleObjectPool<T>, T> constructor;
     private final Consumer<T> initializer;
+    private final Consumer<T> onRecycle;
     private final int size;
 
     private final Object[] cachedObjects;
     private int allocatedCount = 0;
 
-    public SimpleObjectPool(Function<SimpleObjectPool<T>, T> constructor, Consumer<T> initializer, int size) {
+    public SimpleObjectPool(Function<SimpleObjectPool<T>, T> constructor, Consumer<T> initializer, Consumer<T> onRecycle, int size) {
         this.constructor = Objects.requireNonNull(constructor);
         this.initializer = Objects.requireNonNull(initializer);
+        this.onRecycle = Objects.requireNonNull(onRecycle);
         Preconditions.checkArgument(size > 0);
         this.cachedObjects = new Object[size];
         this.size = size;
@@ -50,6 +52,8 @@ public class SimpleObjectPool<T> {
     public void release(T object) {
         synchronized (this) {
             if (this.allocatedCount == 0) return; // pool is full
+
+            this.onRecycle.accept(object);
             this.cachedObjects[--this.allocatedCount] = object; // store the object into the pool
         }
     }
