@@ -22,7 +22,7 @@ For the best performance it is recommended to use VMP with [Lithium](https://mod
 - Uses our own chunk sending mechanism (optionally with packet-level rate-limiting)
 - Adds per-player render distance (packet-level)
 - Makes vanilla tcp connections more responsive using packet priority  
-  (works best when the server is connected **without reverse proxies like velocity and ssh port forwarding**)
+  (works best when the server is connected **without reverse proxies such as velocity and ssh port forwarding**)
 - ... and more
 
 ## Support
