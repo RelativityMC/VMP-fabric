@@ -32,10 +32,13 @@ jobs:
           distribution: 'zulu'
           java-version: 17
           java-package: jdk
-      - name: make gradle wrapper executable
-        run: chmod +x ./gradlew
       - name: build
         run: ./gradlew build
+      - name: upload to modrinth
+        run: ./gradlew modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_UPLOAD_TOKEN }}
+        continue-on-error: true
       - name: capture build artifacts
         uses: actions/upload-artifact@v2
         with:
