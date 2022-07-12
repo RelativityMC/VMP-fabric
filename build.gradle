@@ -3,7 +3,8 @@ plugins {
 	id 'io.github.juuxel.loom-quiltflower' version '1.6.0'
 	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '7.1.0'
-	id "com.modrinth.minotaur" version "2.+"
+	id 'com.modrinth.minotaur' version '2.+'
+	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -144,6 +145,27 @@ modrinth {
 	uploadFile = remapShadowJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
 	gameVersions = ["1.18.2"] // Must be an array, even with only one version
 	loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+}
+
+if (System.getenv("CURSEFORGE_TOKEN")) {
+	curseforge {
+		apiKey = System.getenv("CURSEFORGE_TOKEN")
+		project {
+			id = '552542'
+			changelog = 'No changelog was specified.'
+			releaseType = 'beta'
+			displayName = project.version + " backport for 1.18.2"
+
+			addGameVersion "1.18.2"
+			addGameVersion "Fabric"
+			addGameVersion "Java 17"
+
+			mainArtifact(remapShadowJar)
+		}
+		options {
+			forgeGradleIntegration = false
+		}
+	}
 }
 
 String getVersionSuffix() {
