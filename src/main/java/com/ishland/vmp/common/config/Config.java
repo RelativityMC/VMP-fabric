@@ -56,6 +56,7 @@ public class Config {
     }
 
     private static boolean parseBoolean(String string) {
+        if (string == null) throw new NumberFormatException("null");
         if (string.trim().equalsIgnoreCase("true")) return true;
         if (string.trim().equalsIgnoreCase("false")) return false;
         throw new NumberFormatException(string);
