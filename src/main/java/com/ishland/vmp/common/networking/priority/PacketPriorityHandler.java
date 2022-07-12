@@ -1,9 +1,13 @@
 package com.ishland.vmp.common.networking.priority;
 
 import com.ishland.raknetify.fabric.common.connection.RakNetMultiChannel;
+import com.ishland.vmp.common.config.Config;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.socket.SocketChannel;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
@@ -12,6 +16,20 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class PacketPriorityHandler extends ChannelDuplexHandler {
+
+    private static final int IP_TOS_LOWDELAY = 0b00010000;
+    private static final int IP_TOS_THROUGHPUT = 0b00001000;
+    private static final int IP_TOS_RELIABILITY = 0b00000100;
+
+    public static void setupPacketPriority(Channel channel) {
+        if (Config.USE_PACKET_PRIORITY_SYSTEM) {
+            if (channel instanceof SocketChannel) {
+                channel.pipeline().addLast("vmp_packet_priority", new PacketPriorityHandler());
+                channel.config().setOption(ChannelOption.SO_SNDBUF, 4096); // reduce latency
+                channel.config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
+            }
+        }
+    }
 
     public static final Object SYNC_REQUEST_OBJECT = new Object();
     public static final Object START_PRIORITY = new Object();
