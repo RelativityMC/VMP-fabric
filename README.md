@@ -14,16 +14,23 @@ Very Many Players, or VMP for short, is a Fabric mod designed to improve general
 For the best performance it is recommended to use VMP with [Lithium](https://modrinth.com/mod/lithium).
 
 ## How VMP achieves its performance improvements?
+
+**Server-side game logic performance improvements:**  
 - Uses area maps to optimize nearby packet sending and player lookups
-- Uses cache to optimize entity trackers, fluid state lookups and ingredient matching for mob AIs
+- Uses cache to optimize entity trackers, fluid state lookups and ingredient matching
 - Optimizes entity iteration for collisions
-- Optimizes ticket propagator using MCUtil from Paper project (patch licensed under MIT)
-- Makes clientside time source to use built-in Java time source instead of JNI calls
+- Optimizes ticket propagator using MCUtil from the Paper project (patch licensed under MIT)
+
+**Client-side game logic performance improvements:**  
+- Makes time source to use built-in Java time source instead of GLFW via JNI calls
+
+**Networking performance & responsiveness improvements:**
 - Uses our own chunk sending mechanism (optionally with packet-level rate-limiting)
 - Adds packet-level per-player render distance
 - Makes vanilla tcp connections more responsive using packet priority from raknetify  
   (works best when the server is connected **without reverse proxies such as velocity and ssh port forwarding**)
-- ... and more
+
+**... and more**
 
 ## Support
 Our issue tracker: [link](https://github.com/RelativityMC/VMP-fabric/issues)  
