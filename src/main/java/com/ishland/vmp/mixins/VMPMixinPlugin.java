@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins;
 
 import com.ishland.vmp.common.chunksending.PlayerChunkSendingSystem;
 import com.ishland.vmp.common.config.Config;
+import com.ishland.vmp.common.logging.AsyncAppenderBootstrap;
 import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
@@ -14,6 +15,7 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         Config.init();
+        AsyncAppenderBootstrap.boot();
     }
 
     @Override
