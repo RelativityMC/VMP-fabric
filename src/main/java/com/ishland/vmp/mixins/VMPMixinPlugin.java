@@ -29,6 +29,8 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
             return FabricLoader.getInstance().isModLoaded("carpet");
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunksending."))
             return PlayerChunkSendingSystem.ENABLED;
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login"))
+            return !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         return true;
     }
 
@@ -50,5 +52,14 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
+    }
+
+    private static boolean isClassExist(String name) {
+        try {
+            Class.forName(name);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }
