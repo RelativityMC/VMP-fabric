@@ -8,8 +8,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.util.ReferenceCountUtil;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
+import net.minecraft.util.math.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
@@ -25,7 +30,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         if (Config.USE_PACKET_PRIORITY_SYSTEM) {
             if (channel instanceof SocketChannel) {
                 channel.pipeline().addLast("vmp_packet_priority", new PacketPriorityHandler());
-                channel.config().setOption(ChannelOption.SO_SNDBUF, 4096); // reduce latency
+                channel.config().setOption(ChannelOption.SO_SNDBUF, 32 * 1024); // reduce latency
                 channel.config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
             }
         }
@@ -44,9 +49,39 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private boolean isEnabled = false;
     private long currentOrderIndex = 0;
 
+    private final Long2IntOpenHashMap sentChunkPacketHashes = new Long2IntOpenHashMap();
+
+    private void handlePacket(Object msg) {
+        if (msg instanceof ChunkDataS2CPacket packet) {
+            sentChunkPacketHashes.put(ChunkPos.toLong(packet.getX(), packet.getZ()), System.identityHashCode(packet));
+        } else if (msg instanceof UnloadChunkS2CPacket packet) {
+            sentChunkPacketHashes.remove(ChunkPos.toLong(packet.getX(), packet.getZ()));
+        }
+    }
+
+    private boolean shouldDropPacket(Object msg) {
+        if (msg instanceof ChunkDataS2CPacket packet) {
+            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
+            final int hash = sentChunkPacketHashes.getOrDefault(coord, Integer.MIN_VALUE);
+            boolean isValidHash = hash != Integer.MIN_VALUE || sentChunkPacketHashes.containsKey(coord);
+            if (!isValidHash)
+                return true; // chunk unloaded, no need to send packet
+            if (hash != System.identityHashCode(packet))
+                return true; // there is a newer packet containing the same chunk data, dropping
+        } else if (msg instanceof UnloadChunkS2CPacket packet) {
+            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
+            final int hash = sentChunkPacketHashes.getOrDefault(coord, Integer.MIN_VALUE);
+            boolean isValidHash = hash != Integer.MIN_VALUE || sentChunkPacketHashes.containsKey(coord);
+            if (isValidHash)
+                return true; // don't unload chunk if its going to be sent again later
+        }
+        return false;
+    }
+
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         final long orderIndex = currentOrderIndex++;
+        handlePacket(msg);
         if (this.isEnabled) {
             if (writesAllowed(ctx) && this.queue.isEmpty()) {
                 ctx.write(msg, promise);
@@ -70,6 +105,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                     retainedPackets.add(pendingPacket);
             }
             this.queue.addAll(retainedPackets);
+            this.sentChunkPacketHashes.clear();
             System.out.println("VMP: Stopped priority handler, retained %d packets".formatted(retainedPackets.size()));
         } else if (evt == START_PRIORITY) {
             this.isEnabled = true;
@@ -93,7 +129,12 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private void tryFlushPackets(ChannelHandlerContext ctx, boolean ignoreWritability) {
         PendingPacket pendingPacket;
         while ((ignoreWritability || writesAllowed(ctx)) && (pendingPacket = this.queue.poll()) != null) {
-            ctx.write(pendingPacket.msg, pendingPacket.promise);
+            if (shouldDropPacket(pendingPacket.msg())) {
+                ReferenceCountUtil.release(pendingPacket.msg);
+                pendingPacket.promise.trySuccess();
+            } else {
+                ctx.write(pendingPacket.msg, pendingPacket.promise);
+            }
         }
         ctx.flush();
     }
