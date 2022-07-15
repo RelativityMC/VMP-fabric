@@ -10,9 +10,14 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.ReferenceCountUtil;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
+import net.minecraft.network.packet.s2c.play.ChunkLoadDistanceS2CPacket;
+import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
+import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import net.minecraft.util.math.ChunkPos;
 import org.jetbrains.annotations.NotNull;
@@ -50,12 +55,29 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private long currentOrderIndex = 0;
 
     private final Long2IntOpenHashMap sentChunkPacketHashes = new Long2IntOpenHashMap();
+    private int serverViewDistance = 3;
+    private int chunkCenterX = 0;
+    private int chunkCenterZ = 0;
 
-    private void handlePacket(Object msg) {
+    private void handlePacket(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof ChunkDataS2CPacket packet) {
-            sentChunkPacketHashes.put(ChunkPos.toLong(packet.getX(), packet.getZ()), System.identityHashCode(packet));
+            if (isInRange(packet.getX(), packet.getZ()))
+                sentChunkPacketHashes.put(ChunkPos.toLong(packet.getX(), packet.getZ()), System.identityHashCode(packet));
         } else if (msg instanceof UnloadChunkS2CPacket packet) {
             sentChunkPacketHashes.remove(ChunkPos.toLong(packet.getX(), packet.getZ()));
+        } else if (msg instanceof GameJoinS2CPacket packet) {
+            int lastViewDistance = this.serverViewDistance;
+            this.serverViewDistance = packet.viewDistance();
+            if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
+        } else if (msg instanceof ChunkLoadDistanceS2CPacket packet) {
+            int lastViewDistance = this.serverViewDistance;
+            this.serverViewDistance = packet.getDistance();
+            if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
+        } else if (msg instanceof ChunkRenderDistanceCenterS2CPacket packet) {
+            this.chunkCenterX = packet.getChunkX();
+            this.chunkCenterZ = packet.getChunkZ();
+            ctx.write(packet);
+            ensureChunkInVD(ctx);
         }
     }
 
@@ -68,22 +90,43 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                 return true; // chunk unloaded, no need to send packet
             if (hash != System.identityHashCode(packet))
                 return true; // there is a newer packet containing the same chunk data, dropping
-        } else if (msg instanceof UnloadChunkS2CPacket packet) {
-            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
-            final int hash = sentChunkPacketHashes.getOrDefault(coord, Integer.MIN_VALUE);
-            boolean isValidHash = hash != Integer.MIN_VALUE || sentChunkPacketHashes.containsKey(coord);
-            if (isValidHash)
-                return true; // don't unload chunk if its going to be sent again later
+        }
+//        else if (msg instanceof UnloadChunkS2CPacket packet) {
+//            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
+//            final int hash = sentChunkPacketHashes.getOrDefault(coord, Integer.MIN_VALUE);
+//            boolean isValidHash = hash != Integer.MIN_VALUE || sentChunkPacketHashes.containsKey(coord);
+//            if (isValidHash)
+//                return true; // don't unload chunk if its going to be sent again later
+//        }
+        else if (msg instanceof ChunkLoadDistanceS2CPacket packet) {
+            return true;
         }
         return false;
+    }
+
+    private void ensureChunkInVD(ChannelHandlerContext ctx) {
+        final ObjectIterator<Long2IntMap.Entry> iterator = this.sentChunkPacketHashes.long2IntEntrySet().fastIterator();
+        while (iterator.hasNext()) {
+            final Long2IntMap.Entry entry = iterator.next();
+            final int x = ChunkPos.getPackedX(entry.getLongKey());
+            final int z = ChunkPos.getPackedZ(entry.getLongKey());
+            if (!isInRange(x, z)) {
+                iterator.remove();
+                ctx.write(new UnloadChunkS2CPacket(x, z));
+            }
+        }
+    }
+
+    private boolean isInRange(int x, int z) {
+        return Math.min(Math.abs(x - this.chunkCenterX), Math.abs(z - this.chunkCenterZ)) <= this.serverViewDistance;
     }
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         final long orderIndex = currentOrderIndex++;
-        handlePacket(msg);
+        handlePacket(ctx, msg);
         if (this.isEnabled) {
-            if (writesAllowed(ctx) && this.queue.isEmpty()) {
+            if (writesAllowed(ctx) && this.queue.isEmpty() && !shouldDropPacket(msg)) {
                 ctx.write(msg, promise);
             } else {
                 this.queue.add(new PendingPacket(msg, promise, orderIndex,
