@@ -16,6 +16,7 @@ group = project.maven_group
 
 afterEvaluate {
 	logger.lifecycle("Version String: ${version}")
+	logger.lifecycle(com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog())
 }
 
 repositories {
@@ -146,6 +147,7 @@ modrinth {
 	uploadFile = remapShadowJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
 	gameVersions = ["1.18.2"] // Must be an array, even with only one version
 	loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+	changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
 }
 
 if (System.getenv("CURSEFORGE_TOKEN")) {
@@ -153,7 +155,8 @@ if (System.getenv("CURSEFORGE_TOKEN")) {
 		apiKey = System.getenv("CURSEFORGE_TOKEN")
 		project {
 			id = '552542'
-			changelog = 'No changelog was specified.'
+			changelogType = "markdown"
+			changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
 			releaseType = 'beta'
 
 			addGameVersion "1.18.2"
