@@ -4,7 +4,11 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.ishland.vmp.common.chunkwatching.PlayerClientVDTracking;
 import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.maps.AreaMap;
+import com.ishland.vmp.common.util.SimpleObjectPool;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.MCUtil;
+import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -13,8 +17,11 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.metadata.version.VersionPredicate;
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,22 +82,34 @@ public class PlayerChunkSendingSystem {
             },
             false
     );
-    private final ChunkSendingHandle chunkSendingHandle;
-    private final ChunkUnloadingHandle chunkUnloadingHandle;
+    private final ThreadedAnvilChunkStorage tacs;
 
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
 
+    private final SimpleObjectPool<MutableObject<ChunkDataS2CPacket>> pool = new SimpleObjectPool<>(
+            pool -> new MutableObject<>(),
+            mutableObject -> mutableObject.setValue(null),
+            mutableObject -> mutableObject.setValue(null),
+            8192
+    );
+    private final Long2ObjectFunction<MutableObject<ChunkDataS2CPacket>> allocFunction = unused -> pool.alloc();
+    private final Long2ObjectOpenHashMap<MutableObject<ChunkDataS2CPacket>> cache = new Long2ObjectOpenHashMap<>();
+
     private int watchDistance = 5;
 
-    public PlayerChunkSendingSystem(ChunkSendingHandle chunkSendingHandle, ChunkUnloadingHandle chunkUnloadingHandle) {
-        this.chunkSendingHandle = chunkSendingHandle;
-        this.chunkUnloadingHandle = chunkUnloadingHandle;
+    public PlayerChunkSendingSystem(ThreadedAnvilChunkStorage tacs) {
+        this.tacs = tacs;
     }
 
     public void tick() {
         for (PlayerState state : this.players.values()) {
-            state.tick();
+            state.tick(cache);
         }
+        for (MutableObject<ChunkDataS2CPacket> value : cache.values()) {
+            pool.release(value);
+        }
+        cache.clear();
+        cache.trim(64);
     }
 
     public void onChunkLoaded(long pos) {
@@ -142,6 +161,14 @@ public class PlayerChunkSendingSystem {
                 : this.watchDistance;
     }
 
+    private void sendChunk(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject) {
+        ((IThreadedAnvilChunkStorage) this.tacs).invokeSendWatchPackets(player, pos, mutableObject, false, true);
+    }
+
+    private void unloadChunk(ServerPlayerEntity player, ChunkPos pos) {
+        ((IThreadedAnvilChunkStorage) this.tacs).invokeSendWatchPackets(player, pos, null, true, false);
+    }
+
     @SuppressWarnings("UnstableApiUsage")
     private class PlayerState {
 
@@ -163,7 +190,7 @@ public class PlayerChunkSendingSystem {
             this.center = player.getChunkPos();
         }
 
-        public void tick() {
+        public void tick(Long2ObjectOpenHashMap<MutableObject<ChunkDataS2CPacket>> cachedPackets) {
             if (this.player instanceof PlayerClientVDTracking tracking) {
                 if (tracking.isClientViewDistanceChanged() && PlayerChunkSendingSystem.this.positions.containsKey(this.player)) {
                     PlayerChunkSendingSystem.this.movePlayer(this.player, PlayerChunkSendingSystem.this.positions.getLong(this.player));
@@ -172,7 +199,7 @@ public class PlayerChunkSendingSystem {
             ChunkPos pos;
             while ((pos = sendQueue.peek()) != null) {
                 if (rateLimiter == null || rateLimiter.tryAcquire()) {
-                    chunkSendingHandle.sendChunk(this.player, pos);
+                    sendChunk(this.player, pos, cachedPackets.computeIfAbsent(pos.toLong(), allocFunction));
                     sendQueue.poll();
                 } else {
                     break;
@@ -184,7 +211,7 @@ public class PlayerChunkSendingSystem {
             final long coordinateKey = MCUtil.getCoordinateKey(x, z);
             final ChunkPos pos = new ChunkPos(x, z);
             sendQueue.remove(pos);
-            chunkUnloadingHandle.unloadChunk(this.player, pos);
+            PlayerChunkSendingSystem.this.unloadChunk(this.player, pos);
         }
 
         public void updateQueue() {

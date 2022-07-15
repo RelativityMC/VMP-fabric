@@ -20,9 +20,6 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
-import java.util.Set;
-import java.util.function.BooleanSupplier;
-import java.util.stream.Stream;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
 public abstract class MixinThreadedAnvilChunkStorage {
@@ -45,8 +42,8 @@ public abstract class MixinThreadedAnvilChunkStorage {
     private PlayerChunkWatchingManager redirectNewPlayerChunkWatchingManager() {
         return new AreaPlayerChunkWatchingManager(
                 (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), false, true),
-                (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), true, false)
-        );
+                (player, chunkX, chunkZ) -> this.sendWatchPackets(player, new ChunkPos(chunkX, chunkZ), new MutableObject<>(), true, false),
+                (ThreadedAnvilChunkStorage) (Object) this);
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
