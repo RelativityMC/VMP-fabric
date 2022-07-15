@@ -16,6 +16,7 @@ group = project.maven_group
 
 afterEvaluate {
 	logger.lifecycle("Version String: ${version}")
+	logger.lifecycle(com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog())
 }
 
 repositories {
@@ -140,12 +141,13 @@ publishing {
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN") // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
 	projectId = "vmp-fabric" // This can be the project ID or the slug. Either will work!
-	versionNumber = project.version + "+1.18.2" // You don't need to set this manually. Will fail if Modrinth has this version already
-	versionName = project.version + " backport for 1.18.2"
-	versionType = "beta" // This is the default -- can also be `beta` or `alpha`
+	versionNumber = project.version + "+" + project.minecraft_version // You don't need to set this manually. Will fail if Modrinth has this version already
+	versionName = project.version + " devbuild for " + project.minecraft_version
+	versionType = "alpha" // This is the default -- can also be `beta` or `alpha`
 	uploadFile = remapShadowJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-	gameVersions = ["1.18.2"] // Must be an array, even with only one version
+	gameVersions = [project.minecraft_version] // Must be an array, even with only one version
 	loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+	changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
 }
 
 if (System.getenv("CURSEFORGE_TOKEN")) {
@@ -153,15 +155,16 @@ if (System.getenv("CURSEFORGE_TOKEN")) {
 		apiKey = System.getenv("CURSEFORGE_TOKEN")
 		project {
 			id = '552542'
-			changelog = 'No changelog was specified.'
-			releaseType = 'beta'
+			changelogType = "markdown"
+			changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
+			releaseType = 'alpha'
 
-			addGameVersion "1.18.2"
+			addGameVersion project.minecraft_version
 			addGameVersion "Fabric"
 			addGameVersion "Java 17"
 
 			mainArtifact(remapShadowJar) {
-				displayName = project.version + " backport for 1.18.2"
+				displayName = project.version + " devbuild for " + project.minecraft_version
 			}
 		}
 		options {
