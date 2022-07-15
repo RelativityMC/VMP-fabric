@@ -20,16 +20,21 @@ public class ParseGItHubActionChangelog {
         StringBuilder builder = new StringBuilder();
         builder.append("This version is uploaded automatically by GitHub Actions.  \n\n")
                 .append("Changelog:  \n");
-        for (JsonElement commit : jsonObject.getAsJsonArray("commits")) {
-            JsonObject object = commit.getAsJsonObject();
-            builder.append("- ");
-            builder.append('[').append(object.get("id").getAsString(), 0, 8).append(']')
-                    .append('(').append(object.get("url").getAsString()).append(')');
-            builder.append(' ');
-            builder.append(object.get("message").getAsString().split("\n")[0]);
-            builder.append(" — ");
-            builder.append(object.get("author").getAsJsonObject().get("name").getAsString());
-            builder.append("  ").append('\n');
+        final JsonArray commits = jsonObject.getAsJsonArray("commits");
+        if (commits.isEmpty()) {
+            builder.append("No changes detected. \n");
+        } else {
+            for (JsonElement commit : commits) {
+                JsonObject object = commit.getAsJsonObject();
+                builder.append("- ");
+                builder.append('[').append(object.get("id").getAsString(), 0, 8).append(']')
+                        .append('(').append(object.get("url").getAsString()).append(')');
+                builder.append(' ');
+                builder.append(object.get("message").getAsString().split("\n")[0]);
+                builder.append(" — ");
+                builder.append(object.get("author").getAsJsonObject().get("name").getAsString());
+                builder.append("  ").append('\n');
+            }
         }
         return builder.toString();
     }
