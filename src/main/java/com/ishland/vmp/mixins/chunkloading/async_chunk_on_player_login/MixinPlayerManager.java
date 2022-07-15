@@ -1,8 +1,8 @@
 package com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login;
 
+import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.IAsyncChunkPlayer;
 import com.ishland.vmp.mixins.access.IServerChunkManager;
-import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -12,12 +12,9 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerTask;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketManager;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -43,8 +40,6 @@ public abstract class MixinPlayerManager {
 
     @Shadow public abstract void sendWorldInfo(ServerPlayerEntity player, ServerWorld world);
 
-    private static final ChunkTicketType<Unit> ASYNC_PLAYER_LOGIN = ChunkTicketType.create("async_player_login", (unit, unit2) -> 0);
-
     @Redirect(
             method = "onPlayerConnect",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;requestTeleport(DDDFF)V")
@@ -53,17 +48,12 @@ public abstract class MixinPlayerManager {
         final ServerChunkManager chunkManager = ((ServerWorld) instance.player.world).getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
 
+        ((IAsyncChunkPlayer) instance.player).markPlayerForAsyncChunkLoad();
         final ChunkPos pos = new ChunkPos(new BlockPos(x, y, z));
-        ticketManager.addTicket(ASYNC_PLAYER_LOGIN, pos, 3, Unit.INSTANCE);
-        ((IServerChunkManager) chunkManager).invokeTick();
-        final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.threadedAnvilChunkStorage).invokeGetCurrentChunkHolder(pos.toLong());
-        if (chunkHolder == null) {
-            throw new IllegalStateException("Chunk not there when requested");
-        }
         instance.player.notInAnyWorld = true; // suppress move packets
 
         final MinecraftServer server = instance.player.server;
-        chunkHolder.getEntityTickingFuture().whenCompleteAsync((worldChunkUnloadedEither, throwable) -> {
+        AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) instance.player.world, pos).whenCompleteAsync((worldChunkUnloadedEither, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Error while loading chunks", throwable);
                 return;
@@ -82,12 +72,9 @@ public abstract class MixinPlayerManager {
             ((IAsyncChunkPlayer) instance.player).setPlayerData(null);
             vmp$mountSavedVehicles(instance.player, playerData);
 
-            ticketManager.removeTicket(ASYNC_PLAYER_LOGIN, pos, 3, Unit.INSTANCE);
             ((IAsyncChunkPlayer) instance.player).onChunkLoadComplete();
             LOGGER.info("Async chunk loading for player {} completed", instance.player.getName().getString());
-        }, runnable -> {
-            server.send(new ServerTask(0, runnable));
-        });
+        }, runnable -> server.send(new ServerTask(0, runnable)));
     }
 
     @Unique
