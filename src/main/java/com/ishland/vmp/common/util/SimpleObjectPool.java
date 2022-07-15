@@ -58,4 +58,8 @@ public class SimpleObjectPool<T> {
         }
     }
 
+    public int getAllocatedCount() {
+        return this.allocatedCount;
+    }
+
 }

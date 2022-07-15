@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
+import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 
 import java.util.Arrays;
@@ -32,18 +33,15 @@ public class AreaPlayerChunkWatchingManager extends PlayerChunkWatchingManager {
     private int watchDistance = 5;
 
     public AreaPlayerChunkWatchingManager() {
-        this(null, null);
+        this(null, null, null);
     }
 
-    public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener) {
+    public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener, ThreadedAnvilChunkStorage tacs) {
         this.addListener = addListener;
         this.removeListener = removeListener;
 
-        if (PlayerChunkSendingSystem.ENABLED) {
-            this.playerChunkSendingSystem = new PlayerChunkSendingSystem(
-                    (player, pos) -> addListener.accept(player, pos.x, pos.z),
-                    (player, pos) -> removeListener.accept(player, pos.x, pos.z)
-            );
+        if (PlayerChunkSendingSystem.ENABLED && tacs != null) {
+            this.playerChunkSendingSystem = new PlayerChunkSendingSystem(tacs);
             this.addListener = null;
             this.removeListener = null;
             this.playerAreaMap = new AreaMap<>(null, null, false);
