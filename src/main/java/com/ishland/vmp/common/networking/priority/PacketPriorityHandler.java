@@ -187,7 +187,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     @Override
     public void flush(ChannelHandlerContext ctx) throws Exception {
-        ctx.flush();
         tryFlushPackets(ctx, false);
     }
 
