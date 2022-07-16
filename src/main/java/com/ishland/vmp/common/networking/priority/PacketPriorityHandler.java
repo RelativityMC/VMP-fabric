@@ -7,6 +7,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.ReferenceCountUtil;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -31,11 +32,13 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private static final int IP_TOS_THROUGHPUT = 0b00001000;
     private static final int IP_TOS_RELIABILITY = 0b00000100;
 
+    private static final int DEFAULT_SNDBUF = 8 * 1024;
+
     public static void setupPacketPriority(Channel channel) {
         if (Config.USE_PACKET_PRIORITY_SYSTEM) {
             if (channel instanceof SocketChannel) {
                 channel.pipeline().addLast("vmp_packet_priority", new PacketPriorityHandler());
-                channel.config().setOption(ChannelOption.SO_SNDBUF, 32 * 1024); // reduce latency
+                channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4 * 1024, 8 * 1024));
                 channel.config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
             }
         }
@@ -61,17 +64,20 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private void handlePacket(ChannelHandlerContext ctx, Object msg) {
         if (msg instanceof ChunkDataS2CPacket packet) {
-            if (isInRange(packet.getX(), packet.getZ()))
+            if (isInRange(packet.getX(), packet.getZ())) {
                 sentChunkPacketHashes.put(ChunkPos.toLong(packet.getX(), packet.getZ()), System.identityHashCode(packet));
+            } else {
+                System.err.println("Not sending chunk [%d, %d] as it is not in view distance".formatted(packet.getX(), packet.getZ()));
+            }
         } else if (msg instanceof UnloadChunkS2CPacket packet) {
             sentChunkPacketHashes.remove(ChunkPos.toLong(packet.getX(), packet.getZ()));
         } else if (msg instanceof GameJoinS2CPacket packet) {
             int lastViewDistance = this.serverViewDistance;
-            this.serverViewDistance = packet.viewDistance();
+            this.serverViewDistance = packet.viewDistance() + 1;
             if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
         } else if (msg instanceof ChunkLoadDistanceS2CPacket packet) {
             int lastViewDistance = this.serverViewDistance;
-            this.serverViewDistance = packet.getDistance();
+            this.serverViewDistance = packet.getDistance() + 1;
             if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
         } else if (msg instanceof ChunkRenderDistanceCenterS2CPacket packet) {
             this.chunkCenterX = packet.getChunkX();
@@ -98,9 +104,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 //            if (isValidHash)
 //                return true; // don't unload chunk if its going to be sent again later
 //        }
-        else if (msg instanceof ChunkLoadDistanceS2CPacket packet) {
-            return true;
-        }
         return false;
     }
 
@@ -118,7 +121,24 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     }
 
     private boolean isInRange(int x, int z) {
-        return Math.min(Math.abs(x - this.chunkCenterX), Math.abs(z - this.chunkCenterZ)) <= this.serverViewDistance;
+        return Math.max(Math.abs(x - this.chunkCenterX), Math.abs(z - this.chunkCenterZ)) <= this.serverViewDistance;
+    }
+
+    private void adjustSendBuffer(ChannelHandlerContext ctx) {
+        final int sendBuffer;
+        if (ctx.channel().isWritable()) {
+            sendBuffer = DEFAULT_SNDBUF; // back to lowlatency
+        } else {
+            sendBuffer = (int) (DEFAULT_SNDBUF * 2 + ctx.channel().bytesBeforeWritable());
+        }
+        ctx.channel().config().setOption(ChannelOption.SO_SNDBUF, sendBuffer);
+        if (!ctx.channel().isWritable()) ctx.flush();
+    }
+
+    @Override
+    public void channelActive(@NotNull ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+        adjustSendBuffer(ctx);
     }
 
     @Override
@@ -161,13 +181,14 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         super.channelWritabilityChanged(ctx);
+        adjustSendBuffer(ctx);
         if (ctx.channel().isWritable()) tryFlushPackets(ctx, false);
     }
 
-//    @Override
-//    public void flush(ChannelHandlerContext ctx) throws Exception {
-//        if (ctx.channel().isWritable()) ctx.flush();
-//    }
+    @Override
+    public void flush(ChannelHandlerContext ctx) throws Exception {
+        tryFlushPackets(ctx, false);
+    }
 
     private void tryFlushPackets(ChannelHandlerContext ctx, boolean ignoreWritability) {
         PendingPacket pendingPacket;
