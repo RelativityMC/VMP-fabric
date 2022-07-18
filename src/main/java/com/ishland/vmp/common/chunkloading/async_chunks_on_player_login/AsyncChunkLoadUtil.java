@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 public class AsyncChunkLoadUtil {
 
-    private static final ChunkTicketType<Unit> ASYNC_PLAYER_LOGIN = ChunkTicketType.create("async_player_login", (unit, unit2) -> 0);
+    private static final ChunkTicketType<Unit> ASYNC_CHUNK_LOAD = ChunkTicketType.create("vmp_async_chunk_load", (unit, unit2) -> 0);
 
     public static CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> scheduleChunkLoad(ServerWorld world, ChunkPos pos) {
         if (!world.getServer().isOnThread()) {
@@ -27,14 +27,14 @@ public class AsyncChunkLoadUtil {
         }
         final ServerChunkManager chunkManager = world.getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
-        ticketManager.addTicket(ASYNC_PLAYER_LOGIN, pos, 3, Unit.INSTANCE);
+        ticketManager.addTicket(ASYNC_CHUNK_LOAD, pos, 3, Unit.INSTANCE);
         ((IServerChunkManager) chunkManager).invokeTick();
         final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.threadedAnvilChunkStorage).invokeGetCurrentChunkHolder(pos.toLong());
         if (chunkHolder == null) {
             throw new IllegalStateException("Chunk not there when requested");
         }
         final CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> future = chunkHolder.getEntityTickingFuture();
-        future.whenCompleteAsync((unused, throwable) -> ticketManager.removeTicket(ASYNC_PLAYER_LOGIN, pos, 3, Unit.INSTANCE), world.getServer());
+        future.whenCompleteAsync((unused, throwable) -> ticketManager.removeTicket(ASYNC_CHUNK_LOAD, pos, 3, Unit.INSTANCE), world.getServer());
         return future;
     }
 
