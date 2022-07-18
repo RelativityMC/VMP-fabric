@@ -53,6 +53,9 @@ dependencies {
 		transitive = false
 	}
 
+	shadowInclude implementation("com.ibm.async:asyncutil:${async_util_version}")
+
+
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
