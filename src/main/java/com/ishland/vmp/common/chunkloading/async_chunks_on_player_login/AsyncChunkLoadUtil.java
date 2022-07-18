@@ -13,12 +13,18 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class AsyncChunkLoadUtil {
 
     private static final ChunkTicketType<Unit> ASYNC_PLAYER_LOGIN = ChunkTicketType.create("async_player_login", (unit, unit2) -> 0);
 
     public static CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> scheduleChunkLoad(ServerWorld world, ChunkPos pos) {
+        if (!world.getServer().isOnThread()) {
+            return CompletableFuture
+                    .supplyAsync(() -> scheduleChunkLoad(world, pos), world.getServer())
+                    .thenCompose(Function.identity());
+        }
         final ServerChunkManager chunkManager = world.getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
         ticketManager.addTicket(ASYNC_PLAYER_LOGIN, pos, 3, Unit.INSTANCE);
