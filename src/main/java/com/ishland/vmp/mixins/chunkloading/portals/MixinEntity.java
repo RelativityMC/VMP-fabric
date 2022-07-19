@@ -6,6 +6,7 @@ import com.ishland.vmp.common.chunkloading.IPOIAsyncPreload;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.NetherPortalBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
@@ -150,6 +151,10 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     RegistryKey<World> registryKey = this.world.getRegistryKey() == World.NETHER ? World.OVERWORLD : World.NETHER;
                     ServerWorld destination = minecraftServer.getWorld(registryKey);
                     long currentLocateIndex = ++vmp$locateIndex;
+                    long startTime = System.nanoTime();
+                    if ((Object) this instanceof ServerPlayerEntity player) {
+                        player.sendMessage(Text.literal("Locating portal destination..."), true);
+                    }
                     vmp$lastLocateFuture = vmp$locatePortalFuture =
                             getTeleportTargetAtAsync(destination)
                                     .thenComposeAsync(target -> {
@@ -172,7 +177,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                             final BlockPos blockPos = new BlockPos(target.position);
                                             destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior
                                             if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Portal located, waiting for portal teleportation..."), true);
+                                                player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
                                             }
                                         } else {
                                             LOGGER.info("Portal not located for entity {} at {}", this, target);
@@ -225,8 +230,23 @@ public abstract class MixinEntity implements IEntityPortalInterface {
             } else {
                 WorldBorder worldBorder = destination.getWorldBorder();
                 double d = DimensionType.getCoordinateScaleFactor(this.world.getDimension(), destination.getDimension());
-                BlockPos blockPos2 = worldBorder.clamp(this.getX() * d, this.getY(), this.getZ() * d);
-                return this.getPortalRectAtAsync(destination, blockPos2, bl3, worldBorder)
+                BlockPos destPos = worldBorder.clamp(this.getX() * d, this.getY(), this.getZ() * d);
+                return this.getPortalRectAtAsync(destination, destPos, bl3, worldBorder)
+                        .thenComposeAsync((Optional<BlockLocating.Rectangle> optional) -> {
+                            if ((Object) this instanceof ServerPlayerEntity && optional.isEmpty()) {
+                                return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(destPos), 3)
+                                        .thenApply(unused1 -> {
+                                            Direction.Axis axis = this.world.getBlockState(this.lastNetherPortalPosition).getOrEmpty(NetherPortalBlock.AXIS).orElse(Direction.Axis.X);
+                                            Optional<BlockLocating.Rectangle> optional2 = destination.getPortalForcer().createPortal(destPos, axis);
+                                            if (!optional2.isPresent()) {
+                                                LOGGER.error("Unable to create a portal, likely target out of worldborder");
+                                            }
+                                            return optional2;
+                                        });
+                            } else {
+                                return CompletableFuture.completedFuture(optional);
+                            }
+                        }, destination.getServer())
                         .thenComposeAsync(optional -> optional.map(rect ->
                                         AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(this.lastNetherPortalPosition), 3)
                                                 .thenComposeAsync(unused -> {
@@ -266,17 +286,17 @@ public abstract class MixinEntity implements IEntityPortalInterface {
     }
 
     @Unique
-    public CompletionStage<Optional<BlockLocating.Rectangle>> getPortalRectAtAsync(ServerWorld destination, BlockPos pos, boolean destIsNether, WorldBorder worldBorder) {
+    public CompletionStage<Optional<BlockLocating.Rectangle>> getPortalRectAtAsync(ServerWorld destination, BlockPos destPos, boolean destIsNether, WorldBorder worldBorder) {
         PointOfInterestStorage pointOfInterestStorage = destination.getPointOfInterestStorage();
         int i = destIsNether ? 16 : 128;
-        return ((CompletionStage<Void>) ((IPOIAsyncPreload) pointOfInterestStorage).preloadChunksAtAsync(destination, pos, i))
+        return ((CompletionStage<Void>) ((IPOIAsyncPreload) pointOfInterestStorage).preloadChunksAtAsync(destination, destPos, i))
                 .thenComposeAsync(unused -> {
                     final Iterator<PointOfInterest> iterator = pointOfInterestStorage.getInSquare(
                                     registryEntry -> registryEntry.matchesKey(PointOfInterestTypes.NETHER_PORTAL),
-                                    pos, i, PointOfInterestStorage.OccupationStatus.ANY
+                                    destPos, i, PointOfInterestStorage.OccupationStatus.ANY
                             )
                             .filter(poi -> worldBorder.contains(poi.getPos()))
-                            .sorted(Comparator.comparingDouble((PointOfInterest poi) -> poi.getPos().getSquaredDistance(pos)).thenComparingInt(poi -> poi.getPos().getY()))
+                            .sorted(Comparator.comparingDouble((PointOfInterest poi) -> poi.getPos().getSquaredDistance(destPos)).thenComparingInt(poi -> poi.getPos().getY()))
                             .toList().iterator();
                     return AsyncIterator
                             .fromIterator(iterator)
