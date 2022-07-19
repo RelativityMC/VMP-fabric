@@ -145,7 +145,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
         if (this.world.isClient) return;
         //noinspection ConstantConditions
         if ((Object) this instanceof ServerPlayerEntity) {
-            if (this.inNetherPortal && this.netherPortalTime >= this.getMaxNetherPortalTime() - 10) {
+            if (this.inNetherPortal && this.netherPortalTime >= this.getMaxNetherPortalTime() - 50) {
                 if (vmp$locatePortalFuture == null && vmp$lastLocateFuture.isDone()) {
                     MinecraftServer minecraftServer = this.world.getServer();
                     RegistryKey<World> registryKey = this.world.getRegistryKey() == World.NETHER ? World.OVERWORLD : World.NETHER;
@@ -175,7 +175,6 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         } else if (target != null) {
                                             LOGGER.info("Portal located for entity {} at {}", this, target);
                                             final BlockPos blockPos = new BlockPos(target.position);
-                                            destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior
                                             if ((Object) this instanceof ServerPlayerEntity player) {
                                                 player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
                                             }
@@ -313,6 +312,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                 BlockPos blockPos = poi.getPos();
                                 return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(blockPos), 3)
                                         .thenApplyAsync(unused1 -> {
+                                            destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior
                                             BlockState blockState = destination.getBlockState(blockPos);
                                             return BlockLocating.getLargestRectangle(
                                                     blockPos, blockState.get(Properties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, posx -> destination.getBlockState(posx) == blockState
