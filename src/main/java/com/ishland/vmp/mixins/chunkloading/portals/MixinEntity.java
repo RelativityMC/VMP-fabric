@@ -31,7 +31,7 @@ import net.minecraft.world.dimension.AreaHelper;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.poi.PointOfInterest;
 import net.minecraft.world.poi.PointOfInterestStorage;
-import net.minecraft.world.poi.PointOfInterestTypes;
+import net.minecraft.world.poi.PointOfInterestType;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -153,7 +153,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     long currentLocateIndex = ++vmp$locateIndex;
                     long startTime = System.nanoTime();
                     if ((Object) this instanceof ServerPlayerEntity player) {
-                        player.sendMessage(Text.literal("Locating portal destination..."), true);
+                        player.sendMessage(Text.of("Locating portal destination..."), true);
                     }
                     vmp$lastLocateFuture = vmp$locatePortalFuture =
                             getTeleportTargetAtAsync(destination)
@@ -170,18 +170,18 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         if (throwable != null) {
                                             LOGGER.error("Error occurred for entity {} while locating portal", this, throwable);
                                             if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Error occurred while locating portal"), true);
+                                                player.sendMessage(Text.of("Error occurred while locating portal"), true);
                                             }
                                         } else if (target != null) {
                                             LOGGER.info("Portal located for entity {} at {}", this, target);
                                             final BlockPos blockPos = new BlockPos(target.position);
                                             if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
+                                                player.sendMessage(Text.of("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
                                             }
                                         } else {
                                             LOGGER.info("Portal not located for entity {} at {}", this, target);
                                             if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Portal not located"), true);
+                                                player.sendMessage(Text.of("Portal not located"), true);
                                             }
                                         }
                                     }, destination.getServer())
@@ -194,7 +194,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     vmp$locateIndex++;
                     if (!done) {
                         if ((Object) this instanceof ServerPlayerEntity player) {
-                            player.sendMessage(Text.literal("Portal location cancelled"), true);
+                            player.sendMessage(Text.of("Portal location cancelled"), true);
                         }
                     }
                 }
@@ -291,7 +291,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
         return ((CompletionStage<Void>) ((IPOIAsyncPreload) pointOfInterestStorage).preloadChunksAtAsync(destination, destPos, i))
                 .thenComposeAsync(unused -> {
                     final Iterator<PointOfInterest> iterator = pointOfInterestStorage.getInSquare(
-                                    registryEntry -> registryEntry.matchesKey(PointOfInterestTypes.NETHER_PORTAL),
+                                    poiType -> poiType == PointOfInterestType.NETHER_PORTAL,
                                     destPos, i, PointOfInterestStorage.OccupationStatus.ANY
                             )
                             .filter(poi -> worldBorder.contains(poi.getPos()))
