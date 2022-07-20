@@ -23,17 +23,6 @@ public class MixinTACSCancelSending {
         ci.cancel(); // Stop packet sending, handled by distance map
     }
 
-    @Dynamic("Compatibility hack for krypton")
-    @Inject(method = {
-            "sendChunks(Lnet/minecraft/util/math/ChunkSectionPos;Lnet/minecraft/server/network/ServerPlayerEntity;)V",
-            "sendSpiralChunkWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V",
-            "unloadChunks(Lnet/minecraft/server/network/ServerPlayerEntity;III)V",
-            "sendChunkWatchPackets(Lnet/minecraft/util/math/ChunkSectionPos;Lnet/minecraft/server/network/ServerPlayerEntity;)V"
-    }, at = @At("HEAD"), cancellable = true, require = 0)
-    private void preventExtraSendChunks(CallbackInfo ci) {
-        ci.cancel();
-    }
-
     @Redirect(method = "setViewDistance", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;getPlayersWatchingChunk(Lnet/minecraft/util/math/ChunkPos;Z)Ljava/util/List;"))
     private List<ServerPlayerEntity> redirectWatchPacketsOnChangingVD(ThreadedAnvilChunkStorage instance, ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
         return Collections.emptyList(); // Stop packet sending, handled by distance map
