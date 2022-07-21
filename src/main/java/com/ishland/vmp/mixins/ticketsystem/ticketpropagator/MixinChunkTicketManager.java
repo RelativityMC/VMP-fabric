@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTaskPrioritySystem;
@@ -65,7 +66,7 @@ public abstract class MixinChunkTicketManager {
     protected io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D ticketLevelPropagator;
 
     @Unique
-    private ArrayList<ChunkHolder> pendingChunkHolderUpdates;
+    private ObjectArrayFIFOQueue<ChunkHolder> pendingChunkHolderUpdates;
 
     // Paper distance map propagates level from max to 0 while vanilla
     // one propagate from 0 to max
@@ -103,7 +104,7 @@ public abstract class MixinChunkTicketManager {
                     this.ticketLevelUpdates.putAndMoveToLast(coordinate, convertBetweenTicketLevels(newLevel));
                 }
         );
-        this.pendingChunkHolderUpdates = new ArrayList<>();
+        this.pendingChunkHolderUpdates = new ObjectArrayFIFOQueue<>();
     }
 
     @Redirect(method = {"purge", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 3, expect = 3)
@@ -160,13 +161,12 @@ public abstract class MixinChunkTicketManager {
                 continue;
             }
 
-            this.pendingChunkHolderUpdates.add(holder);
+            this.pendingChunkHolderUpdates.enqueue(holder);
         }
 
-        for (ChunkHolder holder : this.pendingChunkHolderUpdates) {
-            ((IChunkHolder) holder).invokeTick1(threadedAnvilChunkStorage, this.mainThreadExecutor);
+        while (!this.pendingChunkHolderUpdates.isEmpty()) {
+            ((IChunkHolder) this.pendingChunkHolderUpdates.dequeue()).invokeTick1(threadedAnvilChunkStorage, this.mainThreadExecutor);
         }
-        this.pendingChunkHolderUpdates.clear();
 
         return hasUpdates ? distance - 1 : distance;
     }
