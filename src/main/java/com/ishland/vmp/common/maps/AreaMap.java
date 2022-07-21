@@ -11,15 +11,18 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 public class AreaMap<T> {
 
     private static final Object[] EMPTY = new Object[0];
-    private static final ReferenceLinkedOpenHashSet<?> EMPTY_SET = new RawObjectLinkedOpenIdentityHashSet<>();
+    private static final RawObjectLinkedOpenIdentityHashSet<?> EMPTY_SET = new RawObjectLinkedOpenIdentityHashSet<>();
 
     private final SimpleObjectPool<RawObjectLinkedOpenIdentityHashSet<T>> pooledHashSets =
             new SimpleObjectPool<>(unused -> new RawObjectLinkedOpenIdentityHashSet<>(),
@@ -248,7 +251,7 @@ public class AreaMap<T> {
         }
     }
 
-    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ReferenceLinkedOpenHashSet<E> {
+    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ReferenceLinkedOpenHashSet<E> implements List<E> {
 
         public RawObjectLinkedOpenIdentityHashSet() {
         }
@@ -257,6 +260,58 @@ public class AreaMap<T> {
             return this.key;
         }
 
+        @Override
+        public boolean addAll(int index, @NotNull Collection<? extends E> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E get(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E set(int index, E element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(int index, E element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @NotNull
+        @Override
+        public ListIterator<E> listIterator() {
+            throw new UnsupportedOperationException();
+        }
+
+        @NotNull
+        @Override
+        public ListIterator<E> listIterator(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @NotNull
+        @Override
+        public List<E> subList(int fromIndex, int toIndex) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     public interface Listener<T> {
