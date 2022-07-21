@@ -71,7 +71,16 @@ public abstract class MixinThreadedAnvilChunkStorage {
      */
     @Overwrite
     public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos chunkPos, boolean onlyOnWatchDistanceEdge) {
-        Object[] set = ((AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager).getPlayersWatchingChunkArray(chunkPos.toLong());
+        final AreaPlayerChunkWatchingManager watchingManager = (AreaPlayerChunkWatchingManager) this.playerChunkWatchingManager;
+
+        if (!onlyOnWatchDistanceEdge) {
+            // implementation details: this object implements java.util.List
+            // but does not support any of the java.util.List specific methods
+            // this may cause incompatibility for mods that expects a good java.util.List
+            return (List<ServerPlayerEntity>) watchingManager.getPlayersWatchingChunk(chunkPos.toLong());
+        }
+
+        Object[] set = watchingManager.getPlayersWatchingChunkArray(chunkPos.toLong());
         ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
 
         for (Object __player : set) {
