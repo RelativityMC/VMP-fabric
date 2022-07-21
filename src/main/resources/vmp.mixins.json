@@ -25,7 +25,6 @@
     "chunkloading.commands.MixinSpreadPlayersCommand",
     "chunkloading.commands.MixinTeleportCommand",
     "chunkloading.portals.MixinEntity",
-    "chunkloading.portals.MixinServerPlayerEntity",
     "chunksending.MixinThreadedAnvilChunkStorage",
     "chunksending.c2me_notickvd_compat.MixinNoTickChunkSendingInterceptor",
     "entity.item.MixinEntity",
