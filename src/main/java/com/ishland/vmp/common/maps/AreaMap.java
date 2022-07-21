@@ -19,6 +19,7 @@ import java.util.Set;
 public class AreaMap<T> {
 
     private static final Object[] EMPTY = new Object[0];
+    private static final ReferenceLinkedOpenHashSet<?> EMPTY_SET = new RawObjectLinkedOpenIdentityHashSet<>();
 
     private final SimpleObjectPool<RawObjectLinkedOpenIdentityHashSet<T>> pooledHashSets =
             new SimpleObjectPool<>(unused -> new RawObjectLinkedOpenIdentityHashSet<>(),
@@ -50,7 +51,7 @@ public class AreaMap<T> {
 
     public Set<T> getObjectsInRange(long coordinateKey) {
         final RawObjectLinkedOpenIdentityHashSet<T> set = map.get(coordinateKey);
-        return set != null ? set : Collections.emptySet();
+        return set != null ? set : (Set<T>) EMPTY_SET;
     }
 
     public Object[] getObjectsInRangeArray(long coordinateKey) {
