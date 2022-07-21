@@ -93,6 +93,11 @@ public abstract class MixinTeleportCommand {
         return targets.size();
     }
 
+    /**
+     * @author ishland
+     * @reason async teleport
+     */
+    @Overwrite
     private static int execute(
             ServerCommandSource source,
             Collection<? extends Entity> targets,
