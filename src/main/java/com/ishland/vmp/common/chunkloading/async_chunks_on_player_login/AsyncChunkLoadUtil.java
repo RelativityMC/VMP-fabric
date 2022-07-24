@@ -61,7 +61,6 @@ public class AsyncChunkLoadUtil {
             SEMAPHORE.release();
             if (throwable != null) throwable.printStackTrace();
             ticketManager.removeTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
-            ((IServerChunkManager) chunkManager).invokeTick();
         }, world.getServer());
         return future;
     }
