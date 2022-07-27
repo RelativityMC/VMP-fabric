@@ -11,7 +11,6 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -21,6 +20,8 @@ import java.util.ListIterator;
 import java.util.Set;
 
 public class AreaMap<T> {
+
+    private static final boolean DEBUG = Boolean.getBoolean("vmp.debugAreaMap");
 
     private static final Object[] EMPTY = new Object[0];
     private static final RawObjectLinkedOpenIdentityHashSet<?> EMPTY_SET = new RawObjectLinkedOpenIdentityHashSet<>();
@@ -233,6 +234,7 @@ public class AreaMap<T> {
 
     // only for debugging
     private void validate(T object, int x, int z, int viewDistance) {
+        if (!DEBUG) return;
         if (viewDistance < 0) {
             for (Long2ObjectMap.Entry<RawObjectLinkedOpenIdentityHashSet<T>> entry : map.long2ObjectEntrySet()) {
                 if (entry.getValue().contains(object))
