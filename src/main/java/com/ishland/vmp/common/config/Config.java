@@ -15,6 +15,7 @@ public class Config {
     public static final int TARGET_CHUNK_SEND_RATE;
     public static final boolean USE_PACKET_PRIORITY_SYSTEM;
     public static final boolean USE_ASYNC_LOGGING;
+    public static final boolean USE_OPTIMIZED_ENTITY_TRACKING;
 
     static {
         final Properties properties = new Properties();
@@ -29,6 +30,7 @@ public class Config {
         TARGET_CHUNK_SEND_RATE = getInt(properties, "target_chunk_send_rate", -1);
         USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, "use_packet_priority_system", true);
         USE_ASYNC_LOGGING = getBoolean(properties, "use_async_logging", true);
+        USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, "use_optimized_entity_tracking", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(out, "Configuration file for VMP");
         } catch (IOException e) {
