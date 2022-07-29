@@ -80,9 +80,6 @@ public abstract class MixinEntity implements IEntityPortalInterface {
     private static Logger LOGGER;
 
     @Shadow
-    protected abstract void tickNetherPortal();
-
-    @Shadow
     protected int netherPortalTime;
 
     @Shadow
@@ -94,12 +91,6 @@ public abstract class MixinEntity implements IEntityPortalInterface {
 
     @Shadow
     public abstract @Nullable Entity moveToWorld(ServerWorld destination);
-
-    @Shadow
-    public abstract void resetNetherPortalCooldown();
-
-    @Shadow
-    protected abstract void tickNetherPortalCooldown();
 
     @Shadow
     protected BlockPos lastNetherPortalPosition;
@@ -140,7 +131,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
     @Unique
     private long vmp$locateIndex = 0;
 
-    @Inject(method = "tickNetherPortal", at = @At("HEAD"))
+    @Inject(method = "tickPortal", at = @At("HEAD"))
     private void onTickNetherPortal(CallbackInfo ci) {
         if (this.world.isClient) return;
         //noinspection ConstantConditions
@@ -202,7 +193,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
         }
     }
 
-    @Redirect(method = "tickNetherPortal", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getMaxNetherPortalTime()I"))
+    @Redirect(method = "tickPortal", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getMaxNetherPortalTime()I"))
     private int redirectMaxPortalTime(Entity instance) {
         if (instance instanceof ServerPlayerEntity) {
             return (vmp$locatePortalFuture != null && vmp$locatePortalFuture.isDone()) ? instance.getMaxNetherPortalTime() : Integer.MAX_VALUE;
