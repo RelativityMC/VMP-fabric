@@ -151,6 +151,7 @@ public class NearbyEntityTracking {
                     }
                 }
             }
+            this.pooledHashSets.release(triedPlayers);
 
             ((EntityTrackerExtension) entityTracker).tryTick();
         }
