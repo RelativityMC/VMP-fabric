@@ -1,8 +1,10 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups;
 
 import com.ishland.vmp.common.playerwatching.EntityTrackerExtension;
+import com.ishland.vmp.mixins.access.IEntityTrackerEntry;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.EntityTrackingListener;
@@ -72,6 +74,16 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     public void tryTick() {
         if (!this.listeners.isEmpty()) {
             this.entry.tick();
+        } else if (this.entity instanceof ServerPlayerEntity player) {
+            // for some reasons mojang decides to sync entity data here, so we need to do it manually
+
+            if (this.entity.velocityModified) {
+                player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(this.entity));
+                this.entity.velocityModified = false;
+            }
+
+            ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
+
         }
     }
 }
