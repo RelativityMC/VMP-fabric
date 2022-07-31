@@ -88,6 +88,9 @@ public class NearbyEntityTracking {
     }
 
     public void updatePlayer(ServerPlayerEntity player) {
+        if (this.players2Location.containsKey(player)) {
+            if (this.players2Location.getLong(player) == player.getChunkPos().toLong()) return;
+        }
         this.removePlayerInternal(player, false);
         this.addPlayer(player);
     }
