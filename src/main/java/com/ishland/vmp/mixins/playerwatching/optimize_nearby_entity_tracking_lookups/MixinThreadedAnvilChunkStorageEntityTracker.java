@@ -2,7 +2,7 @@ package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lo
 
 import com.ishland.vmp.common.playerwatching.EntityTrackerExtension;
 import com.ishland.vmp.mixins.access.IEntityTrackerEntry;
-import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -16,6 +16,8 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.Set;
 
@@ -85,5 +87,10 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
             ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
 
         }
+    }
+
+    @Redirect(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/EntityTrackerEntry;getLastPos()Lnet/minecraft/util/math/Vec3d;"))
+    private Vec3d redirectLastPos(EntityTrackerEntry instance) {
+        return ((IEntityTrackerEntry) instance).getEntity().getPos();
     }
 }

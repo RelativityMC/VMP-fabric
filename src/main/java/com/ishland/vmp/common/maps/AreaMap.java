@@ -135,6 +135,10 @@ public class AreaMap<T> {
         validate(object, x, z, viewDistance);
     }
 
+    public int uniqueObjects() {
+        return this.lastCenters.size();
+    }
+
     private void updateAdds(T object, int oldX, int oldZ, int oldViewDistance, int newX, int newZ, int newViewDistance) {
         int xLower = oldX - oldViewDistance;
         int xHigher = oldX + oldViewDistance;

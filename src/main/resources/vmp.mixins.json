@@ -47,6 +47,7 @@
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinTACSCancelSendingKrypton",
     "playerwatching.MixinThreadedAnvilChunkStorage",
+    "playerwatching.optimize_nearby_entity_tracking_lookups.MixinServerPlayerEntity",
     "playerwatching.optimize_nearby_entity_tracking_lookups.MixinThreadedAnvilChunkStorage",
     "playerwatching.optimize_nearby_entity_tracking_lookups.MixinThreadedAnvilChunkStorageEntityTracker",
     "playerwatching.optimize_nearby_player_lookups.MixinMobEntity",
