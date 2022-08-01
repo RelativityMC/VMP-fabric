@@ -62,8 +62,7 @@ public class MixinThreadedAnvilChunkStorage {
         if (this.entityTrackers != instance) {
             return instance.values();
         } else {
-            this.nearbyEntityTracking.updatePlayer(player);
-            return Int2ObjectMaps.<T>emptyMap().values(); // nullify
+            return Int2ObjectMaps.<T>emptyMap().values(); // nullify, already handled in tick call
         }
     }
 
@@ -73,7 +72,11 @@ public class MixinThreadedAnvilChunkStorage {
      */
     @Overwrite
     public void tickEntityMovement() {
-        this.nearbyEntityTracking.tick();
+        try {
+            this.nearbyEntityTracking.tick();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
 }
