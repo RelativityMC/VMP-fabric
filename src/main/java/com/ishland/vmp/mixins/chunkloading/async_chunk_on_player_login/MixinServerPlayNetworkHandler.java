@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login;
 
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.IAsyncChunkPlayer;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
@@ -32,6 +33,8 @@ public abstract class MixinServerPlayNetworkHandler {
     @Shadow public abstract void onClientStatus(ClientStatusC2SPacket packet);
 
     @Shadow @Final private static Logger LOGGER;
+
+    @Shadow @Final public ClientConnection connection;
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updatePositionAndAngles(DDDFF)V"))
     private void suppressUpdatePositionDuringChunkLoad(ServerPlayerEntity instance, double x, double y, double z, float yaw, float pitch) {
@@ -68,6 +71,8 @@ public abstract class MixinServerPlayNetworkHandler {
             this.player.sendMessage(new LiteralText("Performing respawn..."), true);
             long startTime = System.nanoTime();
             AsyncChunkLoadUtil.scheduleChunkLoad(spawnPointWorld, pos).whenCompleteAsync((unused, throwable) -> {
+                if (!this.connection.isOpen()) return; // player disconnected, no need to continue
+
                 LOGGER.info("Async chunk loading for player {} completed", this.player.getName().getString());
                 this.isPerformingRespawn = false;
                 try {

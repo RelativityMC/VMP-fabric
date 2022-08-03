@@ -181,7 +181,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         } else {
                                             LOGGER.info("Portal not located for entity {} at {}", this, target);
                                             if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.of("Portal not located"), true);
+                                                player.sendMessage(Text.of("Portal not located, will spawn a new portal later"), true);
                                             }
                                         }
                                     }, destination.getServer())
@@ -193,6 +193,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     vmp$locatePortalFuture = null;
                     vmp$locateIndex++;
                     if (!done) {
+                        vmp$locatePortalFuture.cancel(false);
                         if ((Object) this instanceof ServerPlayerEntity player) {
                             player.sendMessage(Text.of("Portal location cancelled"), true);
                         }
@@ -212,8 +213,9 @@ public abstract class MixinEntity implements IEntityPortalInterface {
 
     @Inject(method = "getTeleportTarget", at = @At("HEAD"), cancellable = true)
     private void beforeGetTeleportTarget(ServerWorld destination, CallbackInfoReturnable<TeleportTarget> cir) {
-        if (this.vmp$locatePortalFuture != null && this.vmp$locatePortalFuture.isDone()) {
-            cir.setReturnValue(this.vmp$locatePortalFuture.join());
+        if (this.vmp$locatePortalFuture != null && this.vmp$locatePortalFuture.isDone() && !this.vmp$locatePortalFuture.isCompletedExceptionally()) {
+            final TeleportTarget value = this.vmp$locatePortalFuture.join();
+            if (value != null) cir.setReturnValue(value);
         }
     }
 
@@ -231,21 +233,21 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                 double d = DimensionType.getCoordinateScaleFactor(this.world.getDimension(), destination.getDimension());
                 BlockPos destPos = worldBorder.clamp(this.getX() * d, this.getY(), this.getZ() * d);
                 return this.getPortalRectAtAsync(destination, destPos, bl3, worldBorder)
-                        .thenComposeAsync((Optional<BlockLocating.Rectangle> optional) -> {
-                            if ((Object) this instanceof ServerPlayerEntity && optional.isEmpty()) {
-                                return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(destPos), 3)
-                                        .thenApply(unused1 -> {
-                                            Direction.Axis axis = this.world.getBlockState(this.lastNetherPortalPosition).getOrEmpty(NetherPortalBlock.AXIS).orElse(Direction.Axis.X);
-                                            Optional<BlockLocating.Rectangle> optional2 = destination.getPortalForcer().createPortal(destPos, axis);
-                                            if (!optional2.isPresent()) {
-                                                LOGGER.error("Unable to create a portal, likely target out of worldborder");
-                                            }
-                                            return optional2;
-                                        });
-                            } else {
-                                return CompletableFuture.completedFuture(optional);
-                            }
-                        }, destination.getServer())
+//                        .thenComposeAsync((Optional<BlockLocating.Rectangle> optional) -> {
+//                            if ((Object) this instanceof ServerPlayerEntity && optional.isEmpty()) {
+//                                return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(destPos), 3)
+//                                        .thenApply(unused1 -> {
+//                                            Direction.Axis axis = this.world.getBlockState(this.lastNetherPortalPosition).getOrEmpty(NetherPortalBlock.AXIS).orElse(Direction.Axis.X);
+//                                            Optional<BlockLocating.Rectangle> optional2 = destination.getPortalForcer().createPortal(destPos, axis);
+//                                            if (!optional2.isPresent()) {
+//                                                LOGGER.error("Unable to create a portal, likely target out of worldborder");
+//                                            }
+//                                            return optional2;
+//                                        });
+//                            } else {
+//                                return CompletableFuture.completedFuture(optional);
+//                            }
+//                        }, destination.getServer())
                         .thenComposeAsync(optional -> optional.map(rect ->
                                         AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(this.lastNetherPortalPosition), 3)
                                                 .thenComposeAsync(unused -> {
