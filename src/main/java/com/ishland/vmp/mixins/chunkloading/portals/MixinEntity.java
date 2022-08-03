@@ -181,10 +181,10 @@ public abstract class MixinEntity implements IEntityPortalInterface {
             } else {
                 if (vmp$locatePortalFuture != null) {
                     final boolean done = vmp$locatePortalFuture.isDone();
+                    vmp$locatePortalFuture.cancel(false);
                     vmp$locatePortalFuture = null;
                     vmp$locateIndex++;
                     if (!done) {
-                        vmp$locatePortalFuture.cancel(false);
                         if ((Object) this instanceof ServerPlayerEntity player) {
                             player.sendMessage(Text.literal("Portal location cancelled"), true);
                         }
