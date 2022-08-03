@@ -220,6 +220,7 @@ public abstract class MixinSpreadPlayersCommand {
         List<CompletableFuture<Void>> futures = new ArrayList<>(piles.length);
 
         for (Entity entity : entities) {
+            if (!entity.isAlive()) continue;
             SpreadPlayersCommand.Pile pile;
             if (respectTeams) {
                 AbstractTeam abstractTeam = entity instanceof PlayerEntity ? entity.getScoreboardTeam() : null;

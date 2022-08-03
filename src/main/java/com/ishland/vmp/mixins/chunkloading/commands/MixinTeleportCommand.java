@@ -51,6 +51,7 @@ public abstract class MixinTeleportCommand {
             int successCount = 0;
             Entity last = null;
             for (Entity entity : targets) {
+                if (!entity.isAlive()) continue;
                 try {
                     teleport(
                             source,
@@ -139,6 +140,7 @@ public abstract class MixinTeleportCommand {
             Entity last = null;
 
             for (Entity entity : targets) {
+                if (!entity.isAlive()) continue;
                 try {
                     if (rotation == null) {
                         teleport(source, entity, world, vec3d.x, vec3d.y, vec3d.z, set, entity.getYaw(), entity.getPitch(), facingLocation);
