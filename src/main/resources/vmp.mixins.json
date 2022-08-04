@@ -29,8 +29,6 @@
     "chunkloading.portals.MixinEntity",
     "chunksending.MixinThreadedAnvilChunkStorage",
     "chunksending.c2me_notickvd_compat.MixinNoTickChunkSendingInterceptor",
-    "entity.item.MixinEntity",
-    "entity.item.MixinItemEntity",
     "entity.iteration.MixinEntityTrackingSection",
     "entity.move_zero_velocity.MixinEntity",
     "entitytracker.MixinThreadedAnvilChunkStorage",
