@@ -16,6 +16,7 @@ public class Config {
     public static final boolean USE_PACKET_PRIORITY_SYSTEM;
     public static final boolean USE_ASYNC_LOGGING;
     public static final boolean USE_OPTIMIZED_ENTITY_TRACKING;
+    public static final boolean USE_MULTIPLE_NETTY_EVENT_LOOPS;
 
     static {
         final Properties properties = new Properties();
@@ -31,6 +32,7 @@ public class Config {
         USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, "use_packet_priority_system", true);
         USE_ASYNC_LOGGING = getBoolean(properties, "use_async_logging", true);
         USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, "use_optimized_entity_tracking", true);
+        USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, "experimental0_use_multiple_netty_event_loops", false);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(out, "Configuration file for VMP");
         } catch (IOException e) {

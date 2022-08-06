@@ -31,6 +31,8 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
             return PlayerChunkSendingSystem.ENABLED;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups"))
             return Config.USE_OPTIMIZED_ENTITY_TRACKING;
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.eventloops."))
+            return Config.USE_MULTIPLE_NETTY_EVENT_LOOPS;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login"))
             return !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         if (mixinClassName.equals("com.ishland.vmp.mixins.playerwatching.MixinTACSCancelSendingKrypton"))
