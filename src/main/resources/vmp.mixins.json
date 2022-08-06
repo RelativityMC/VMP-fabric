@@ -39,6 +39,8 @@
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
+    "networking.eventloops.MixinClientConnection",
+    "networking.eventloops.MixinServerNetworkIo",
     "networking.priority.MixinClientConnection1",
     "networking.priority.MixinServerNetworkIo1",
     "networking.priority.sync.MixinPlayerManager",
