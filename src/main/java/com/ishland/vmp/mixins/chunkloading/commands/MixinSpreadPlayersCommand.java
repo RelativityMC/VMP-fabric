@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins.chunkloading.commands;
 
 import com.google.common.collect.Maps;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
+import com.ishland.vmp.mixins.access.IServerCommandSource;
 import com.ishland.vmp.mixins.access.ISpreadPlayersCommandPile;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
@@ -9,9 +10,12 @@ import com.mojang.brigadier.exceptions.Dynamic4CommandExceptionType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
+import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.command.SpreadPlayersCommand;
+import net.minecraft.server.rcon.RconCommandOutput;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
@@ -24,6 +28,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,14 +76,17 @@ public abstract class MixinSpreadPlayersCommand {
     @Final
     private static Dynamic4CommandExceptionType FAILED_ENTITIES_EXCEPTION;
 
-    /**
-     * @author ishland
-     * @reason async
-     */
-    @Overwrite
-    private static int execute(
-            ServerCommandSource source, Vec2f center, float spreadDistance, float maxRange, int maxY, boolean respectTeams, Collection<? extends Entity> players
+    @Inject(method = "execute", at = @At("HEAD"), cancellable = true)
+    private static void execute(
+            ServerCommandSource source, Vec2f center, float spreadDistance, float maxRange, int maxY, boolean respectTeams, Collection<? extends Entity> players,
+            CallbackInfoReturnable<Integer> cir
     ) throws CommandSyntaxException {
+        final CommandOutput output = ((IServerCommandSource) source).getOutput();
+        if (!(output instanceof PlayerEntity) && !(output instanceof MinecraftServer) && !(output instanceof RconCommandOutput)) {
+            return;
+        }
+        cir.cancel();
+        cir.setReturnValue(0);
         ServerWorld serverWorld = source.getWorld();
         int i = serverWorld.getBottomY();
         if (maxY < i) {
@@ -101,7 +111,7 @@ public abstract class MixinSpreadPlayersCommand {
                         t.printStackTrace();
                     });
                 }
-                double h = getMinDistance(players, serverWorld, piles, maxY, respectTeams);
+                double h = vmp$getMinDistance(players, serverWorld, piles, maxY, respectTeams);
                 source.getServer().execute(() -> {
                     source.sendFeedback(
                             new TranslatableText(
@@ -111,7 +121,7 @@ public abstract class MixinSpreadPlayersCommand {
                     );
                 });
             });
-            return piles.length;
+            cir.setReturnValue(piles.length);
         }
     }
 
@@ -211,7 +221,8 @@ public abstract class MixinSpreadPlayersCommand {
         }
     }
 
-    private static double getMinDistance(
+    @Unique
+    private static double vmp$getMinDistance(
             Collection<? extends Entity> entities, ServerWorld world, SpreadPlayersCommand.Pile[] piles, int maxY, boolean respectTeams
     ) {
         double d = 0.0;
