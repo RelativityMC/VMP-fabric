@@ -45,6 +45,7 @@
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
     "networking.eventloops.MixinClientConnection",
     "networking.eventloops.MixinServerNetworkIo",
+    "networking.no_flush.MixinClientConnection",
     "networking.priority.MixinClientConnection1",
     "networking.priority.MixinServerNetworkIo1",
     "networking.priority.sync.MixinPlayerManager",
