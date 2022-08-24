@@ -19,10 +19,13 @@ For the best performance it is recommended to use VMP with [Lithium](https://mod
 
 **Server-side game logic performance improvements:**  
 - Uses area maps to optimize nearby packet sending and player lookups
-- Uses cache to optimize entity trackers, fluid state lookups and ingredient matching
+- Uses cache to optimize entity trackers, fluid state lookups, ingredient matching and biome lookup
+- Optimizes natural spawning with caches and other tricks to reduce the amount of work done
+- Optimizes entity tracking with area maps
 - Optimizes entity iteration for collisions
 - Optimizes ticket propagator using MCUtil from the Paper project (patch licensed under MIT)
 - Makes initial chunk loading async on player login
+- Makes several commands run async **only when issued by a player**
 
 **Client-side game logic performance improvements:**  
 - Makes time source to use built-in Java time source instead of GLFW via JNI calls
@@ -32,6 +35,7 @@ For the best performance it is recommended to use VMP with [Lithium](https://mod
 - Adds packet-level per-player render distance
 - Makes vanilla tcp connections more responsive using packet priority from raknetify  
   (works best when the server is connected **without reverse proxies such as velocity and ssh port forwarding**)
+- Mitigates several kinds of bot attacks with split event loops and optimizations
 
 **Other improvements:**
 - Uses AsyncAppender to improve logging performance and keep logging IO off main thread
