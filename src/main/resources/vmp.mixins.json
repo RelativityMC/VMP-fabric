@@ -43,6 +43,7 @@
     "general.ingredient_matching.MixinIngredient",
     "general.no_locking.MixinPalettedContainer",
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
+    "networking.avoid_deadlocks.MixinClientConnection",
     "networking.eventloops.MixinClientConnection",
     "networking.eventloops.MixinServerNetworkIo",
     "networking.no_flush.MixinClientConnection",
