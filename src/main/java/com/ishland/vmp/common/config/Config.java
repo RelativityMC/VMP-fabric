@@ -32,7 +32,7 @@ public class Config {
         USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, "use_packet_priority_system", true);
         USE_ASYNC_LOGGING = getBoolean(properties, "use_async_logging", true);
         USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, "use_optimized_entity_tracking", true);
-        USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, "experimental0_use_multiple_netty_event_loops", false);
+        USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, "use_multiple_netty_event_loops", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             properties.store(out, "Configuration file for VMP");
         } catch (IOException e) {
