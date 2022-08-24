@@ -39,6 +39,8 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
             return !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         if (mixinClassName.equals("com.ishland.vmp.mixins.playerwatching.MixinTACSCancelSendingKrypton"))
             return FabricLoader.getInstance().isModLoaded("krypton");
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.avoid_deadlocks"))
+            return !FabricLoader.getInstance().isModLoaded("raknetify");
         return true;
     }
 
