@@ -126,7 +126,7 @@ public abstract class MixinChunkTicketManager {
         while(objectIterator.hasNext()) {
             Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>> entry = objectIterator.next();
             if (entry.getValue().removeIf(predicate)) {
-                this.distanceFromTicketTracker.updateLevel(entry.getLongKey(), getLevel(entry.getValue()), false); // modified
+                this.updateTicketLevel(entry.getLongKey(), getLevel(entry.getValue())); // modified
             }
 
             if (entry.getValue().isEmpty()) {
