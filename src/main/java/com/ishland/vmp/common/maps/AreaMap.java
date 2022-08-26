@@ -268,6 +268,13 @@ public class AreaMap<T> {
         }
 
         @Override
+        protected void rehash(int newN) {
+            if (newN > n) { // don't shrink automatically
+                super.rehash(newN);
+            }
+        }
+
+        @Override
         public boolean addAll(int index, @NotNull Collection<? extends E> c) {
             throw new UnsupportedOperationException();
         }
