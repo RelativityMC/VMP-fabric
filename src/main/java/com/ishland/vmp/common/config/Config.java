@@ -19,6 +19,7 @@ public class Config {
     public static final boolean USE_MULTIPLE_NETTY_EVENT_LOOPS;
     public static final boolean USE_ASYNC_PORTALS;
     public static final boolean USE_ASYNC_CHUNKS_ON_LOGIN;
+    public static final boolean PRECACHE_BIOME_LOOKUP;
 
     static {
         final Properties properties = new Properties();
@@ -38,6 +39,7 @@ public class Config {
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
         USE_ASYNC_PORTALS = getBoolean(properties, newProperties, "use_async_portals", true);
         USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", true);
+        PRECACHE_BIOME_LOOKUP = getBoolean(properties, newProperties, "precache_biome_lookup", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             newProperties.store(out, "Configuration file for VMP");
         } catch (IOException e) {
