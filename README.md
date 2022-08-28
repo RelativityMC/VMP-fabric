@@ -11,7 +11,7 @@ A Fabric mod designed to improve server performance at high playercounts.
 ## So what is VMP? 
 Very Many Players, or VMP for short, is a Fabric mod designed to improve general server performance at high playercount 
 **without sacrificing vanilla functionality or behavior**.  
-For the best performance it is recommended to use VMP with [Lithium](https://modrinth.com/mod/lithium).
+For the best performance it is recommended to use VMP along with [Lithium](https://modrinth.com/mod/lithium).
 
 ## How VMP achieves its performance improvements?
 
@@ -20,7 +20,7 @@ For the best performance it is recommended to use VMP with [Lithium](https://mod
 **Server-side game logic performance improvements:**  
 - Uses area maps to optimize nearby packet sending and player lookups
 - Uses cache to optimize entity trackers, fluid state lookups, ingredient matching and biome lookup
-- Optimizes natural spawning with caches and other tricks to reduce the amount of work done
+- Optimizes natural spawning with caches and other tricks
 - Optimizes entity tracking with area maps
 - Optimizes entity iteration for collisions
 - Optimizes ticket propagator using MCUtil from the Paper project (patch licensed under MIT)
@@ -34,21 +34,22 @@ For the best performance it is recommended to use VMP with [Lithium](https://mod
 - Uses our own chunk sending mechanism (optionally with packet-level rate-limiting)
 - Adds packet-level per-player render distance
 - Makes vanilla tcp connections more responsive using packet priority from raknetify  
-  (works best when the server is connected **without reverse proxies such as velocity and ssh port forwarding**)
+  (works best when the server is connected **without reverse proxies such as Velocity and SSH port forwarding**)
 - Mitigates several kinds of bot attacks with split event loops and optimizations
 
 **Other improvements:**
-- Uses AsyncAppender to improve logging performance and keep logging IO off main thread
+- Uses AsyncAppender to improve logging performance and keep logging IO off the main thread
 
 **... and more**
 
 ## Support
-Our issue tracker: [link](https://github.com/RelativityMC/VMP-fabric/issues)  
-Our discord server: [link](https://discord.gg/Kdy8NM5HW4)
+[Issue tracker](https://github.com/RelativityMC/VMP-fabric/issues)  
+[Discord server](https://discord.gg/Kdy8NM5HW4)
 
 ## Building and setting up
-JDK 17+ is required to build and use VMP  
-Run the following commands in the root directory:
+_Requires Java 17 or later, both to build it and to use it._  
+Use Git to clone this repository, **do NOT download zip**  
+Run the following commands in the project directory:
 
 ```shell
 ./gradlew clean build
