@@ -37,6 +37,8 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
             return Config.USE_ASYNC_PORTALS;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.general.cache_ops.biome."))
             return Config.PRECACHE_BIOME_LOOKUP;
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.priority."))
+            return Config.USE_PACKET_PRIORITY_SYSTEM;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login"))
             return Config.USE_ASYNC_CHUNKS_ON_LOGIN && !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         if (mixinClassName.equals("com.ishland.vmp.mixins.playerwatching.MixinTACSCancelSendingKrypton"))

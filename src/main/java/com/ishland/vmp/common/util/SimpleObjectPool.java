@@ -13,7 +13,7 @@ public class SimpleObjectPool<T> {
     private final Consumer<T> onRecycle;
     private final int size;
 
-    private final Object[] cachedObjects;
+    private Object[] cachedObjects = null;
     private int allocatedCount = 0;
 
     public SimpleObjectPool(Function<SimpleObjectPool<T>, T> constructor, Consumer<T> initializer, Consumer<T> onRecycle, int size) {
@@ -21,18 +21,24 @@ public class SimpleObjectPool<T> {
         this.initializer = Objects.requireNonNull(initializer);
         this.onRecycle = Objects.requireNonNull(onRecycle);
         Preconditions.checkArgument(size > 0);
-        this.cachedObjects = new Object[size];
         this.size = size;
+    }
 
-        for (int i = 0; i < size; i++) {
-            final T object = constructor.apply(this);
-            this.cachedObjects[i] = object;
+    private void init() {
+        if (this.cachedObjects == null) {
+            this.cachedObjects = new Object[this.size];
+
+            for (int i = 0; i < size; i++) {
+                final T object = this.constructor.apply(this);
+                this.cachedObjects[i] = object;
+            }
         }
     }
 
     public T alloc() {
         final T object;
         synchronized (this) {
+            init();
             if (this.allocatedCount >= this.size) { // oversized, falling back to normal alloc
                 object = this.constructor.apply(this);
                 return object;
@@ -51,6 +57,7 @@ public class SimpleObjectPool<T> {
 
     public void release(T object) {
         synchronized (this) {
+            init();
             if (this.allocatedCount == 0) return; // pool is full
 
             this.onRecycle.accept(object);
