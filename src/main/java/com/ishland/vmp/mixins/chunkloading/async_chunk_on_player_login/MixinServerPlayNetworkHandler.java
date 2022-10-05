@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login;
 
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.IAsyncChunkPlayer;
+import com.ishland.vmp.common.config.Config;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket;
 import net.minecraft.server.MinecraftServer;
@@ -67,12 +68,16 @@ public abstract class MixinServerPlayNetworkHandler {
             BlockPos spawnPointPosition = this.player.getSpawnPointPosition();
             spawnPointPosition = spawnPointPosition != null ? spawnPointPosition : spawnPointWorld.getSpawnPos();
             final ChunkPos pos = new ChunkPos(spawnPointPosition);
-            this.player.sendMessage(Text.literal("Performing respawn..."), true);
+            if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
+                this.player.sendMessage(Text.literal("Performing respawn..."), true);
+            }
             long startTime = System.nanoTime();
             AsyncChunkLoadUtil.scheduleChunkLoad(spawnPointWorld, pos).whenCompleteAsync((unused, throwable) -> {
                 if (!this.connection.isOpen()) return; // player disconnected, no need to continue
 
-                LOGGER.info("Async chunk loading for player {} completed", this.player.getName().getString());
+                if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
+                    LOGGER.info("Async chunk loading for player {} completed", this.player.getName().getString());
+                }
                 this.isPerformingRespawn = false;
                 try {
                     AsyncChunkLoadUtil.setIsRespawnChunkLoadFinished(true);
@@ -80,7 +85,9 @@ public abstract class MixinServerPlayNetworkHandler {
                 } finally {
                     AsyncChunkLoadUtil.setIsRespawnChunkLoadFinished(false);
                 }
-                this.player.sendMessage(Text.literal("Respawn finished after %.1fms".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
+                if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
+                    this.player.sendMessage(Text.literal("Respawn finished after %.1fms".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
+                }
             }, runnable -> server.send(new ServerTask(0, runnable)));
         }
     }

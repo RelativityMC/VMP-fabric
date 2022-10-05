@@ -4,6 +4,7 @@ import com.ibm.asyncutil.iteration.AsyncIterator;
 import com.ishland.vmp.common.chunkloading.IEntityPortalInterface;
 import com.ishland.vmp.common.chunkloading.IPOIAsyncPreload;
 import com.ishland.vmp.common.chunkloading.async_chunks_on_player_login.AsyncChunkLoadUtil;
+import com.ishland.vmp.common.config.Config;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.NetherPortalBlock;
@@ -143,7 +144,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     ServerWorld destination = minecraftServer.getWorld(registryKey);
                     long currentLocateIndex = ++vmp$locateIndex;
                     long startTime = System.nanoTime();
-                    if ((Object) this instanceof ServerPlayerEntity player) {
+                    if (Config.SHOW_ASYNC_LOADING_MESSAGES && (Object) this instanceof ServerPlayerEntity player) {
                         player.sendMessage(Text.literal("Locating portal destination..."), true);
                     }
                     vmp$lastLocateFuture = vmp$locatePortalFuture =
@@ -160,19 +161,23 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         if (currentLocateIndex != vmp$locateIndex) return;
                                         if (throwable != null) {
                                             LOGGER.error("Error occurred for entity {} while locating portal", this, throwable);
-                                            if ((Object) this instanceof ServerPlayerEntity player) {
+                                            if (Config.SHOW_ASYNC_LOADING_MESSAGES && (Object) this instanceof ServerPlayerEntity player) {
                                                 player.sendMessage(Text.literal("Error occurred while locating portal"), true);
                                             }
                                         } else if (target != null) {
-                                            LOGGER.info("Portal located for entity {} at {}", this, target);
-                                            final BlockPos blockPos = new BlockPos(target.position);
-                                            if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
+                                            if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
+                                                LOGGER.info("Portal located for entity {} at {}", this, target);
+                                                final BlockPos blockPos = new BlockPos(target.position);
+                                                if ((Object) this instanceof ServerPlayerEntity player) {
+                                                    player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
+                                                }
                                             }
                                         } else {
-                                            LOGGER.info("Portal not located for entity {} at {}", this, target);
-                                            if ((Object) this instanceof ServerPlayerEntity player) {
-                                                player.sendMessage(Text.literal("Portal not located, will spawn a new portal later"), true);
+                                            if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
+                                                LOGGER.info("Portal not located for entity {} at {}", this, target);
+                                                if ((Object) this instanceof ServerPlayerEntity player) {
+                                                    player.sendMessage(Text.literal("Portal not located, will spawn a new portal later"), true);
+                                                }
                                             }
                                         }
                                     }, destination.getServer())
@@ -185,7 +190,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     vmp$locatePortalFuture = null;
                     vmp$locateIndex++;
                     if (!done) {
-                        if ((Object) this instanceof ServerPlayerEntity player) {
+                        if (Config.SHOW_ASYNC_LOADING_MESSAGES && (Object) this instanceof ServerPlayerEntity player) {
                             player.sendMessage(Text.literal("Portal location cancelled"), true);
                         }
                     }
