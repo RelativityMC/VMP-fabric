@@ -396,7 +396,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             this.chunkCenterX = packet.getChunkX();
             this.chunkCenterZ = packet.getChunkZ();
             ensureChunkInVD(ctx);
-        } else if ((!ctx.channel().isWritable() || this.queue.size() > 16) && ChunkUpdateQueue.chunkUpdatePackets.containsKey(msg.getClass())) {
+        } else if (Config.USE_PACKET_PRIORITY_SYSTEM_BLOCK_UPDATE_CONSOLIDATION && ChunkUpdateQueue.chunkUpdatePackets.containsKey(msg.getClass())) {
             this.chunkUpdateQueues.computeIfAbsent(ChunkUpdateQueue.chunkUpdatePackets.get(msg.getClass()).apply(msg).toLong(), pos -> chunkUpdateQueueSimpleObjectPool.alloc().submitChunk(new ChunkPos(pos)))
                     .consumePacket(ReferenceCountUtil.retain(msg), promise);
             return true;
