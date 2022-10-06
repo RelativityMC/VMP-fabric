@@ -36,7 +36,7 @@ public class Config {
         }
         TARGET_CHUNK_SEND_RATE = getInt(properties, newProperties, "target_chunk_send_rate", -1);
         USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, newProperties, "use_packet_priority_system", true);
-        USE_PACKET_PRIORITY_SYSTEM_BLOCK_UPDATE_CONSOLIDATION = getBoolean(properties, newProperties, "use_packet_priority_system_block_update_consolidation", true);
+        USE_PACKET_PRIORITY_SYSTEM_BLOCK_UPDATE_CONSOLIDATION = getBoolean(properties, newProperties, "exp_use_packet_priority_system_block_update_consolidation", false);
         USE_ASYNC_LOGGING = getBoolean(properties, newProperties, "use_async_logging", true);
         USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, newProperties, "use_optimized_entity_tracking", true);
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
