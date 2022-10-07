@@ -20,6 +20,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -110,57 +111,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         private record SimplePendingPacket(Object packet, ChannelPromise promise) {
         }
 
-        private class ChunkUpdateDummyPacket implements PendingPacket {
-
-            private long orderIndex;
-
-            public ChunkUpdateDummyPacket() {
-                refresh();
-            }
-
-            private void refresh() {
-                this.orderIndex = currentOrderIndex ++;
-            }
-
-            @Override
-            public Object msg() {
-                return null;
-            }
-
-            @Override
-            public void dispatch(ChannelHandlerContext ctx) {
-                final PendingPacket packet = producePacket(ctx);
-                if (packet != null) {
-                    queue.add(this);
-                    refresh();
-                    packet.dispatch(ctx);
-                } else {
-                    // no packet to send, the lifetime ends
-                    final boolean success = chunkUpdateQueues.remove(chunkPos.toLong(), ChunkUpdateQueue.this);
-                    if (!success) {
-                        // something is wrong, crash now
-                        throw new IllegalStateException("Failed to update chunk update queue");
-                    }
-                    chunkUpdateQueueSimpleObjectPool.release(ChunkUpdateQueue.this);
-                }
-            }
-
-            @Override
-            public void release() {
-
-            }
-
-            @Override
-            public long orderIndex() {
-                return orderIndex;
-            }
-
-            @Override
-            public int priority() {
-                return 6;
-            }
-        }
-
         private final Int2ReferenceLinkedOpenHashMap<PacketPriorityHandler.SectionUpdateQueue> sectionQueues = new Int2ReferenceLinkedOpenHashMap<>();
         private final Object2ObjectLinkedOpenHashMap<Class<?>, SimplePendingPacket> sequencedQueuedPackets = new Object2ObjectLinkedOpenHashMap<>();
         private final ObjectArrayList<SimplePendingPacket> queuedPackets = new ObjectArrayList<>();
@@ -170,14 +120,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         public ChunkUpdateQueue submitChunk(ChunkPos chunkPos) {
             Preconditions.checkState(this.chunkPos == null);
             this.chunkPos = chunkPos;
-            trySubmit();
             return this;
-        }
-
-        public void trySubmit() {
-            Preconditions.checkState(this.chunkPos != null);
-            if (!actuallySentChunks.contains(this.chunkPos.toLong())) return;
-            queue.add(new ChunkUpdateDummyPacket());
         }
 
         public void consumePacket(Object msg, ChannelPromise promise) {
@@ -376,14 +319,17 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private boolean shouldDropPacketEarly(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (msg instanceof ChunkDataS2CPacket packet) {
             if (isInRange(packet.getX(), packet.getZ())) {
-                sentChunkPacketHashes.put(ChunkPos.toLong(packet.getX(), packet.getZ()), System.identityHashCode(packet));
+                final long pos = ChunkPos.toLong(packet.getX(), packet.getZ());
+                sentChunkPacketHashes.put(pos, System.identityHashCode(packet));
+                clearChunkUpdateQueue(pos);
             } else {
                 System.err.println("Not sending chunk [%d, %d] as it is not in view distance".formatted(packet.getX(), packet.getZ()));
             }
         } else if (msg instanceof UnloadChunkS2CPacket packet) {
-            final long key = ChunkPos.toLong(packet.getX(), packet.getZ());
-            sentChunkPacketHashes.remove(key);
-            actuallySentChunks.remove(key);
+            final long pos = ChunkPos.toLong(packet.getX(), packet.getZ());
+            sentChunkPacketHashes.remove(pos);
+            actuallySentChunks.remove(pos);
+            clearChunkUpdateQueue(pos);
         } else if (msg instanceof GameJoinS2CPacket packet) {
             int lastViewDistance = this.serverViewDistance;
             this.serverViewDistance = packet.viewDistance() + 1;
@@ -397,11 +343,22 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             this.chunkCenterZ = packet.getChunkZ();
             ensureChunkInVD(ctx);
         } else if (Config.USE_PACKET_PRIORITY_SYSTEM_BLOCK_UPDATE_CONSOLIDATION && ChunkUpdateQueue.chunkUpdatePackets.containsKey(msg.getClass())) {
-            this.chunkUpdateQueues.computeIfAbsent(ChunkUpdateQueue.chunkUpdatePackets.get(msg.getClass()).apply(msg).toLong(), pos -> chunkUpdateQueueSimpleObjectPool.alloc().submitChunk(new ChunkPos(pos)))
-                    .consumePacket(ReferenceCountUtil.retain(msg), promise);
-            return true;
+            final ChunkPos chunkPos = ChunkUpdateQueue.chunkUpdatePackets.get(msg.getClass()).apply(msg);
+            if (sentChunkPacketHashes.containsKey(chunkPos.toLong())) {
+                this.chunkUpdateQueues.computeIfAbsent(chunkPos.toLong(), pos -> chunkUpdateQueueSimpleObjectPool.alloc().submitChunk(new ChunkPos(pos)))
+                        .consumePacket(ReferenceCountUtil.retain(msg), promise);
+                return true;
+            }
         }
         return false;
+    }
+
+    private void clearChunkUpdateQueue(long pos) {
+        if (chunkUpdateQueues.containsKey(pos)) {
+            final ChunkUpdateQueue chunkUpdateQueue = chunkUpdateQueues.get(pos);
+            chunkUpdateQueue.clear();
+            chunkUpdateQueueSimpleObjectPool.release(chunkUpdateQueue);
+        }
     }
 
     private boolean shouldDropPacket(Object msg) {
@@ -414,9 +371,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             if (hash != System.identityHashCode(packet))
                 return true; // there is a newer packet containing the same chunk data, dropping
             actuallySentChunks.add(coord);
-            if (this.chunkUpdateQueues.containsKey(coord)) {
-                this.chunkUpdateQueues.get(coord).trySubmit();
-            }
         }
 //        else if (msg instanceof UnloadChunkS2CPacket packet) {
 //            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
@@ -437,6 +391,8 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             if (!isInRange(x, z)) {
                 iterator.remove();
                 ctx.write(new UnloadChunkS2CPacket(x, z));
+                actuallySentChunks.remove(entry.getLongKey());
+                clearChunkUpdateQueue(entry.getLongKey());
             }
         }
     }
@@ -453,7 +409,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             sendBuffer = (int) (DEFAULT_SNDBUF * 2 + ctx.channel().bytesBeforeWritable());
         }
         ctx.channel().config().setOption(ChannelOption.SO_SNDBUF, sendBuffer);
-        if (!ctx.channel().isWritable()) ctx.flush();
+        ctx.flush();
     }
 
     @Override
@@ -488,6 +444,13 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt == SYNC_REQUEST_OBJECT) {
             this.isEnabled = false;
+            for (Long2ObjectMap.Entry<ChunkUpdateQueue> entry : this.chunkUpdateQueues.long2ObjectEntrySet()) {
+                entry.getValue().clear();
+                chunkUpdateQueueSimpleObjectPool.release(entry.getValue());
+            }
+            this.actuallySentChunks.clear();
+            this.sentChunkPacketHashes.clear();
+
             ObjectArrayList<PendingPacket> retainedPackets = new ObjectArrayList<>(this.queue.size() / 12);
             PendingPacket pendingPacket;
             while ((pendingPacket = this.queue.poll()) != null) {
@@ -520,15 +483,42 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private void tryFlushPackets(ChannelHandlerContext ctx, boolean ignoreWritability) {
         PendingPacket pendingPacket;
-        while ((ignoreWritability || writesAllowed(ctx)) && (pendingPacket = this.queue.poll()) != null) {
-            final Object msg = pendingPacket.msg();
-            if (shouldDropPacket(msg)) {
-                pendingPacket.release();
-            } else {
-                pendingPacket.dispatch(ctx);
+        while ((ignoreWritability || writesAllowed(ctx)) && (pendingPacket = this.queue.peek()) != null) {
+            final boolean flushedBlockUpdates = pendingPacket.orderIndex() > 6 && tryFlushBlockUpdates(ctx, ignoreWritability);
+            if (!flushedBlockUpdates) {
+                this.queue.poll();
+                final Object msg = pendingPacket.msg();
+                if (shouldDropPacket(msg)) {
+                    pendingPacket.release();
+                } else {
+                    pendingPacket.dispatch(ctx);
+                }
             }
         }
         ctx.flush();
+    }
+
+    private boolean tryFlushBlockUpdates(ChannelHandlerContext ctx, boolean ignoreWritability) {
+        final ObjectBidirectionalIterator<Long2ObjectMap.Entry<ChunkUpdateQueue>> iterator = this.chunkUpdateQueues.long2ObjectEntrySet().fastIterator();
+        boolean hasWork = false;
+        while ((ignoreWritability || writesAllowed(ctx)) && iterator.hasNext()) {
+            final Long2ObjectMap.Entry<ChunkUpdateQueue> entry = iterator.next();
+            final ChunkUpdateQueue queue = entry.getValue();
+            final PendingPacket pendingPacket = queue.producePacket(ctx);
+            if (pendingPacket == null) { // nothing in queue
+                iterator.remove();
+                chunkUpdateQueueSimpleObjectPool.release(queue);
+            } else {
+                final Object msg = pendingPacket.msg();
+                if (shouldDropPacket(msg)) {
+                    pendingPacket.release();
+                } else {
+                    pendingPacket.dispatch(ctx);
+                    hasWork = true;
+                }
+            }
+        }
+        return hasWork;
     }
 
     @Override
