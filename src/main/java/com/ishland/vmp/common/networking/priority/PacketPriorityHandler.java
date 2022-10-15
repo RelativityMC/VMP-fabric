@@ -45,9 +45,11 @@ import net.minecraft.network.packet.s2c.play.ChunkLoadDistanceS2CPacket;
 import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameJoinS2CPacket;
 import net.minecraft.network.packet.s2c.play.LightUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRespawnS2CPacket;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket;
 import net.minecraft.network.packet.s2c.play.WorldEventS2CPacket;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -76,6 +78,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     }
 
     public static final Object SYNC_REQUEST_OBJECT = new Object();
+    public static final Object SYNC_REQUEST_OBJECT_DIM_CHANGE = new Object();
     public static final Object START_PRIORITY = new Object();
 
     private class ChunkUpdateQueue {
@@ -315,9 +318,23 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     private int serverViewDistance = 3;
     private int chunkCenterX = 0;
     private int chunkCenterZ = 0;
+    private Identifier dimension = null;
 
-    private boolean shouldDropPacketEarly(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
-        if (msg instanceof ChunkDataS2CPacket packet) {
+    private boolean shouldDropPacketEarly(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        if (msg instanceof PlayerRespawnS2CPacket packet) {
+            final Identifier changedDimension = packet.getDimension().getValue();
+            if (changedDimension.equals(this.dimension)) {
+                this.userEventTriggered(ctx, SYNC_REQUEST_OBJECT);
+            } else {
+                this.dimension = changedDimension;
+                this.userEventTriggered(ctx, SYNC_REQUEST_OBJECT_DIM_CHANGE);
+            }
+        } else if (msg instanceof GameJoinS2CPacket packet) {
+            this.dimension = packet.dimensionId().getValue();
+            int lastViewDistance = this.serverViewDistance;
+            this.serverViewDistance = packet.viewDistance() + 1;
+            if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
+        } else if (msg instanceof ChunkDataS2CPacket packet) {
             if (isInRange(packet.getX(), packet.getZ())) {
                 final long pos = ChunkPos.toLong(packet.getX(), packet.getZ());
                 sentChunkPacketHashes.put(pos, System.identityHashCode(packet));
@@ -330,10 +347,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             sentChunkPacketHashes.remove(pos);
             actuallySentChunks.remove(pos);
             clearChunkUpdateQueue(pos);
-        } else if (msg instanceof GameJoinS2CPacket packet) {
-            int lastViewDistance = this.serverViewDistance;
-            this.serverViewDistance = packet.viewDistance() + 1;
-            if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
         } else if (msg instanceof ChunkLoadDistanceS2CPacket packet) {
             int lastViewDistance = this.serverViewDistance;
             this.serverViewDistance = packet.getDistance() + 1;
@@ -442,14 +455,17 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt == SYNC_REQUEST_OBJECT) {
+        if (evt == SYNC_REQUEST_OBJECT || evt == SYNC_REQUEST_OBJECT_DIM_CHANGE) {
             this.isEnabled = false;
-            for (Long2ObjectMap.Entry<ChunkUpdateQueue> entry : this.chunkUpdateQueues.long2ObjectEntrySet()) {
-                entry.getValue().clear();
-                chunkUpdateQueueSimpleObjectPool.release(entry.getValue());
+
+            if (evt == SYNC_REQUEST_OBJECT_DIM_CHANGE) {
+                for (Long2ObjectMap.Entry<ChunkUpdateQueue> entry : this.chunkUpdateQueues.long2ObjectEntrySet()) {
+                    entry.getValue().clear();
+                    chunkUpdateQueueSimpleObjectPool.release(entry.getValue());
+                }
+                this.actuallySentChunks.clear();
+                this.sentChunkPacketHashes.clear();
             }
-            this.actuallySentChunks.clear();
-            this.sentChunkPacketHashes.clear();
 
             ObjectArrayList<PendingPacket> retainedPackets = new ObjectArrayList<>(this.queue.size() / 12);
             PendingPacket pendingPacket;
@@ -458,7 +474,6 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                     retainedPackets.add(pendingPacket);
             }
             this.queue.addAll(retainedPackets);
-            this.sentChunkPacketHashes.clear();
             System.out.println("VMP: Stopped priority handler, retained %d packets".formatted(retainedPackets.size()));
             tryFlushPackets(ctx, true);
         } else if (evt == START_PRIORITY) {
@@ -483,6 +498,9 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private void tryFlushPackets(ChannelHandlerContext ctx, boolean ignoreWritability) {
         PendingPacket pendingPacket;
+        if (queue.isEmpty()) {
+            tryFlushBlockUpdates(ctx, ignoreWritability);
+        }
         while ((ignoreWritability || writesAllowed(ctx)) && (pendingPacket = this.queue.peek()) != null) {
             final boolean flushedBlockUpdates = pendingPacket.orderIndex() > 6 && tryFlushBlockUpdates(ctx, ignoreWritability);
             if (!flushedBlockUpdates) {
