@@ -5,30 +5,26 @@ import com.ishland.vmp.common.networking.priority.PacketPriorityHandler;
 import com.ishland.vmp.mixins.access.IClientConnection;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.SocketChannel;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
+
 @Mixin(PlayerManager.class)
 public class MixinPlayerManager {
-
-    @Inject(method = "respawnPlayer", at = @At(value = "NEW", target = "net/minecraft/network/packet/s2c/play/PlayerRespawnS2CPacket", shift = At.Shift.BEFORE))
-    private void beforeMoveToAnotherWorld(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
-        final Channel channel = ((IClientConnection) player.networkHandler.connection).getChannel();
-        if (channel == null) {
-            //noinspection RedundantStringFormatCall
-            System.err.println("VMP: Warning: %s don't have valid channel when teleporting to another dimension, not sending sync packet".formatted(this));
-            return;
-        }
-        if (channel instanceof SocketChannel) {
-            channel.pipeline().fireUserEventTriggered(PacketPriorityHandler.SYNC_REQUEST_OBJECT);
-        }
-    }
 
     @Inject(method = "respawnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V", shift = At.Shift.AFTER))
     private void afterMoveToAnotherWorld(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {

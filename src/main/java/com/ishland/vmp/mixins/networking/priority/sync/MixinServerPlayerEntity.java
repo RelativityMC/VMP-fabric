@@ -20,37 +20,14 @@ public class MixinServerPlayerEntity {
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
 
-    @Inject(method = "teleport", at = @At(value = "NEW", target = "net/minecraft/network/packet/s2c/play/PlayerRespawnS2CPacket", shift = At.Shift.BEFORE))
-    private void beforeTeleportToAnotherDimension(CallbackInfo ci) {
-        vmp$doPrioritySync();
-    }
-
     @Inject(method = "teleport", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendPlayerStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", shift = At.Shift.AFTER))
     private void afterTeleportToAnotherDimension(CallbackInfo ci) {
         vmp$startPriorityHandler();
     }
 
-    @Inject(method = "moveToWorld", at = @At(value = "NEW", target = "net/minecraft/network/packet/s2c/play/PlayerRespawnS2CPacket", shift = At.Shift.BEFORE))
-    private void beforeMoveToAnotherWorld(CallbackInfoReturnable<Entity> cir) {
-        vmp$doPrioritySync();
-    }
-
     @Inject(method = "moveToWorld", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendPlayerStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", shift = At.Shift.AFTER))
     private void afterMoveToAnotherWorld(CallbackInfoReturnable<Entity> cir) {
         vmp$startPriorityHandler();
-    }
-
-    @Unique
-    private void vmp$doPrioritySync() {
-        final Channel channel = ((IClientConnection) this.networkHandler.connection).getChannel();
-        if (channel == null) {
-            //noinspection RedundantStringFormatCall
-            System.err.println("VMP: Warning: %s don't have valid channel when teleporting to another dimension, not sending sync packet".formatted(this));
-            return;
-        }
-        if (channel instanceof SocketChannel) {
-            channel.pipeline().fireUserEventTriggered(PacketPriorityHandler.SYNC_REQUEST_OBJECT);
-        }
     }
 
     private void vmp$startPriorityHandler() {
