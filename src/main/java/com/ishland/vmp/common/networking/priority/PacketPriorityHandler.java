@@ -399,13 +399,14 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         final ObjectIterator<Long2IntMap.Entry> iterator = this.sentChunkPacketHashes.long2IntEntrySet().fastIterator();
         while (iterator.hasNext()) {
             final Long2IntMap.Entry entry = iterator.next();
-            final int x = ChunkPos.getPackedX(entry.getLongKey());
-            final int z = ChunkPos.getPackedZ(entry.getLongKey());
+            final long pos = entry.getLongKey();
+            final int x = ChunkPos.getPackedX(pos);
+            final int z = ChunkPos.getPackedZ(pos);
             if (!isInRange(x, z)) {
                 iterator.remove();
                 ctx.write(new UnloadChunkS2CPacket(x, z));
-                actuallySentChunks.remove(entry.getLongKey());
-                clearChunkUpdateQueue(entry.getLongKey());
+                actuallySentChunks.remove(pos);
+                clearChunkUpdateQueue(pos);
             }
         }
     }
@@ -521,6 +522,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         boolean hasWork = false;
         while ((ignoreWritability || writesAllowed(ctx)) && iterator.hasNext()) {
             final Long2ObjectMap.Entry<ChunkUpdateQueue> entry = iterator.next();
+            if (!actuallySentChunks.contains(entry.getLongKey())) continue;
             final ChunkUpdateQueue queue = entry.getValue();
             final PendingPacket pendingPacket = queue.producePacket(ctx);
             if (pendingPacket == null) { // nothing in queue
