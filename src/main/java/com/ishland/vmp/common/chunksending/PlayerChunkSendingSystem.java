@@ -33,40 +33,9 @@ public class PlayerChunkSendingSystem {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("PlayerChunkSendingSystem");
 
-    public static final boolean ENABLED;
+    public static final boolean ENABLED = true;
 
     //    private static final int MAX_CONCURRENT_SENDS = 4;
-
-    static {
-        if (FabricLoader.getInstance().isModLoaded("c2me")) {
-            final VersionPredicate predicate;
-            try {
-                predicate = VersionPredicate.parse(">=0.2.0+alpha.5.11");
-            } catch (VersionParsingException e) {
-                throw new RuntimeException(e);
-            }
-            if (predicate.test(FabricLoader.getInstance().getModContainer("c2me").get().getMetadata().getVersion())) {
-                boolean isEnabled = true;
-                if (FabricLoader.getInstance().isModLoaded("c2me-notickvd")) {
-                    try {
-                        final Class<?> entryPoint = Class.forName("com.ishland.c2me.notickvd.ModuleEntryPoint");
-                        final Field enabledField = entryPoint.getDeclaredField("enabled");
-                        enabledField.setAccessible(true);
-                        isEnabled = (boolean) enabledField.get(null);
-                    } catch (Throwable t) {
-                    }
-                } else {
-                    isEnabled = false;
-                }
-                ENABLED = isEnabled;
-            } else {
-                LOGGER.warn("An old version of C2ME is detected, disabling chunk sender system rewrite");
-                ENABLED = false;
-            }
-        } else {
-            ENABLED = true;
-        }
-    }
 
     private final Reference2ReferenceLinkedOpenHashMap<ServerPlayerEntity, PlayerState> players = new Reference2ReferenceLinkedOpenHashMap<>();
     private final AreaMap<ServerPlayerEntity> areaMap = new AreaMap<>(
