@@ -368,7 +368,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private void clearChunkUpdateQueue(long pos) {
         if (chunkUpdateQueues.containsKey(pos)) {
-            final ChunkUpdateQueue chunkUpdateQueue = chunkUpdateQueues.get(pos);
+            final ChunkUpdateQueue chunkUpdateQueue = chunkUpdateQueues.remove(pos);
             chunkUpdateQueue.clear();
             chunkUpdateQueueSimpleObjectPool.release(chunkUpdateQueue);
         }
@@ -464,6 +464,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                     entry.getValue().clear();
                     chunkUpdateQueueSimpleObjectPool.release(entry.getValue());
                 }
+                this.chunkUpdateQueues.clear();
                 this.actuallySentChunks.clear();
                 this.sentChunkPacketHashes.clear();
             }
