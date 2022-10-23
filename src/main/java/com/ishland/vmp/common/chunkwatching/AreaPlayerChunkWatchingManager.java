@@ -1,6 +1,6 @@
 package com.ishland.vmp.common.chunkwatching;
 
-import com.ishland.vmp.common.chunksending.PlayerChunkSendingSystem;
+import com.ishland.vmp.common.chunk.sending.PlayerChunkSendingSystem;
 import com.ishland.vmp.common.maps.AreaMap;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
