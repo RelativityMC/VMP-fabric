@@ -1,6 +1,6 @@
 package com.ishland.vmp.mixins;
 
-import com.ishland.vmp.common.chunksending.PlayerChunkSendingSystem;
+import com.ishland.vmp.common.chunk.sending.PlayerChunkSendingSystem;
 import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.logging.AsyncAppenderBootstrap;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,19 +27,21 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.carpet."))
             return FabricLoader.getInstance().isModLoaded("carpet");
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunksending."))
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.sending."))
             return PlayerChunkSendingSystem.ENABLED;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups"))
             return Config.USE_OPTIMIZED_ENTITY_TRACKING;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.eventloops."))
             return Config.USE_MULTIPLE_NETTY_EVENT_LOOPS;
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunkloading.portals."))
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.portals."))
             return Config.USE_ASYNC_PORTALS;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.general.cache_ops.biome."))
             return Config.PRECACHE_BIOME_LOOKUP;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.priority."))
             return Config.USE_PACKET_PRIORITY_SYSTEM;
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunkloading.async_chunk_on_player_login"))
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.iteration."))
+            return Config.USE_OPTIMIZED_CHUNK_TICKING_ITERATION;
+        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.async_chunk_on_player_login"))
             return Config.USE_ASYNC_CHUNKS_ON_LOGIN && !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         if (mixinClassName.equals("com.ishland.vmp.mixins.playerwatching.MixinTACSCancelSendingKrypton"))
             return FabricLoader.getInstance().isModLoaded("krypton");
