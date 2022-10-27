@@ -19,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(targets = "carpet.patches.EntityPlayerMPFake")
 public abstract class MixinEntityPlayerMPFake extends ServerPlayerEntity {
 
-    public MixinEntityPlayerMPFake(MinecraftServer server, ServerWorld world, GameProfile profile, @Nullable PlayerPublicKey publicKey) {
-        super(server, world, profile, publicKey);
+    public MixinEntityPlayerMPFake(MinecraftServer server, ServerWorld world, GameProfile profile) {
+        super(server, world, profile);
     }
 
     @Unique private double vmp_lastX = Double.NaN;
