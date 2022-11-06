@@ -27,8 +27,8 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.dimension.AreaHelper;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.dimension.NetherPortal;
 import net.minecraft.world.poi.PointOfInterest;
 import net.minecraft.world.poi.PointOfInterestStorage;
 import net.minecraft.world.poi.PointOfInterestTypes;
@@ -261,7 +261,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                                     }
 
                                                     return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(rect.lowerLeft), 3)
-                                                            .thenApplyAsync(unused1 -> AreaHelper.getNetherTeleportTarget(
+                                                            .thenApplyAsync(unused1 -> NetherPortal.getNetherTeleportTarget(
                                                                             destination, rect, axis, vec3d, this.getDimensions(this.getPose()), this.getVelocity(), this.getYaw(), this.getPitch()),
                                                                     destination.getServer());
                                                 }, destination.getServer()))
