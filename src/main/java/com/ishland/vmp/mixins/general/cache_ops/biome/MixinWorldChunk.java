@@ -6,6 +6,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKeys;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.World;
@@ -49,7 +50,7 @@ public abstract class MixinWorldChunk extends Chunk implements PreloadingBiome {
             if (vmp$preloadBiomeFuture == null) {
                 vmp$preloadBiomeFuture = CompletableFuture.runAsync(() -> {
                     PalettedContainer<RegistryEntry<Biome>>[] preloadedBiome = new PalettedContainer[this.countVerticalSections()];
-                    final Registry<Biome> biomeRegistry = this.world.getRegistryManager().get(Registry.BIOME_KEY);
+                    final Registry<Biome> biomeRegistry = this.world.getRegistryManager().get(RegistryKeys.BIOME_WORLDGEN);
                     for (int y = 0; y < preloadedBiome.length; y++) {
                         preloadedBiome[y] = new PalettedContainer<>(
                                 biomeRegistry.getIndexedEntries(),

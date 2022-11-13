@@ -262,7 +262,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
 
                                                     return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(rect.lowerLeft), 3)
                                                             .thenApplyAsync(unused1 -> NetherPortal.getNetherTeleportTarget(
-                                                                            destination, rect, axis, vec3d, this.getDimensions(this.getPose()), this.getVelocity(), this.getYaw(), this.getPitch()),
+                                                                            destination, rect, axis, vec3d, (Entity) (Object) this, this.getVelocity(), this.getYaw(), this.getPitch()),
                                                                     destination.getServer());
                                                 }, destination.getServer()))
                                 .orElse(CompletableFuture.completedFuture(null)), destination.getServer());
