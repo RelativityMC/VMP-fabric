@@ -29,7 +29,7 @@ public class MixinThreadedAnvilChunkStorage {
                     new ChunkRegion(
                             (ServerWorld) worldChunk.getWorld(),
                             chunks,
-                            ChunkStatus.FULL,
+                            ChunkStatus.FEATURES,
                             0
                     )
             );
