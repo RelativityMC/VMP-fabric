@@ -1,6 +1,7 @@
 package com.ishland.vmp.mixins.general.collections;
 
 import com.ishland.vmp.common.general.collections.ITypeFilterableList;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.util.collection.TypeFilterableList;
@@ -37,7 +38,7 @@ public abstract class MixinTypeFilterableList<T> extends AbstractCollection<T> i
 
     @Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/util/collection/TypeFilterableList;elementsByType:Ljava/util/Map;", opcode = Opcodes.PUTFIELD))
     private void redirectSetElementsByType(TypeFilterableList<T> instance, Map<Class<?>, List<T>> value) {
-        this.elementsByType = new Object2ObjectOpenHashMap<>();
+        this.elementsByType = new Object2ObjectLinkedOpenHashMap<>();
     }
 
     @Redirect(method = "<init>", at = @At(value = "FIELD", target = "Lnet/minecraft/util/collection/TypeFilterableList;allElements:Ljava/util/List;", opcode = Opcodes.PUTFIELD))

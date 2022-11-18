@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinEntityTrackerEntry {
     @Shadow private int updatesWithoutVehicle;
 
-    @Shadow @Final private TrackedPosition field_39019;
+    @Shadow @Final private TrackedPosition trackedPos;
 
     @Shadow @Final private Entity entity;
 

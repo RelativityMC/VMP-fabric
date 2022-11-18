@@ -1,6 +1,6 @@
 package com.ishland.vmp.common.general.cache_ops.biome;
 
-import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.biome.Biome;
 
