@@ -37,6 +37,7 @@
     "entitytracker.MixinEntityTrackerEntry",
     "entitytracker.MixinThreadedAnvilChunkStorage",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
+    "general.cache_ops.biome.MixinFillBiomeCommand",
     "general.cache_ops.biome.MixinServerWorld",
     "general.cache_ops.biome.MixinThreadedAnvilChunkStorage",
     "general.cache_ops.biome.MixinWorldChunk",

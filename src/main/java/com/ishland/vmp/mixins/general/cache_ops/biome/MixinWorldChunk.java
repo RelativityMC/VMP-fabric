@@ -43,6 +43,8 @@ public abstract class MixinWorldChunk extends Chunk implements PreloadingBiome {
     private CompletableFuture<Void> vmp$preloadBiomeFuture = null;
     @Unique
     private PalettedContainer<RegistryEntry<Biome>>[] vmp$preloadedBiome = null; // y, xz(indexed)
+    @Unique
+    private boolean vmp$needBiomeReload = false;
 
     @Override
     public void vmp$tryPreloadBiome(ChunkRegion chunkRegion) {
@@ -69,6 +71,28 @@ public abstract class MixinWorldChunk extends Chunk implements PreloadingBiome {
                         }
                     }
                     this.vmp$preloadedBiome = preloadedBiome;
+                });
+            }
+        }
+    }
+
+    @Override
+    public void vmp$tryReloadBiome(ChunkRegion chunkRegion) {
+        synchronized (this) {
+            if (vmp$preloadBiomeFuture == null) {
+                vmp$tryPreloadBiome(chunkRegion);
+            } else if (vmp$preloadBiomeFuture.isDone()) {
+                this.vmp$preloadBiomeFuture = null;
+                vmp$tryPreloadBiome(chunkRegion);
+            } else {
+                this.vmp$needBiomeReload = true;
+                vmp$preloadBiomeFuture.thenRun(() -> {
+                    synchronized (this) {
+                        if (this.vmp$needBiomeReload) {
+                            this.vmp$needBiomeReload = false;
+                            vmp$tryPreloadBiome(chunkRegion);
+                        }
+                    }
                 });
             }
         }

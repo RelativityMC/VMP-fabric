@@ -8,6 +8,8 @@ public interface PreloadingBiome {
 
     void vmp$tryPreloadBiome(ChunkRegion chunkRegion);
 
+    void vmp$tryReloadBiome(ChunkRegion chunkRegion);
+
     RegistryEntry<Biome> vmp$getBiomeCached(int x, int y, int z);
 
 }
