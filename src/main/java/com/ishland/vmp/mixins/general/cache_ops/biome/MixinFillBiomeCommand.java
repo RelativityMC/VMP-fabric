@@ -25,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 @Mixin(FillBiomeCommand.class)
 public abstract class MixinFillBiomeCommand {
@@ -39,7 +40,7 @@ public abstract class MixinFillBiomeCommand {
     public static SimpleCommandExceptionType UNLOADED_EXCEPTION;
 
     @Inject(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/command/ServerCommandSource;sendFeedback(Lnet/minecraft/text/Text;Z)V"))
-    private static void scheduleRefreshBiome(ServerCommandSource source, BlockPos from, BlockPos to, RegistryEntry.Reference<Biome> biome, CallbackInfoReturnable<Integer> cir) {
+    private static void scheduleRefreshBiome(ServerCommandSource source, BlockPos from, BlockPos to, RegistryEntry.Reference<Biome> biome, Predicate<RegistryEntry<Biome>> filter, CallbackInfoReturnable<Integer> cir) {
         BlockPos blockPos = convertPos(from);
         BlockPos blockPos2 = convertPos(to);
         BlockBox blockBox = BlockBox.create(blockPos, blockPos2);

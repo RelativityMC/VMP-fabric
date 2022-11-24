@@ -52,7 +52,7 @@ public abstract class MixinWorldChunk extends Chunk implements PreloadingBiome {
             if (vmp$preloadBiomeFuture == null) {
                 vmp$preloadBiomeFuture = CompletableFuture.runAsync(() -> {
                     PalettedContainer<RegistryEntry<Biome>>[] preloadedBiome = new PalettedContainer[this.countVerticalSections()];
-                    final Registry<Biome> biomeRegistry = this.world.getRegistryManager().get(RegistryKeys.BIOME_WORLDGEN);
+                    final Registry<Biome> biomeRegistry = this.world.getRegistryManager().get(RegistryKeys.BIOME);
                     for (int y = 0; y < preloadedBiome.length; y++) {
                         preloadedBiome[y] = new PalettedContainer<>(
                                 biomeRegistry.getIndexedEntries(),

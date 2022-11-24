@@ -18,10 +18,10 @@ public class SpawnDensityCapperDensityCapDelegate {
             }
 
             @Override
-            public ObjectSet<Entry<SpawnGroup>> object2IntEntrySet() {
+            public ObjectSet<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<SpawnGroup>> object2IntEntrySet() {
                 return new AbstractObjectSet<>() {
                     @Override
-                    public ObjectIterator<Entry<SpawnGroup>> iterator() {
+                    public ObjectIterator<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<SpawnGroup>> iterator() {
                         return new AbstractObjectIterator<>() {
                             private int index = 0;
 
@@ -31,7 +31,7 @@ public class SpawnDensityCapperDensityCapDelegate {
                             }
 
                             @Override
-                            public Entry<SpawnGroup> next() {
+                            public it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<SpawnGroup> next() {
                                 final int index = this.index;
                                 this.index++;
                                 return new AbstractObject2IntMap.BasicEntry<>(
