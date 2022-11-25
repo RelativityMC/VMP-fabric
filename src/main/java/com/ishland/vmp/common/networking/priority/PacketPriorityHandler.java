@@ -441,13 +441,15 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
         }
         if (this.isEnabled) {
             if (writesAllowed(ctx) && this.queue.isEmpty()) {
-                ctx.write(msg, promise);
-            } else if (!shouldDropPacket(msg)) {
+                if (!shouldDropPacket(msg)) {
+                    ctx.write(msg, promise);
+                } else {
+                    ReferenceCountUtil.release(msg);
+                    promise.trySuccess();
+                }
+            } else {
                 this.queue.add(new PendingRawPacket(msg, promise, orderIndex,
                         RakNetMultiChannel.getPacketChannelOverride(msg.getClass())));
-            } else {
-                ReferenceCountUtil.release(msg);
-                promise.trySuccess();
             }
         } else {
             super.write(ctx, msg, promise);
