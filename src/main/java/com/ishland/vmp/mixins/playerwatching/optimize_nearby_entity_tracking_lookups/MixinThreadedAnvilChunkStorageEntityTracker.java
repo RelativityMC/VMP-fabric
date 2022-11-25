@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
+import java.util.List;
 import java.util.Set;
 
 @Mixin(ThreadedAnvilChunkStorage.EntityTracker.class)
@@ -76,16 +77,22 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     public void tryTick() {
         if (!this.listeners.isEmpty()) {
             this.entry.tick();
-        } else if (this.entity instanceof ServerPlayerEntity player) {
-            // for some reasons mojang decides to sync entity data here, so we need to do it manually
-
-            if (this.entity.velocityModified) {
-                player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(this.entity));
-                this.entity.velocityModified = false;
+        } else {
+            final List<Entity> currentPassegers = this.entity.getPassengerList();
+            if (!((IEntityTrackerEntry) this.entry).getLastPassengers().equals(currentPassegers)) {
+                ((IEntityTrackerEntry) this.entry).setLastPassengers(currentPassegers);
             }
 
-            ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
+            if (this.entity instanceof ServerPlayerEntity player) {
+                // for some reasons mojang decides to sync entity data here, so we need to do it manually
 
+                if (this.entity.velocityModified) {
+                    player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(this.entity));
+                    this.entity.velocityModified = false;
+                }
+
+                ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
+            }
         }
     }
 

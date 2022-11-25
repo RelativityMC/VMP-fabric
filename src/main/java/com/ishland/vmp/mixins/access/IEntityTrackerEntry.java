@@ -6,6 +6,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
+import java.util.List;
+
 @Mixin(EntityTrackerEntry.class)
 public interface IEntityTrackerEntry {
 
@@ -14,5 +16,11 @@ public interface IEntityTrackerEntry {
 
     @Accessor
     Entity getEntity();
+
+    @Accessor
+    List<Entity> getLastPassengers();
+
+    @Accessor
+    void setLastPassengers(List<Entity> lastPassengers);
 
 }
