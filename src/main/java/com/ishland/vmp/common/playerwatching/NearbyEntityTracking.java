@@ -12,6 +12,7 @@ import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
@@ -81,7 +82,7 @@ public class NearbyEntityTracking {
             }
         }
 
-        var trackerTickList = new ReferenceLinkedOpenHashSet<ThreadedAnvilChunkStorage.EntityTracker>(this.areaMap.uniqueObjects());
+        var trackerTickList = new ReferenceOpenHashSet<>(this.areaMap.uniqueObjects());
         for (var entry : this.playerTrackers.entrySet()) {
             final Set<ThreadedAnvilChunkStorage.EntityTracker> currentTrackers = this.areaMap.getObjectsInRange(entry.getKey().getChunkPos().toLong());
 
@@ -93,10 +94,12 @@ public class NearbyEntityTracking {
             for (ObjectListIterator<ThreadedAnvilChunkStorage.EntityTracker> iterator = trackers.iterator(); iterator.hasNext(); ) {
                 ThreadedAnvilChunkStorage.EntityTracker entityTracker = iterator.next();
                 if (currentTrackers.contains(entityTracker)) {
+                    if (trackerTickList.add(entityTracker)) {
+                        tryTickTracker(entityTracker);
+                    }
                     if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
                         tryUpdateTracker(entityTracker, entry.getKey());
                     }
-                    trackerTickList.add(entityTracker);
                 } else {
                     entityTracker.stopTracking(entry.getKey());
                     iterator.remove();
@@ -106,22 +109,25 @@ public class NearbyEntityTracking {
             // update new trackers
             for (ThreadedAnvilChunkStorage.EntityTracker entityTracker : currentTrackers) {
                 if (!trackers.contains(entityTracker)) {
+                    if (trackerTickList.add(entityTracker)) {
+                        tryTickTracker(entityTracker);
+                    }
                     if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
                         tryUpdateTracker(entityTracker, entry.getKey());
                     }
-                    trackerTickList.add(entityTracker);
                     trackers.add(entityTracker);
                 }
             }
-        }
-        for (ThreadedAnvilChunkStorage.EntityTracker entityTracker : trackerTickList) {
-            ((EntityTrackerExtension) entityTracker).tryTick();
-            ((EntityTrackerExtension) entityTracker).updatePosition();
         }
     }
 
     private static void tryUpdateTracker(ThreadedAnvilChunkStorage.EntityTracker entityTracker, ServerPlayerEntity player) {
         entityTracker.updateTrackedStatus(player);
+    }
+
+    private static void tryTickTracker(ThreadedAnvilChunkStorage.EntityTracker entityTracker) {
+        ((EntityTrackerExtension) entityTracker).tryTick();
+        ((EntityTrackerExtension) entityTracker).updatePosition();
     }
 
     private int getChunkViewDistance(ThreadedAnvilChunkStorage.EntityTracker tracker) {
