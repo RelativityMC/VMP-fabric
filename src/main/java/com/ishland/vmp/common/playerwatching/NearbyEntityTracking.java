@@ -94,10 +94,11 @@ public class NearbyEntityTracking {
             for (ObjectListIterator<ThreadedAnvilChunkStorage.EntityTracker> iterator = trackers.iterator(); iterator.hasNext(); ) {
                 ThreadedAnvilChunkStorage.EntityTracker entityTracker = iterator.next();
                 if (currentTrackers.contains(entityTracker)) {
+                    final boolean shouldUpdate = isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated();
                     if (trackerTickList.add(entityTracker)) {
                         tryTickTracker(entityTracker);
                     }
-                    if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
+                    if (shouldUpdate) {
                         tryUpdateTracker(entityTracker, entry.getKey());
                     }
                 } else {
@@ -109,10 +110,11 @@ public class NearbyEntityTracking {
             // update new trackers
             for (ThreadedAnvilChunkStorage.EntityTracker entityTracker : currentTrackers) {
                 if (!trackers.contains(entityTracker)) {
+                    final boolean shouldUpdate = isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated();
                     if (trackerTickList.add(entityTracker)) {
                         tryTickTracker(entityTracker);
                     }
-                    if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
+                    if (shouldUpdate) {
                         tryUpdateTracker(entityTracker, entry.getKey());
                     }
                     trackers.add(entityTracker);
