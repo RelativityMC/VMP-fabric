@@ -1,10 +1,10 @@
 plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'fabric-loom' version '1.0-SNAPSHOT'
 	id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
 	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '7.1.0'
 	id 'com.modrinth.minotaur' version '2.+'
-//	id 'com.matthewprenger.cursegradle' version '1.4.0' // TODO
+	id 'com.matthewprenger.cursegradle' version '1.4.0'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -153,28 +153,28 @@ modrinth {
 	changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
 }
 
-//if (System.getenv("CURSEFORGE_TOKEN")) {
-//	curseforge {
-//		apiKey = System.getenv("CURSEFORGE_TOKEN")
-//		project {
-//			id = '552542'
-//			changelogType = "markdown"
-//			changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
-//			releaseType = 'alpha'
-//
-//			addGameVersion project.minecraft_version
-//			addGameVersion "Fabric"
-//			addGameVersion "Java 17"
-//
-//			mainArtifact(remapShadowJar) {
-//				displayName = project.version + " devbuild for " + project.minecraft_version
-//			}
-//		}
-//		options {
-//			forgeGradleIntegration = false
-//		}
-//	}
-//}
+if (System.getenv("CURSEFORGE_TOKEN")) {
+	curseforge {
+		apiKey = System.getenv("CURSEFORGE_TOKEN")
+		project {
+			id = '552542'
+			changelogType = "markdown"
+			changelog = com.ishland.vmp.buildscript.ParseGItHubActionChangelog.getChangelog()
+			releaseType = 'alpha'
+
+			addGameVersion project.minecraft_version
+			addGameVersion "Fabric"
+			addGameVersion "Java 17"
+
+			mainArtifact(remapShadowJar) {
+				displayName = project.version + " devbuild for " + project.minecraft_version
+			}
+		}
+		options {
+			forgeGradleIntegration = false
+		}
+	}
+}
 
 String getVersionSuffix() {
 	def stdout = new ByteArrayOutputStream()
