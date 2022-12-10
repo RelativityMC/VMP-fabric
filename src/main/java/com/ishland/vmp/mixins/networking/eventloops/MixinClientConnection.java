@@ -48,10 +48,10 @@ public class MixinClientConnection {
         ChannelPromise promise = this.channel.newPromise();
         this.channel.config().setAutoRead(false);
         isReregistering = true;
-        System.out.println("Deregistering " + this.channel);
+//        System.out.println("Deregistering " + this.channel);
         this.channel.deregister().addListener(future -> {
             if (future.isSuccess()) {
-                System.out.println("Reregistering " + this.channel);
+//                System.out.println("Reregistering " + this.channel);
                 group.register(promise);
             } else {
                 promise.setFailure(new RuntimeException("Failed to deregister channel", future.cause()));
@@ -60,7 +60,7 @@ public class MixinClientConnection {
         promise.addListener(future -> {
             isReregistering = false;
             if (future.isSuccess()) {
-                System.out.println("Reregistered " + this.channel);
+//                System.out.println("Reregistered " + this.channel);
                 this.channel.config().setAutoRead(true);
             } else {
                 this.channel.pipeline().fireExceptionCaught(future.cause());
