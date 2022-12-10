@@ -9,6 +9,7 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
@@ -22,22 +23,7 @@ public class MixinClientConnection {
         if (this.channel.config() == instance) {
             final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state);
             if (group != null) {
-                ChannelPromise promise = this.channel.newPromise();
-                this.channel.config().setAutoRead(false);
-                this.channel.deregister().addListener(future -> {
-                    if (future.isSuccess()) {
-                        group.register(promise);
-                    } else {
-                        promise.setFailure(new RuntimeException("Failed to deregister channel", future.cause()));
-                    }
-                });
-                promise.addListener(future -> {
-                    if (future.isSuccess()) {
-                        this.channel.config().setAutoRead(true);
-                    } else {
-                        this.channel.pipeline().fireExceptionCaught(future.cause());
-                    }
-                });
+                reregister(group);
                 return instance;
             } else {
                 return instance.setAutoRead(b);
@@ -45,6 +31,45 @@ public class MixinClientConnection {
         } else {
             return instance.setAutoRead(b);
         }
+    }
+
+    @Unique
+    private boolean isReregistering = false;
+
+    @Unique
+    private EventLoopGroup pendingReregistration = null;
+
+    private synchronized void reregister(EventLoopGroup group) {
+        if (isReregistering) {
+            pendingReregistration = group;
+            return;
+        }
+
+        ChannelPromise promise = this.channel.newPromise();
+        this.channel.config().setAutoRead(false);
+        isReregistering = true;
+        System.out.println("Deregistering " + this.channel);
+        this.channel.deregister().addListener(future -> {
+            if (future.isSuccess()) {
+                System.out.println("Reregistering " + this.channel);
+                group.register(promise);
+            } else {
+                promise.setFailure(new RuntimeException("Failed to deregister channel", future.cause()));
+            }
+        });
+        promise.addListener(future -> {
+            isReregistering = false;
+            if (future.isSuccess()) {
+                System.out.println("Reregistered " + this.channel);
+                this.channel.config().setAutoRead(true);
+            } else {
+                this.channel.pipeline().fireExceptionCaught(future.cause());
+            }
+            if (pendingReregistration != null) {
+                reregister(pendingReregistration);
+                pendingReregistration = null;
+            }
+        });
     }
 
 }
