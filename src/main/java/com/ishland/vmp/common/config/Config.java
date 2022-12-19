@@ -36,7 +36,7 @@ public class Config {
             }
         }
         TARGET_CHUNK_SEND_RATE = getInt(properties, newProperties, "target_chunk_send_rate", -1);
-        USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, newProperties, "use_packet_priority_system", true);
+        USE_PACKET_PRIORITY_SYSTEM = getBoolean(properties, newProperties, "exp3_use_packet_priority_system", false);
         USE_PACKET_PRIORITY_SYSTEM_BLOCK_UPDATE_CONSOLIDATION = getBoolean(properties, newProperties, "exp_use_packet_priority_system_block_update_consolidation", false);
         USE_OPTIMIZED_CHUNK_TICKING_ITERATION = getBoolean(properties, newProperties, "exp_use_optimized_chunk_ticking_iteration", false);
         USE_ASYNC_LOGGING = getBoolean(properties, newProperties, "use_async_logging", true);
