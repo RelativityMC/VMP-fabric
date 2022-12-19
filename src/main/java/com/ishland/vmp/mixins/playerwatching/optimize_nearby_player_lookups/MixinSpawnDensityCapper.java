@@ -3,6 +3,7 @@ package com.ishland.vmp.mixins.playerwatching.optimize_nearby_player_lookups;
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -19,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 @Mixin(value = SpawnDensityCapper.class, priority = 950)
@@ -35,13 +35,13 @@ public abstract class MixinSpawnDensityCapper {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(CallbackInfo info) {
-        this.playersToDensityCap = new Object2ReferenceOpenHashMap<>();
+        this.playersToDensityCap = new Reference2ReferenceOpenHashMap<>();
     }
 
     @Unique
-    private Set<ServerPlayerEntity> getMobSpawnablePlayersSet(ChunkPos chunkPos) {
+    private Object[] getMobSpawnablePlayersArray(ChunkPos chunkPos) {
         final AreaPlayerChunkWatchingManager manager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) this.threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
-        return manager.getPlayersWatchingChunk(chunkPos.toLong());
+        return manager.getPlayersWatchingChunkArray(chunkPos.toLong());
     }
 
     /**
@@ -50,8 +50,10 @@ public abstract class MixinSpawnDensityCapper {
      */
     @Overwrite
     public void increaseDensity(ChunkPos chunkPos, SpawnGroup spawnGroup) {
-        for(ServerPlayerEntity serverPlayerEntity : this.getMobSpawnablePlayersSet(chunkPos)) {
-            this.playersToDensityCap.computeIfAbsent(serverPlayerEntity, newDensityCap).increaseDensity(spawnGroup);
+        for(Object _player : this.getMobSpawnablePlayersArray(chunkPos)) {
+            if (_player instanceof ServerPlayerEntity serverPlayerEntity) {
+                this.playersToDensityCap.computeIfAbsent(serverPlayerEntity, newDensityCap).increaseDensity(spawnGroup);
+            }
         }
     }
 
@@ -61,10 +63,12 @@ public abstract class MixinSpawnDensityCapper {
      */
     @Overwrite
     public boolean canSpawn(SpawnGroup spawnGroup, ChunkPos chunkPos) {
-        for(ServerPlayerEntity serverPlayerEntity : this.getMobSpawnablePlayersSet(chunkPos)) {
-            SpawnDensityCapper.DensityCap densityCap = this.playersToDensityCap.get(serverPlayerEntity);
-            if (densityCap == null || densityCap.canSpawn(spawnGroup)) {
-                return true;
+        for(Object _player : this.getMobSpawnablePlayersArray(chunkPos)) {
+            if (_player instanceof ServerPlayerEntity serverPlayerEntity) {
+                SpawnDensityCapper.DensityCap densityCap = this.playersToDensityCap.get(serverPlayerEntity);
+                if (densityCap == null || densityCap.canSpawn(spawnGroup)) {
+                    return true;
+                }
             }
         }
 
