@@ -491,6 +491,8 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
     @Override
     public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
         super.channelWritabilityChanged(ctx);
+        if (!ctx.channel().isOpen()) return;
+
         adjustSendBuffer(ctx);
         if (ctx.channel().isWritable()) tryFlushPackets(ctx, false);
     }
