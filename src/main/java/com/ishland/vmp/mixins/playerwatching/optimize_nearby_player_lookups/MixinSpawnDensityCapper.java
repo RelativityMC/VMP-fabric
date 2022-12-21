@@ -2,7 +2,6 @@ package com.ishland.vmp.mixins.playerwatching.optimize_nearby_player_lookups;
 
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
-import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -41,7 +40,13 @@ public abstract class MixinSpawnDensityCapper {
     @Unique
     private Object[] getMobSpawnablePlayersArray(ChunkPos chunkPos) {
         final AreaPlayerChunkWatchingManager manager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) this.threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
-        return manager.getPlayersWatchingChunkArray(chunkPos.toLong());
+        return manager.getPlayersInGeneralAreaMap(chunkPos.toLong());
+    }
+
+    private static double sqrDistance(double x1, double y1, double x2, double y2) {
+        final double dx = x1 - x2;
+        final double dy = y1 - y2;
+        return dx * dx + dy * dy;
     }
 
     /**
@@ -50,9 +55,11 @@ public abstract class MixinSpawnDensityCapper {
      */
     @Overwrite
     public void increaseDensity(ChunkPos chunkPos, SpawnGroup spawnGroup) {
+        final double centerX = chunkPos.getCenterX();
+        final double centerZ = chunkPos.getCenterZ();
         for(Object _player : this.getMobSpawnablePlayersArray(chunkPos)) {
-            if (_player instanceof ServerPlayerEntity serverPlayerEntity) {
-                this.playersToDensityCap.computeIfAbsent(serverPlayerEntity, newDensityCap).increaseDensity(spawnGroup);
+            if (_player instanceof ServerPlayerEntity player && !player.isSpectator() && sqrDistance(centerX, centerZ, player.getX(), player.getZ()) <= 16384.0D) {
+                this.playersToDensityCap.computeIfAbsent(player, newDensityCap).increaseDensity(spawnGroup);
             }
         }
     }
@@ -63,9 +70,11 @@ public abstract class MixinSpawnDensityCapper {
      */
     @Overwrite
     public boolean canSpawn(SpawnGroup spawnGroup, ChunkPos chunkPos) {
+        final double centerX = chunkPos.getCenterX();
+        final double centerZ = chunkPos.getCenterZ();
         for(Object _player : this.getMobSpawnablePlayersArray(chunkPos)) {
-            if (_player instanceof ServerPlayerEntity serverPlayerEntity) {
-                SpawnDensityCapper.DensityCap densityCap = this.playersToDensityCap.get(serverPlayerEntity);
+            if (_player instanceof ServerPlayerEntity player && !player.isSpectator() && sqrDistance(centerX, centerZ, player.getX(), player.getZ()) <= 16384.0D) {
+                SpawnDensityCapper.DensityCap densityCap = this.playersToDensityCap.get(player);
                 if (densityCap == null || densityCap.canSpawn(spawnGroup)) {
                     return true;
                 }
