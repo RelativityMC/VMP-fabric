@@ -34,6 +34,7 @@
     "chunk.sending.MixinThreadedAnvilChunkStorage",
     "chunk.sending.c2me_notickvd_compat.MixinNoTickChunkSendingInterceptor",
     "entity.iteration.MixinEntityTrackingSection",
+    "chunk.ticking.MixinServerWorld",
     "entity.move_zero_velocity.MixinEntity",
     "entitytracker.MixinEntityTrackerEntry",
     "entitytracker.MixinThreadedAnvilChunkStorage",
