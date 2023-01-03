@@ -44,7 +44,7 @@ public class Config {
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
         USE_ASYNC_PORTALS = getBoolean(properties, newProperties, "use_async_portals", true);
         USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", true);
-        PRECACHE_BIOME_LOOKUP = getBoolean(properties, newProperties, "precache_biome_lookup", true);
+        PRECACHE_BIOME_LOOKUP = getBoolean(properties, newProperties, "deprecated_precache_biome_lookup", false);
         SHOW_ASYNC_LOADING_MESSAGES = getBoolean(properties, newProperties, "show_async_loading_messages", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
             newProperties.store(out, "Configuration file for VMP");
