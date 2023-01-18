@@ -1,8 +1,8 @@
 package com.ishland.vmp.mixins.networking.priority.sync;
 
-import com.ishland.raknetify.fabric.common.connection.RakNetFabricMultiChannelCodec;
 import com.ishland.vmp.common.networking.priority.PacketPriorityHandler;
 import com.ishland.vmp.mixins.access.IClientConnection;
+import com.ishland.vmp.mixins.access.IServerPlayNetworkHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.SocketChannel;
 import net.minecraft.entity.player.PlayerEntity;
@@ -28,7 +28,7 @@ public class MixinPlayerManager {
 
     @Inject(method = "respawnPlayer", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;onSpawn()V", shift = At.Shift.AFTER))
     private void afterMoveToAnotherWorld(ServerPlayerEntity player, boolean alive, CallbackInfoReturnable<ServerPlayerEntity> cir) {
-        final Channel channel = ((IClientConnection) player.networkHandler.connection).getChannel();
+        final Channel channel = ((IClientConnection) ((IServerPlayNetworkHandler) player.networkHandler).getConnection()).getChannel();
         if (channel == null) {
             //noinspection RedundantStringFormatCall
             System.err.println("VMP: Warning: %s don't have valid channel when teleporting to another dimension, not starting priority handling".formatted(this));
