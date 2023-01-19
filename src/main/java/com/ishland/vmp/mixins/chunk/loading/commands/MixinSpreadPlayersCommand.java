@@ -31,11 +31,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -248,7 +244,7 @@ public abstract class MixinSpreadPlayersCommand {
                     CompletableFuture.supplyAsync(() -> AsyncChunkLoadUtil.scheduleChunkLoad(world, pos), world.getServer())
                             .thenCompose(Function.identity())
                             .whenCompleteAsync((unused, throwable) -> {
-                                entity.teleport(Math.floor(((ISpreadPlayersCommandPile) pile).getX()) + 0.5, pile.getY(world, maxY), Math.floor(((ISpreadPlayersCommandPile) pile).getZ()) + 0.5);
+                                entity.method_48105(world, Math.floor(((ISpreadPlayersCommandPile) pile).getX()) + 0.5, pile.getY(world, maxY), Math.floor(((ISpreadPlayersCommandPile) pile).getZ()) + 0.5, Set.of(), entity.getYaw(), entity.getPitch());
                             }, world.getServer())
                             .exceptionally(throwable -> null)
                             .thenRun(() -> {

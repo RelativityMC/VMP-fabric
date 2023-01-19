@@ -30,6 +30,7 @@
     "chunk.loading.async_chunk_on_player_login.MixinServerPlayNetworkHandler",
     "chunk.loading.commands.MixinCommandFunctionManager",
     "chunk.loading.commands.MixinSpreadPlayersCommand",
+    "chunk.loading.commands.MixinTeleportCommand",
     "chunk.loading.portals.MixinEntity",
     "chunk.sending.MixinThreadedAnvilChunkStorage",
     "chunk.sending.c2me_notickvd_compat.MixinNoTickChunkSendingInterceptor",

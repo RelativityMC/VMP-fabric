@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.s2c.play.Flag;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
@@ -32,13 +33,12 @@ import java.util.Set;
 public abstract class MixinTeleportCommand {
 
     @Shadow
-    protected static void teleport(ServerCommandSource source, Entity target, ServerWorld world, double x, double y, double z, Set<PlayerPositionLookS2CPacket.Flag> movementFlags, float yaw, float pitch, TeleportCommand.@Nullable LookTarget facingLocation) throws CommandSyntaxException {
+    protected static String formatFloat(double d) {
         throw new AbstractMethodError();
     }
 
     @Shadow
-    protected static String formatFloat(double d) {
-        throw new AbstractMethodError();
+    protected static void teleport(ServerCommandSource source, Entity target, ServerWorld world, double x, double y, double z, Set<Flag> movementFlags, float yaw, float pitch, TeleportCommand.@Nullable LookTarget facingLocation) throws CommandSyntaxException {
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class MixinTeleportCommand {
                             destination.getX(),
                             destination.getY(),
                             destination.getZ(),
-                            EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class),
+                            EnumSet.noneOf(Flag.class),
                             destination.getYaw(),
                             destination.getPitch(),
                             null
@@ -109,29 +109,29 @@ public abstract class MixinTeleportCommand {
     ) throws CommandSyntaxException {
         Vec3d vec3d = location.toAbsolutePos(source);
         Vec2f vec2f = rotation == null ? null : rotation.toAbsoluteRotation(source);
-        Set<PlayerPositionLookS2CPacket.Flag> set = EnumSet.noneOf(PlayerPositionLookS2CPacket.Flag.class);
+        Set<Flag> set = EnumSet.noneOf(Flag.class);
         if (location.isXRelative()) {
-            set.add(PlayerPositionLookS2CPacket.Flag.X);
+            set.add(Flag.X);
         }
 
         if (location.isYRelative()) {
-            set.add(PlayerPositionLookS2CPacket.Flag.Y);
+            set.add(Flag.Y);
         }
 
         if (location.isZRelative()) {
-            set.add(PlayerPositionLookS2CPacket.Flag.Z);
+            set.add(Flag.Z);
         }
 
         if (rotation == null) {
-            set.add(PlayerPositionLookS2CPacket.Flag.X_ROT);
-            set.add(PlayerPositionLookS2CPacket.Flag.Y_ROT);
+            set.add(Flag.X_ROT);
+            set.add(Flag.Y_ROT);
         } else {
             if (rotation.isXRelative()) {
-                set.add(PlayerPositionLookS2CPacket.Flag.X_ROT);
+                set.add(Flag.X_ROT);
             }
 
             if (rotation.isYRelative()) {
-                set.add(PlayerPositionLookS2CPacket.Flag.Y_ROT);
+                set.add(Flag.Y_ROT);
             }
         }
 
