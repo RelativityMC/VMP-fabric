@@ -40,6 +40,7 @@
     "entitytracker.MixinThreadedAnvilChunkStorage",
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.biome_access.MixinBiomeAccess",
+    "general.biome_access.fast_chunk_access.MixinWorldView",
     "general.cache_ops.biome.MixinServerWorld",
     "general.cache_ops.biome.MixinThreadedAnvilChunkStorage",
     "general.cache_ops.biome.MixinWorldChunk",
