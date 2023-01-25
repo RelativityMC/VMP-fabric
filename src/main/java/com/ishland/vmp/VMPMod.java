@@ -7,8 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.Packet;
-
+import net.minecraft.network.packet.Packet;
 import java.util.Map;
 
 public class VMPMod implements ModInitializer {

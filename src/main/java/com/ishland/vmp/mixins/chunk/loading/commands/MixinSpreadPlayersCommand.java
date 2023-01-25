@@ -244,7 +244,7 @@ public abstract class MixinSpreadPlayersCommand {
                     CompletableFuture.supplyAsync(() -> AsyncChunkLoadUtil.scheduleChunkLoad(world, pos), world.getServer())
                             .thenCompose(Function.identity())
                             .whenCompleteAsync((unused, throwable) -> {
-                                entity.method_48105(world, Math.floor(((ISpreadPlayersCommandPile) pile).getX()) + 0.5, pile.getY(world, maxY), Math.floor(((ISpreadPlayersCommandPile) pile).getZ()) + 0.5, Set.of(), entity.getYaw(), entity.getPitch());
+                                entity.teleport(world, Math.floor(((ISpreadPlayersCommandPile) pile).getX()) + 0.5, pile.getY(world, maxY), Math.floor(((ISpreadPlayersCommandPile) pile).getZ()) + 0.5, Set.of(), entity.getYaw(), entity.getPitch());
                             }, world.getServer())
                             .exceptionally(throwable -> null)
                             .thenRun(() -> {

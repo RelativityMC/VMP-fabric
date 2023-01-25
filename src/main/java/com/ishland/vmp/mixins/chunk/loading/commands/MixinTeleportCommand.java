@@ -6,8 +6,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.command.argument.PosArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.Flag;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
 import net.minecraft.server.command.ServerCommandSource;
@@ -38,7 +38,7 @@ public abstract class MixinTeleportCommand {
     }
 
     @Shadow
-    protected static void teleport(ServerCommandSource source, Entity target, ServerWorld world, double x, double y, double z, Set<Flag> movementFlags, float yaw, float pitch, TeleportCommand.@Nullable LookTarget facingLocation) throws CommandSyntaxException {
+    protected static void teleport(ServerCommandSource source, Entity target, ServerWorld world, double x, double y, double z, Set<PositionFlag> movementFlags, float yaw, float pitch, TeleportCommand.@Nullable LookTarget facingLocation) throws CommandSyntaxException {
     }
 
     /**
@@ -60,7 +60,7 @@ public abstract class MixinTeleportCommand {
                             destination.getX(),
                             destination.getY(),
                             destination.getZ(),
-                            EnumSet.noneOf(Flag.class),
+                            EnumSet.noneOf(PositionFlag.class),
                             destination.getYaw(),
                             destination.getPitch(),
                             null
@@ -109,29 +109,29 @@ public abstract class MixinTeleportCommand {
     ) throws CommandSyntaxException {
         Vec3d vec3d = location.toAbsolutePos(source);
         Vec2f vec2f = rotation == null ? null : rotation.toAbsoluteRotation(source);
-        Set<Flag> set = EnumSet.noneOf(Flag.class);
+        Set<PositionFlag> set = EnumSet.noneOf(PositionFlag.class);
         if (location.isXRelative()) {
-            set.add(Flag.X);
+            set.add(PositionFlag.X);
         }
 
         if (location.isYRelative()) {
-            set.add(Flag.Y);
+            set.add(PositionFlag.Y);
         }
 
         if (location.isZRelative()) {
-            set.add(Flag.Z);
+            set.add(PositionFlag.Z);
         }
 
         if (rotation == null) {
-            set.add(Flag.X_ROT);
-            set.add(Flag.Y_ROT);
+            set.add(PositionFlag.X_ROT);
+            set.add(PositionFlag.Y_ROT);
         } else {
             if (rotation.isXRelative()) {
-                set.add(Flag.X_ROT);
+                set.add(PositionFlag.X_ROT);
             }
 
             if (rotation.isYRelative()) {
-                set.add(Flag.Y_ROT);
+                set.add(PositionFlag.Y_ROT);
             }
         }
 

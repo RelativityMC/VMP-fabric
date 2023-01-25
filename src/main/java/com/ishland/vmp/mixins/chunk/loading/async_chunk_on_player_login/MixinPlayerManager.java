@@ -58,7 +58,7 @@ public abstract class MixinPlayerManager {
                 LOGGER.error("Error while loading chunks", throwable);
                 return;
             }
-            if (!instance.method_48106()) {
+            if (!instance.isConnectionOpen()) {
                 return;
             }
 
