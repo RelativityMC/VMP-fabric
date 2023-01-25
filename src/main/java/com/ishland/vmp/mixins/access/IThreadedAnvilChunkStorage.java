@@ -18,6 +18,9 @@ public interface IThreadedAnvilChunkStorage {
     @Invoker
     ChunkHolder invokeGetCurrentChunkHolder(long pos);
 
+    @Invoker
+    ChunkHolder invokeGetChunkHolder(long pos);
+
     @Accessor
     ServerWorld getWorld();
 
