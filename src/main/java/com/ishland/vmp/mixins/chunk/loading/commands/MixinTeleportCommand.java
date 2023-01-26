@@ -86,7 +86,7 @@ public abstract class MixinTeleportCommand {
 
         final CommandOutput output = ((IServerCommandSource) source).getOutput();
         if (output instanceof PlayerEntity || output instanceof MinecraftServer || output instanceof RconCommandOutput) {
-            AsyncChunkLoadUtil.scheduleChunkLoadWithRadius((ServerWorld) destination.world, destination.getChunkPos(), 2)
+            AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) destination.world, destination.getChunkPos())
                     .thenRunAsync(action, destination.world.getServer());
         } else {
             action.run();
@@ -178,7 +178,7 @@ public abstract class MixinTeleportCommand {
 
         final CommandOutput output = ((IServerCommandSource) source).getOutput();
         if (output instanceof PlayerEntity || output instanceof MinecraftServer || output instanceof RconCommandOutput) {
-            AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(world, new ChunkPos(new BlockPos(vec3d)), 2)
+            AsyncChunkLoadUtil.scheduleChunkLoad(world, new ChunkPos(new BlockPos(vec3d)))
                     .thenRunAsync(action, world.getServer());
         } else {
             action.run();
