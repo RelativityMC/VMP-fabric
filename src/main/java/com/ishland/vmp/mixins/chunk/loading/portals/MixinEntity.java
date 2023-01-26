@@ -150,8 +150,12 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                             getTeleportTargetAtAsync(destination)
                                     .thenComposeAsync(target -> {
                                         if (target != null) {
-                                            return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(new BlockPos(target.position)), 3)
-                                                    .thenApply(unused -> target);
+                                            return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(new BlockPos(target.position)))
+                                                    .thenApplyAsync(unused -> {
+                                                        final BlockPos blockPos = new BlockPos(target.position);
+                                                        destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior and faster teleports
+                                                        return target;
+                                                    }, destination.getServer());
                                         } else {
                                             return CompletableFuture.completedFuture(null);
                                         }
@@ -244,7 +248,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
 //                            }
 //                        }, destination.getServer())
                         .thenComposeAsync(optional -> optional.map(rect ->
-                                        AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(this.lastNetherPortalPosition), 3)
+                                        AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(this.lastNetherPortalPosition))
                                                 .thenComposeAsync(unused -> {
                                                     BlockState blockState = this.world.getBlockState(this.lastNetherPortalPosition);
                                                     Direction.Axis axis;
@@ -260,7 +264,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                                         vec3d = new Vec3d(0.5, 0.0, 0.0);
                                                     }
 
-                                                    return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(rect.lowerLeft), 3)
+                                                    return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(rect.lowerLeft))
                                                             .thenApplyAsync(unused1 -> NetherPortal.getNetherTeleportTarget(
                                                                             destination, rect, axis, vec3d, (Entity) (Object) this, this.getVelocity(), this.getYaw(), this.getPitch()),
                                                                     destination.getServer());
@@ -307,7 +311,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                             .take(1)
                             .thenComposeAsync(poi -> {
                                 BlockPos blockPos = poi.getPos();
-                                return AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(blockPos), 3)
+                                return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(blockPos))
                                         .thenApplyAsync(unused1 -> {
                                             destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior
                                             BlockState blockState = destination.getBlockState(blockPos);
