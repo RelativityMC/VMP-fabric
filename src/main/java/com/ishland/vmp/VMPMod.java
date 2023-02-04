@@ -1,6 +1,8 @@
 package com.ishland.vmp;
 
 import com.ishland.raknetify.fabric.common.connection.RakNetMultiChannel;
+import com.ishland.vmp.common.config.Config;
+import com.ishland.vmp.common.playerwatching.NearbyEntityTracking;
 import com.ishland.vmp.mixins.access.INetworkState;
 import com.ishland.vmp.mixins.access.INetworkStatePacketHandler;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -20,6 +22,10 @@ public class VMPMod implements ModInitializer {
             for (Object2IntMap.Entry<Class<? extends Packet<?>>> type : ((INetworkStatePacketHandler) entry.getValue()).getPacketIds().object2IntEntrySet()) {
                 RakNetMultiChannel.getPacketChannelOverride(type.getKey());
             }
+        }
+
+        if (Config.USE_OPTIMIZED_ENTITY_TRACKING) {
+            NearbyEntityTracking.init();
         }
     }
 }
