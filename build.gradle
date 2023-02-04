@@ -55,6 +55,9 @@ dependencies {
 
 	shadowInclude implementation("com.ibm.async:asyncutil:${async_util_version}")
 
+	// https://mvnrepository.com/artifact/org.joml/joml-primitives
+	compileOnly 'org.joml:joml-primitives:1.10.0'
+
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
