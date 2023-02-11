@@ -1,6 +1,7 @@
 package com.ishland.vmp.common.playerwatching;
 
 import com.ishland.vmp.common.maps.AreaMap;
+import com.ishland.vmp.common.playerwatching.compat.EntityPositionTransformer;
 import com.ishland.vmp.common.util.SimpleObjectPool;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
@@ -13,14 +14,41 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.Vec3d;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
 public class NearbyEntityTracking {
+
+    private static final EntityPositionTransformer[] transformers;
+
+    static {
+        List<EntityPositionTransformer> list = new ArrayList<>();
+        if (FabricLoader.getInstance().isModLoaded("valkyrienskies")) {
+            System.out.println("ValkyrienSkies detected, applying compatibility patch");
+            try {
+                list.add((EntityPositionTransformer)
+                        Class.forName("com.ishland.vmp.common.playerwatching.compat.ValkyrienSkies2ShipPositionTransformer")
+                                .getDeclaredConstructor().newInstance());
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+        transformers = list.toArray(EntityPositionTransformer[]::new);
+    }
+
+    public static void init() {
+        // intentionally empty
+    }
 
     private final SimpleObjectPool<ReferenceLinkedOpenHashSet<?>> pooledHashSets =
             new SimpleObjectPool<>(unused -> new ReferenceLinkedOpenHashSet<>(),
@@ -44,14 +72,14 @@ public class NearbyEntityTracking {
     private final Reference2LongOpenHashMap<ThreadedAnvilChunkStorage.EntityTracker> tracker2ChunkPos = new Reference2LongOpenHashMap<>();
 
     public void addEntityTracker(ThreadedAnvilChunkStorage.EntityTracker tracker) {
-        final ChunkSectionPos trackedSection = ((IThreadedAnvilChunkStorageEntityTracker) tracker).getTrackedSection();
+        final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity());
         this.areaMap.add(
                 tracker,
-                trackedSection.getX(),
-                trackedSection.getZ(),
+                pos.x,
+                pos.z,
                 getChunkViewDistance(tracker)
         );
-        this.tracker2ChunkPos.put(tracker, ((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity().getChunkPos().toLong());
+        this.tracker2ChunkPos.put(tracker, pos.toLong());
     }
 
     public void removeEntityTracker(ThreadedAnvilChunkStorage.EntityTracker tracker) {
@@ -82,9 +110,17 @@ public class NearbyEntityTracking {
         }
     };
 
+    private static ChunkPos getEntityChunkPos(Entity entity) {
+        Vec3d pos = entity.getPos();
+        for (EntityPositionTransformer transformer : transformers) {
+            pos = transformer.transform(entity, pos);
+        }
+        return new ChunkPos(ChunkSectionPos.getSectionCoord(pos.x), ChunkSectionPos.getSectionCoord(pos.z));
+    }
+
     public void tick() {
         for (Reference2LongMap.Entry<ThreadedAnvilChunkStorage.EntityTracker> entry : this.tracker2ChunkPos.reference2LongEntrySet()) {
-            final ChunkPos pos = ((IThreadedAnvilChunkStorageEntityTracker) entry.getKey()).getEntity().getChunkPos();
+            final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) entry.getKey()).getEntity());
             if (pos.toLong() != entry.getLongValue()) {
                 this.areaMap.update(entry.getKey(), pos.x, pos.z, getChunkViewDistance(entry.getKey()));
                 entry.setValue(pos.toLong());
@@ -94,7 +130,7 @@ public class NearbyEntityTracking {
         trackerTickList.clear();
 
         for (var entry : this.playerTrackers.entrySet()) {
-            final Set<ThreadedAnvilChunkStorage.EntityTracker> currentTrackers = this.areaMap.getObjectsInRange(entry.getKey().getChunkPos().toLong());
+            final Set<ThreadedAnvilChunkStorage.EntityTracker> currentTrackers = this.areaMap.getObjectsInRange(getEntityChunkPos(entry.getKey()).toLong());
 
             boolean isPlayerPositionUpdated = ((ServerPlayerEntityExtension) entry.getKey()).vmpTracking$isPositionUpdated();
             ((ServerPlayerEntityExtension) entry.getKey()).vmpTracking$updatePosition();
