@@ -150,9 +150,9 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                             getTeleportTargetAtAsync(destination)
                                     .thenComposeAsync(target -> {
                                         if (target != null) {
-                                            return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(new BlockPos(target.position)))
+                                            return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(BlockPos.method_49637(target.position.x, target.position.y, target.position.z)))
                                                     .thenApplyAsync(unused -> {
-                                                        final BlockPos blockPos = new BlockPos(target.position);
+                                                        final BlockPos blockPos = BlockPos.method_49637(target.position.x, target.position.y, target.position.z);
                                                         destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior and faster teleports
                                                         return target;
                                                     }, destination.getServer());
@@ -170,7 +170,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         } else if (target != null) {
                                             if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
                                                 LOGGER.info("Portal located for entity {} at {}", this, target);
-                                                final BlockPos blockPos = new BlockPos(target.position);
+                                                final BlockPos blockPos = BlockPos.method_49637(target.position.x, target.position.y, target.position.z);
                                                 if ((Object) this instanceof ServerPlayerEntity player) {
                                                     player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
                                                 }
