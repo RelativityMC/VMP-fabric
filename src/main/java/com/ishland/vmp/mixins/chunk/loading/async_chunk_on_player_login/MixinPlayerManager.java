@@ -49,7 +49,7 @@ public abstract class MixinPlayerManager {
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
 
         ((IAsyncChunkPlayer) instance.player).markPlayerForAsyncChunkLoad();
-        final ChunkPos pos = new ChunkPos(BlockPos.method_49637(x, y, z));
+        final ChunkPos pos = new ChunkPos(BlockPos.ofFloored(x, y, z));
         instance.player.notInAnyWorld = true; // suppress move packets
 
         final MinecraftServer server = instance.player.server;

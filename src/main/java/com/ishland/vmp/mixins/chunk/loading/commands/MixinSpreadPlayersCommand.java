@@ -182,7 +182,7 @@ public abstract class MixinSpreadPlayersCommand {
                 List<CompletableFuture<Void>> futures = new ArrayList<>(piles.length);
                 AtomicBoolean result = new AtomicBoolean(false);
                 for (SpreadPlayersCommand.Pile pile2 : piles) {
-                    ChunkPos pos = new ChunkPos(BlockPos.method_49637(((ISpreadPlayersCommandPile) pile2).getX(), 0.0, ((ISpreadPlayersCommandPile) pile2).getZ()));
+                    ChunkPos pos = new ChunkPos(BlockPos.ofFloored(((ISpreadPlayersCommandPile) pile2).getX(), 0.0, ((ISpreadPlayersCommandPile) pile2).getZ()));
                     final CompletableFuture<Void> future =
                             CompletableFuture.supplyAsync(() -> AsyncChunkLoadUtil.scheduleChunkLoad(world, pos), world.getServer())
                                     .thenCompose(Function.identity())
@@ -239,7 +239,7 @@ public abstract class MixinSpreadPlayersCommand {
                 pile = piles[i++];
             }
 
-            ChunkPos pos = new ChunkPos(BlockPos.method_49637(((ISpreadPlayersCommandPile) pile).getX(), 0.0, ((ISpreadPlayersCommandPile) pile).getZ()));
+            ChunkPos pos = new ChunkPos(BlockPos.ofFloored(((ISpreadPlayersCommandPile) pile).getX(), 0.0, ((ISpreadPlayersCommandPile) pile).getZ()));
             final CompletableFuture<Void> future =
                     CompletableFuture.supplyAsync(() -> AsyncChunkLoadUtil.scheduleChunkLoad(world, pos), world.getServer())
                             .thenCompose(Function.identity())

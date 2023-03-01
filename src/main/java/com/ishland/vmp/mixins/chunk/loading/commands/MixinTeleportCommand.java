@@ -177,7 +177,7 @@ public abstract class MixinTeleportCommand {
 
         final CommandOutput output = ((IServerCommandSource) source).getOutput();
         if (output instanceof PlayerEntity || output instanceof MinecraftServer || output instanceof RconCommandOutput) {
-            AsyncChunkLoadUtil.scheduleChunkLoad(world, new ChunkPos(BlockPos.method_49637(vec3d.x, vec3d.y, vec3d.z)))
+            AsyncChunkLoadUtil.scheduleChunkLoad(world, new ChunkPos(BlockPos.ofFloored(vec3d.x, vec3d.y, vec3d.z)))
                     .thenRunAsync(action, world.getServer());
         } else {
             action.run();
