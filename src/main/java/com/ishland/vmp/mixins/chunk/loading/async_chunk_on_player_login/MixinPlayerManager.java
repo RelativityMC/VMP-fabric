@@ -64,8 +64,8 @@ public abstract class MixinPlayerManager {
 
             instance.player.notInAnyWorld = false;
             instance.requestTeleport(x, y, z, yaw, pitch);
-            ((ServerWorld) instance.player.world).onPlayerConnected(instance.player);
             this.sendWorldInfo(instance.player, (ServerWorld) instance.player.world);
+            ((ServerWorld) instance.player.world).onPlayerConnected(instance.player);
             instance.player.onSpawn();
 
             final NbtCompound playerData = ((IAsyncChunkPlayer) instance.player).getPlayerData();
