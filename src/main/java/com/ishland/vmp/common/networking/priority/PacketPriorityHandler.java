@@ -64,11 +64,10 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     public static void setupPacketPriority(ChannelPipeline pipeline) {
         if (Config.USE_PACKET_PRIORITY_SYSTEM) {
-            if (pipeline instanceof SocketChannel) {
+            if (pipeline.channel() instanceof SocketChannel) {
                 pipeline.addLast("vmp_packet_priority", new PacketPriorityHandler());
-                final ChannelConfig config = pipeline.channel().config();
-                config.setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4 * 1024, 8 * 1024));
-                config.setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
+                pipeline.channel().config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4 * 1024, 8 * 1024));
+                pipeline.channel().config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
             }
         }
     }
