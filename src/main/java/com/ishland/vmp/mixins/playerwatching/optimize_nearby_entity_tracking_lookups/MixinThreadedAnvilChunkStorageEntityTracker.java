@@ -1,8 +1,8 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups;
 
+import com.ishland.vmp.common.playerwatching.EntityTrackerEntryExtension;
 import com.ishland.vmp.common.playerwatching.EntityTrackerExtension;
 import com.ishland.vmp.mixins.access.IEntityTrackerEntry;
-import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -17,7 +17,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Set;
@@ -91,8 +92,15 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
                     this.entity.velocityModified = false;
                 }
 
-                ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
+                ((EntityTrackerEntryExtension) this.entry).vmp$syncEntityData();
             }
+        }
+    }
+
+    @Inject(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z", shift = At.Shift.BEFORE))
+    private void beforeStartTracking(ServerPlayerEntity player, CallbackInfo ci) {
+        if (this.listeners.isEmpty()) {
+            ((EntityTrackerEntryExtension) this.entry).vmp$tickAlways();
         }
     }
 
