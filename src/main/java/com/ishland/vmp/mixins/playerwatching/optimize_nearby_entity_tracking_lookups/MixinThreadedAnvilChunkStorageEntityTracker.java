@@ -1,5 +1,6 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups;
 
+import com.ishland.vmp.common.playerwatching.EntityTrackerEntryExtension;
 import com.ishland.vmp.common.playerwatching.EntityTrackerExtension;
 import com.ishland.vmp.mixins.access.IEntityTrackerEntry;
 import net.minecraft.entity.Entity;
@@ -91,7 +92,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
                     this.entity.velocityModified = false;
                 }
 
-                ((IEntityTrackerEntry) this.entry).invokeSyncEntityData();
+                ((EntityTrackerEntryExtension) this.entry).vmp$syncEntityData();
             }
         }
     }
@@ -99,7 +100,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     @Inject(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z", shift = At.Shift.BEFORE))
     private void beforeStartTracking(ServerPlayerEntity player, CallbackInfo ci) {
         if (this.listeners.isEmpty()) {
-            this.entity.tick();
+            ((EntityTrackerEntryExtension) this.entry).vmp$tickAlways();
         }
     }
 
