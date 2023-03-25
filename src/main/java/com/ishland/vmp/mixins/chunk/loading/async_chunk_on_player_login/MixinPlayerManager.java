@@ -3,6 +3,7 @@ package com.ishland.vmp.mixins.chunk.loading.async_chunk_on_player_login;
 import com.ishland.vmp.common.chunk.loading.async_chunks_on_player_login.AsyncChunkLoadUtil;
 import com.ishland.vmp.common.chunk.loading.async_chunks_on_player_login.IAsyncChunkPlayer;
 import com.ishland.vmp.mixins.access.IServerChunkManager;
+import com.mojang.datafixers.util.Either;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.nbt.NbtCompound;
@@ -12,12 +13,14 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerTask;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.spongepowered.asm.mixin.Final;
@@ -31,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 @Mixin(PlayerManager.class)
@@ -53,7 +57,7 @@ public abstract class MixinPlayerManager {
         instance.player.notInAnyWorld = true; // suppress move packets
 
         final MinecraftServer server = instance.player.server;
-        AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) instance.player.world, pos).whenCompleteAsync((worldChunkUnloadedEither, throwable) -> {
+        final BiConsumer<Either<Chunk, ChunkHolder.Unloaded>, Throwable> action = (worldChunkUnloadedEither, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Error while loading chunks", throwable);
                 return;
@@ -74,7 +78,14 @@ public abstract class MixinPlayerManager {
 
             ((IAsyncChunkPlayer) instance.player).onChunkLoadComplete();
             LOGGER.info("Async chunk loading for player {} completed", instance.player.getName().getString());
-        }, runnable -> server.send(new ServerTask(0, runnable)));
+        };
+
+        if (instance.player.getClass() != ServerPlayerEntity.class) {
+            action.accept(null, null);
+            return;
+        }
+
+        AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) instance.player.world, pos).whenCompleteAsync(action, runnable -> server.send(new ServerTask(0, runnable)));
     }
 
     @Unique
