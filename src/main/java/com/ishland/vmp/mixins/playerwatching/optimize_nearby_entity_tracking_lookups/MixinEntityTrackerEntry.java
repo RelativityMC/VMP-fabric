@@ -27,7 +27,7 @@ public abstract class MixinEntityTrackerEntry implements EntityTrackerEntryExten
     @Override
     public void vmp$tickAlways() {
         this.trackingTick = MathHelper.roundUpToMultiple(this.trackingTick, this.tickInterval);
-        this.updatesWithoutVehicle = Integer.MAX_VALUE - 1;
+        this.updatesWithoutVehicle = 1 << 16;
         this.entity.velocityDirty = true;
         this.tick();
     }
