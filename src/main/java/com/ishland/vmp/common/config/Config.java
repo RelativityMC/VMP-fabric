@@ -21,6 +21,7 @@ public class Config {
     public static final boolean USE_MULTIPLE_NETTY_EVENT_LOOPS;
     public static final boolean USE_ASYNC_PORTALS;
     public static final boolean USE_ASYNC_CHUNKS_ON_LOGIN;
+    public static final boolean USE_ASYNC_CHUNKS_ON_SOME_COMMANDS;
     public static final boolean PRECACHE_BIOME_LOOKUP;
     public static final boolean SHOW_ASYNC_LOADING_MESSAGES;
 
@@ -44,6 +45,7 @@ public class Config {
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
         USE_ASYNC_PORTALS = getBoolean(properties, newProperties, "use_async_portals", true);
         USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", true);
+        USE_ASYNC_CHUNKS_ON_SOME_COMMANDS = getBoolean(properties, newProperties, "use_async_chunks_on_some_commands", false);
         PRECACHE_BIOME_LOOKUP = getBoolean(properties, newProperties, "deprecated_precache_biome_lookup", false);
         SHOW_ASYNC_LOADING_MESSAGES = getBoolean(properties, newProperties, "show_async_loading_messages", true);
         try (OutputStream out = Files.newOutputStream(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
