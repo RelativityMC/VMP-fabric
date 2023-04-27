@@ -6,10 +6,10 @@ import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.util.SimpleObjectPool;
 import com.ishland.vmp.mixins.access.IChunkDeltaUpdateS2CPacket;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.WriteBufferWaterMark;
 import io.netty.channel.socket.SocketChannel;
@@ -67,12 +67,12 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private static final int DEFAULT_SNDBUF = 8 * 1024;
 
-    public static void setupPacketPriority(Channel channel) {
+    public static void setupPacketPriority(ChannelPipeline pipeline) {
         if (Config.USE_PACKET_PRIORITY_SYSTEM) {
-            if (channel instanceof SocketChannel) {
-                channel.pipeline().addLast("vmp_packet_priority", new PacketPriorityHandler());
-                channel.config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4 * 1024, 8 * 1024));
-                channel.config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
+            if (pipeline.channel() instanceof SocketChannel) {
+                pipeline.addLast("vmp_packet_priority", new PacketPriorityHandler());
+                pipeline.channel().config().setOption(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(4 * 1024, 8 * 1024));
+                pipeline.channel().config().setOption(ChannelOption.IP_TOS, IP_TOS_LOWDELAY | IP_TOS_THROUGHPUT); // reduce latency
             }
         }
     }
