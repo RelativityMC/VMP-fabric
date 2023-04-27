@@ -33,7 +33,7 @@ public class ValkyrienSkies2ShipPositionTransformer extends EntityPositionTransf
     @Override
     public Vec3d transform0(Entity entity, Vec3d pos) {
         try {
-            final Object ship = methodVSGameUtilsKt$getShipManagingPos.invoke(entity.world, ChunkSectionPos.getSectionCoord(pos.x), ChunkSectionPos.getSectionCoord(pos.z));
+            final Object ship = methodVSGameUtilsKt$getShipManagingPos.invoke(entity.getWorld(), ChunkSectionPos.getSectionCoord(pos.x), ChunkSectionPos.getSectionCoord(pos.z));
             if (ship != null) {
                 final Matrix4dc shipToWorld = (Matrix4dc) methodShip$getShipToWorld.invoke(ship);
                 final Vector3d transformedPosition = shipToWorld.transformPosition(new Vector3d(pos.x, pos.y, pos.z));

@@ -25,8 +25,8 @@ public interface IChunkDeltaUpdateS2CPacket {
     @Accessor
     void setBlockStates(BlockState[] blockStates);
 
-    @Mutable
-    @Accessor
-    void setNoLightingUpdates(boolean noLightingUpdates);
+//    @Mutable
+//    @Accessor
+//    void setNoLightingUpdates(boolean noLightingUpdates);
 
 }

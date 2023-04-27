@@ -56,7 +56,7 @@ public abstract class MixinTeleportCommand {
                     teleport(
                             source,
                             entity,
-                            (ServerWorld) destination.world,
+                            (ServerWorld) destination.getWorld(),
                             destination.getX(),
                             destination.getY(),
                             destination.getZ(),
@@ -85,8 +85,8 @@ public abstract class MixinTeleportCommand {
 
         final CommandOutput output = ((IServerCommandSource) source).getOutput();
         if (output instanceof PlayerEntity || output instanceof MinecraftServer || output instanceof RconCommandOutput) {
-            AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) destination.world, destination.getChunkPos())
-                    .thenRunAsync(action, destination.world.getServer());
+            AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) destination.getWorld(), destination.getChunkPos())
+                    .thenRunAsync(action, destination.getServer());
         } else {
             action.run();
         }

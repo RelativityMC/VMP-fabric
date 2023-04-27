@@ -25,7 +25,7 @@ public abstract class MixinMobEntity extends LivingEntity {
         if (closestPlayer != null) {
             return closestPlayer;
         } else {
-            final List<? extends PlayerEntity> players = this.world.getPlayers();
+            final List<? extends PlayerEntity> players = this.getWorld().getPlayers();
             if (players.isEmpty()) return null;
             return players.get(0);
         }

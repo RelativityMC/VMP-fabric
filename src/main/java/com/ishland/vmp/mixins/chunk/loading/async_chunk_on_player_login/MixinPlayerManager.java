@@ -49,7 +49,7 @@ public abstract class MixinPlayerManager {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;requestTeleport(DDDFF)V")
     )
     private void redirectRequestTeleport(ServerPlayNetworkHandler instance, double x, double y, double z, float yaw, float pitch) {
-        final ServerChunkManager chunkManager = ((ServerWorld) instance.player.world).getChunkManager();
+        final ServerChunkManager chunkManager = instance.player.getServerWorld().getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
 
         ((IAsyncChunkPlayer) instance.player).markPlayerForAsyncChunkLoad();
@@ -68,8 +68,8 @@ public abstract class MixinPlayerManager {
 
             instance.player.notInAnyWorld = false;
             instance.requestTeleport(x, y, z, yaw, pitch);
-            this.sendWorldInfo(instance.player, (ServerWorld) instance.player.world);
-            ((ServerWorld) instance.player.world).onPlayerConnected(instance.player);
+            this.sendWorldInfo(instance.player, instance.player.getServerWorld());
+            instance.player.getServerWorld().onPlayerConnected(instance.player);
             instance.player.onSpawn();
 
             final NbtCompound playerData = ((IAsyncChunkPlayer) instance.player).getPlayerData();
@@ -85,7 +85,7 @@ public abstract class MixinPlayerManager {
             return;
         }
 
-        AsyncChunkLoadUtil.scheduleChunkLoad((ServerWorld) instance.player.world, pos).whenCompleteAsync(action, runnable -> server.send(new ServerTask(0, runnable)));
+        AsyncChunkLoadUtil.scheduleChunkLoad(instance.player.getServerWorld(), pos).whenCompleteAsync(action, runnable -> server.send(new ServerTask(0, runnable)));
     }
 
     @Unique
@@ -93,7 +93,7 @@ public abstract class MixinPlayerManager {
         // TODO [VanillaCopy]
         if (playerData != null && playerData.contains("RootVehicle", NbtElement.COMPOUND_TYPE)) {
             NbtCompound nbtCompound2 = playerData.getCompound("RootVehicle");
-            ServerWorld world = (ServerWorld) player.world;
+            ServerWorld world = player.getServerWorld();
             Entity entity = EntityType.loadEntityWithPassengers(
                     nbtCompound2.getCompound("Entity"), world, vehicle -> !world.tryLoadEntity(vehicle) ? null : vehicle
             );

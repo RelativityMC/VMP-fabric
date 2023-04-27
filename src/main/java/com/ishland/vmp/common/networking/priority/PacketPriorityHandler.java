@@ -263,7 +263,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                 ((IChunkDeltaUpdateS2CPacket) msg).setSectionPos(chunkSectionPos);
                 ((IChunkDeltaUpdateS2CPacket) msg).setPositions(positions);
                 ((IChunkDeltaUpdateS2CPacket) msg).setBlockStates(blockStates);
-                ((IChunkDeltaUpdateS2CPacket) msg).setNoLightingUpdates(false);
+//                ((IChunkDeltaUpdateS2CPacket) msg).setNoLightingUpdates(false);
 
                 return new ChunkUpdateQueue.SimplePendingPacket(msg, promise);
             }

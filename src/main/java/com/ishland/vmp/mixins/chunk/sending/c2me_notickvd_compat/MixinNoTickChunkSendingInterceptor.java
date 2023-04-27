@@ -20,7 +20,7 @@ public class MixinNoTickChunkSendingInterceptor {
     @Inject(method = "onChunkSending", at = @At("RETURN"), remap = false, cancellable = true)
     private static void onChunkSending(ServerPlayerEntity player, long pos, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValueZ()) {
-            final PlayerChunkWatchingManager playerChunkWatchingManager = ((IThreadedAnvilChunkStorage) player.getWorld().getChunkManager().threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
+            final PlayerChunkWatchingManager playerChunkWatchingManager = ((IThreadedAnvilChunkStorage) player.getServerWorld().getChunkManager().threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
             if (playerChunkWatchingManager instanceof AreaPlayerChunkWatchingManager manager && PlayerChunkSendingSystem.ENABLED) {
                 manager.onChunkLoaded(pos);
                 cir.setReturnValue(false);
