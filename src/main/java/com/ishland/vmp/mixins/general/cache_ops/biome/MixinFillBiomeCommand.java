@@ -14,7 +14,7 @@ import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.ReadOnlyChunk;
+import net.minecraft.world.chunk.WrapperProtoChunk;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -53,7 +53,7 @@ public abstract class MixinFillBiomeCommand {
                     throw new RuntimeException();
                 }
 
-                if (chunk instanceof ReadOnlyChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
+                if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
 
                 if (chunk instanceof PreloadingBiome preloadingBiome) {
                     try {
