@@ -3,6 +3,7 @@ package com.ishland.vmp.mixins.chunk.iteration;
 import com.ishland.vmp.common.chunk.iteration.ITickableChunkSource;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.LevelType;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
@@ -27,10 +28,10 @@ public class MixinThreadedAnvilChunkStorage implements ITickableChunkSource {
     }
 
     @Inject(method = "onChunkStatusChange", at = @At("HEAD"))
-    private void listenChunkStatusChange(ChunkPos chunkPos, ChunkHolder.LevelType levelType, CallbackInfo ci) {
+    private void listenChunkStatusChange(ChunkPos chunkPos, LevelType levelType, CallbackInfo ci) {
         final ChunkHolder chunkHolder = this.currentChunkHolders.get(chunkPos.toLong());
         if (chunkHolder == null) return;
-        if (chunkHolder.getLevelType().isAfter(ChunkHolder.LevelType.TICKING)) {
+        if (chunkHolder.getLevelType().isAfter(LevelType.BLOCK_TICKING)) {
             this.vmp$tickingChunks.put(chunkPos.toLong(), chunkHolder);
         } else {
             this.vmp$tickingChunks.remove(chunkPos.toLong());
