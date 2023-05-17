@@ -5,11 +5,11 @@ import com.ibm.asyncutil.locks.FairAsyncSemaphore;
 import com.ishland.vmp.mixins.access.IServerChunkManager;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.class_8563;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ChunkLevelType;
+import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.LevelType;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Unit;
@@ -51,9 +51,9 @@ public class AsyncChunkLoadUtil {
                     if (chunkHolder == null) {
                         throw new IllegalStateException("Chunk not there when requested");
                     }
-                    final LevelType levelType = class_8563.method_51830(level);
+                    final ChunkLevelType levelType = ChunkLevels.getType(level);
                     return switch (levelType) {
-                        case INACCESSIBLE -> chunkHolder.getChunkAt(class_8563.method_51827(level), world.getChunkManager().threadedAnvilChunkStorage);
+                        case INACCESSIBLE -> chunkHolder.getChunkAt(ChunkLevels.getStatus(level), world.getChunkManager().threadedAnvilChunkStorage);
                         case FULL -> chunkHolder.getAccessibleFuture().thenApply(either -> either.mapLeft(Function.identity()));
                         case BLOCK_TICKING -> chunkHolder.getTickingFuture().thenApply(either -> either.mapLeft(Function.identity()));
                         case ENTITY_TICKING -> chunkHolder.getEntityTickingFuture().thenApply(either -> either.mapLeft(Function.identity()));

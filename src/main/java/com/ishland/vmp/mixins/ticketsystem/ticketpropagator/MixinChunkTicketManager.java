@@ -9,8 +9,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import net.minecraft.class_8563;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.server.world.ChunkTaskPrioritySystem;
 import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
@@ -75,12 +75,12 @@ public abstract class MixinChunkTicketManager {
 
     @Unique
     private static int convertBetweenTicketLevels(final int level) {
-        return class_8563.field_44849 - level + 1;
+        return ChunkLevels.INACCESSIBLE - level + 1;
     }
 
     @Unique
     protected final void updateTicketLevel(final long coordinate, final int ticketLevel) {
-        if (ticketLevel > class_8563.field_44849) {
+        if (ticketLevel > ChunkLevels.INACCESSIBLE) {
             this.ticketLevelPropagator.removeSource(coordinate);
         } else {
             this.ticketLevelPropagator.setSource(coordinate, convertBetweenTicketLevels(ticketLevel));
@@ -150,13 +150,13 @@ public abstract class MixinChunkTicketManager {
             int newLevel = this.ticketLevelUpdates.removeFirstInt();
 
             ChunkHolder holder = this.getChunkHolder(key);
-            int currentLevel = holder == null ? class_8563.field_44849 + 1 : holder.getLevel();
+            int currentLevel = holder == null ? ChunkLevels.INACCESSIBLE + 1 : holder.getLevel();
             if (newLevel == currentLevel) continue;
 
             holder = this.setLevel(key, newLevel, holder, currentLevel);
 
             if (holder == null) {
-                if (newLevel <= class_8563.field_44849) {
+                if (newLevel <= ChunkLevels.INACCESSIBLE) {
                     throw new IllegalStateException("Chunk holder not created");
                 }
                 continue;

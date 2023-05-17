@@ -108,7 +108,7 @@ public abstract class MixinSpreadPlayersCommand {
                 double h = vmp$getMinDistance(players, serverWorld, piles, maxY, respectTeams);
                 source.getServer().execute(() -> {
                     source.sendFeedback(
-                            Text.translatable(
+                            () -> Text.translatable(
                                     "commands.spreadplayers.success." + (respectTeams ? "teams" : "entities"), piles.length, center.x, center.y, String.format(Locale.ROOT, "%.2f", h)
                             ),
                             true

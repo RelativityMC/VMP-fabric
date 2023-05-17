@@ -75,11 +75,13 @@ public abstract class MixinTeleportCommand {
                 }
             }
             if (successCount == 1) {
+                Entity finalLast = last;
                 source.sendFeedback(
-                        Text.translatable("commands.teleport.success.entity.single", last.getDisplayName(), destination.getDisplayName()), true
+                        () -> Text.translatable("commands.teleport.success.entity.single", finalLast.getDisplayName(), destination.getDisplayName()), true
                 );
             } else {
-                source.sendFeedback(Text.translatable("commands.teleport.success.entity.multiple", successCount, destination.getDisplayName()), true);
+                int finalSuccessCount = successCount;
+                source.sendFeedback(() -> Text.translatable("commands.teleport.success.entity.multiple", finalSuccessCount, destination.getDisplayName()), true);
             }
         };
 
@@ -158,10 +160,11 @@ public abstract class MixinTeleportCommand {
             }
 
             if (successCount == 1) {
+                Entity finalLast = last;
                 source.sendFeedback(
-                        Text.translatable(
+                        () -> Text.translatable(
                                 "commands.teleport.success.location.single",
-                                last.getDisplayName(),
+                                finalLast.getDisplayName(),
                                 formatFloat(vec3d.x),
                                 formatFloat(vec3d.y),
                                 formatFloat(vec3d.z)
@@ -169,8 +172,9 @@ public abstract class MixinTeleportCommand {
                         true
                 );
             } else {
+                int finalSuccessCount = successCount;
                 source.sendFeedback(
-                        Text.translatable("commands.teleport.success.location.multiple", successCount, formatFloat(vec3d.x), formatFloat(vec3d.y), formatFloat(vec3d.z)), true
+                        () -> Text.translatable("commands.teleport.success.location.multiple", finalSuccessCount, formatFloat(vec3d.x), formatFloat(vec3d.y), formatFloat(vec3d.z)), true
                 );
             }
         };
