@@ -32,6 +32,9 @@
     "minecraft": ">=1.19.1-rc.3",
     "java": ">=17"
   },
+  "breaks": {
+    "optifabric": "*"
+  },
 
   "custom": {
     "_lithium_toggle_comment": "We disable the player_chunk_tick mixin as we handle chunk sending on our own",

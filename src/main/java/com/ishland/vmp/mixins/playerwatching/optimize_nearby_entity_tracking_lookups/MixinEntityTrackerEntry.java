@@ -34,6 +34,7 @@ public abstract class MixinEntityTrackerEntry implements EntityTrackerEntryExten
 
     @Override
     public void vmp$syncEntityData() {
+        trackingTick ++;
         if (this.trackingTick % this.tickInterval == 0) { // [VanillaCopy]
             this.syncEntityData();
         }
