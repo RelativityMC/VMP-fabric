@@ -7,6 +7,7 @@ import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.thread.ThreadExecutor;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
@@ -29,5 +30,8 @@ public interface IThreadedAnvilChunkStorage {
 
     @Invoker
     void invokeSendWatchPackets(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance);
+
+    @Accessor
+    ThreadExecutor<Runnable> getMainThreadExecutor();
 
 }

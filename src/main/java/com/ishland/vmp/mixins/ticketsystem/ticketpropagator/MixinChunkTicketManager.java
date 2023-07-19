@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins.ticketsystem.ticketpropagator;
 
 import com.ishland.vmp.mixins.access.IChunkHolder;
 import com.ishland.vmp.mixins.access.IChunkTicket;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -30,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
@@ -139,6 +141,10 @@ public abstract class MixinChunkTicketManager {
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
     public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
+        if (!((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getMainThreadExecutor().isOnThread()) {
+            throw new ConcurrentModificationException("Attempted to tick tickets asynchronously");
+        }
+
         boolean hasUpdates = this.ticketLevelPropagator.propagateUpdates();
         if (hasUpdates) {
         }
