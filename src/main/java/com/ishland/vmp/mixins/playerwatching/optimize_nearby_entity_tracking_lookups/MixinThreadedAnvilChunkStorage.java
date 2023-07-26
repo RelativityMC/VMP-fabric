@@ -23,6 +23,7 @@ public class MixinThreadedAnvilChunkStorage {
     @Shadow
     @Final
     private Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> entityTrackers;
+    @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
     @Unique
     private final NearbyEntityTracking nearbyEntityTracking = new NearbyEntityTracking();
 
@@ -73,7 +74,7 @@ public class MixinThreadedAnvilChunkStorage {
     @Overwrite
     public void tickEntityMovement() {
         try {
-            this.nearbyEntityTracking.tick();
+            this.nearbyEntityTracking.tick(this.ticketManager);
         } catch (Throwable t) {
             t.printStackTrace();
         }

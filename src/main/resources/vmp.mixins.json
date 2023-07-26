@@ -20,6 +20,7 @@
     "access.ISpreadPlayersCommandPile",
     "access.IThreadedAnvilChunkStorage",
     "access.IThreadedAnvilChunkStorageEntityTracker",
+    "access.ITrackedPosition",
     "carpet.MixinEntityPlayerMPFake",
     "chunk.iteration.MixinServerChunkManager",
     "chunk.iteration.MixinThreadedAnvilChunkStorage",

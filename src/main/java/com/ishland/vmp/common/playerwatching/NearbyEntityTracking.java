@@ -118,7 +118,7 @@ public class NearbyEntityTracking {
         return new ChunkPos(ChunkSectionPos.getSectionCoord(pos.x), ChunkSectionPos.getSectionCoord(pos.z));
     }
 
-    public void tick() {
+    public void tick(ThreadedAnvilChunkStorage.TicketManager ticketManager) {
         for (Reference2LongMap.Entry<ThreadedAnvilChunkStorage.EntityTracker> entry : this.tracker2ChunkPos.reference2LongEntrySet()) {
             final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) entry.getKey()).getEntity());
             if (pos.toLong() != entry.getLongValue()) {
@@ -130,24 +130,20 @@ public class NearbyEntityTracking {
         trackerTickList.clear();
 
         for (var entry : this.playerTrackers.entrySet()) {
-            final Set<ThreadedAnvilChunkStorage.EntityTracker> currentTrackers = this.areaMap.getObjectsInRange(getEntityChunkPos(entry.getKey()).toLong());
+            final ServerPlayerEntity player = entry.getKey();
+            final Set<ThreadedAnvilChunkStorage.EntityTracker> currentTrackers = this.areaMap.getObjectsInRange(getEntityChunkPos(player).toLong());
 
-            boolean isPlayerPositionUpdated = ((ServerPlayerEntityExtension) entry.getKey()).vmpTracking$isPositionUpdated();
-            ((ServerPlayerEntityExtension) entry.getKey()).vmpTracking$updatePosition();
+            boolean isPlayerPositionUpdated = ((ServerPlayerEntityExtension) player).vmpTracking$isPositionUpdated();
+            ((ServerPlayerEntityExtension) player).vmpTracking$updatePosition();
 
             // update original trackers
             final ReferenceLinkedOpenHashSet<ThreadedAnvilChunkStorage.EntityTracker> trackers = entry.getValue();
             for (ObjectListIterator<ThreadedAnvilChunkStorage.EntityTracker> iterator = trackers.iterator(); iterator.hasNext(); ) {
                 ThreadedAnvilChunkStorage.EntityTracker entityTracker = iterator.next();
                 if (currentTrackers.contains(entityTracker)) {
-                    if (trackerTickList.add(entityTracker)) {
-                        tryTickTracker(entityTracker);
-                    }
-                    if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
-                        tryUpdateTracker(entityTracker, entry.getKey());
-                    }
+                    handleTracker(ticketManager, player, isPlayerPositionUpdated, entityTracker);
                 } else {
-                    entityTracker.stopTracking(entry.getKey());
+                    entityTracker.stopTracking(player);
                     iterator.remove();
                 }
             }
@@ -155,18 +151,23 @@ public class NearbyEntityTracking {
             // update new trackers
             for (ThreadedAnvilChunkStorage.EntityTracker entityTracker : currentTrackers) {
                 if (!trackers.contains(entityTracker)) {
-                    if (trackerTickList.add(entityTracker)) {
-                        tryTickTracker(entityTracker);
-                    }
-                    if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
-                        tryUpdateTracker(entityTracker, entry.getKey());
-                    }
+                    handleTracker(ticketManager, player, isPlayerPositionUpdated, entityTracker);
                     trackers.add(entityTracker);
                 }
             }
         }
         for (ThreadedAnvilChunkStorage.EntityTracker entityTracker : trackerTickList) {
             ((EntityTrackerExtension) entityTracker).updatePosition();
+        }
+    }
+
+    private void handleTracker(ThreadedAnvilChunkStorage.TicketManager ticketManager, ServerPlayerEntity player, boolean isPlayerPositionUpdated, ThreadedAnvilChunkStorage.EntityTracker entityTracker) {
+        final ChunkSectionPos trackedPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
+        if (trackerTickList.add(entityTracker) && ticketManager.shouldTickEntities(ChunkPos.toLong(trackedPos.getSectionX(), trackedPos.getSectionZ()))) {
+            tryTickTracker(entityTracker);
+        }
+        if (isPlayerPositionUpdated || ((EntityTrackerExtension) entityTracker).isPositionUpdated()) {
+            tryUpdateTracker(entityTracker, player);
         }
     }
 

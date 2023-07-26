@@ -32,6 +32,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     @Shadow public abstract void updateTrackedStatus(ServerPlayerEntity player);
 
     @Shadow @Final private EntityTrackerEntry entry;
+    @Shadow private ChunkSectionPos trackedSection;
     @Unique
     private double prevX = Double.NaN;
 
@@ -76,6 +77,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
 
     @Override
     public void tryTick() {
+        this.trackedSection = ChunkSectionPos.from(this.entity);
         if (!this.listeners.isEmpty()) {
             this.entry.tick();
         } else {
