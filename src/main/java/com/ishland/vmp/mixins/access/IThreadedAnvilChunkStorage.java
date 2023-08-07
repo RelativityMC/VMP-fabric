@@ -28,9 +28,6 @@ public interface IThreadedAnvilChunkStorage {
     @Accessor
     PlayerChunkWatchingManager getPlayerChunkWatchingManager();
 
-    @Invoker
-    void invokeSendWatchPackets(ServerPlayerEntity player, ChunkPos pos, MutableObject<ChunkDataS2CPacket> mutableObject, boolean oldWithinViewDistance, boolean newWithinViewDistance);
-
     @Accessor
     ThreadExecutor<Runnable> getMainThreadExecutor();
 

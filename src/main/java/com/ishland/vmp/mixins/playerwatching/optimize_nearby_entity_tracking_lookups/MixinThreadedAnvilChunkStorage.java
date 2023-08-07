@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,6 +25,7 @@ public class MixinThreadedAnvilChunkStorage {
     @Final
     private Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> entityTrackers;
     @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
+    @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
     @Unique
     private final NearbyEntityTracking nearbyEntityTracking = new NearbyEntityTracking();
 
@@ -73,6 +75,11 @@ public class MixinThreadedAnvilChunkStorage {
      */
     @Overwrite
     public void tickEntityMovement() {
+        for(ServerPlayerEntity serverPlayerEntity : this.playerChunkWatchingManager.getPlayersWatchingChunk()) {
+//            this.sendWatchPackets(serverPlayerEntity); // done with distance maps
+            serverPlayerEntity.networkHandler.chunkDataSender.sendChunkBatches(serverPlayerEntity);
+        }
+
         try {
             this.nearbyEntityTracking.tick(this.ticketManager);
         } catch (Throwable t) {

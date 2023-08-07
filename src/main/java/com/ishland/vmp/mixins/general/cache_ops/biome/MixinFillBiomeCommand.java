@@ -39,7 +39,7 @@ public abstract class MixinFillBiomeCommand {
     @Final
     public static SimpleCommandExceptionType UNLOADED_EXCEPTION;
 
-    @Inject(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/command/ServerCommandSource;sendFeedback(Lnet/minecraft/text/Text;Z)V"))
+    @Inject(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/command/ServerCommandSource;sendFeedback(Ljava/util/function/Supplier;Z)V"))
     private static void scheduleRefreshBiome(ServerCommandSource source, BlockPos from, BlockPos to, RegistryEntry.Reference<Biome> biome, Predicate<RegistryEntry<Biome>> filter, CallbackInfoReturnable<Integer> cir) {
         BlockPos blockPos = convertPos(from);
         BlockPos blockPos2 = convertPos(to);

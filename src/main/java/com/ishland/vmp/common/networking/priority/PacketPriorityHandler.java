@@ -322,7 +322,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private boolean shouldDropPacketEarly(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof PlayerRespawnS2CPacket packet) {
-            final Identifier changedDimension = packet.getDimension().getValue();
+            final Identifier changedDimension = packet.commonPlayerSpawnInfo().dimension().getValue();
             if (changedDimension.equals(this.dimension)) {
                 this.userEventTriggered(ctx, SYNC_REQUEST_OBJECT);
             } else {
@@ -330,20 +330,20 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
                 this.userEventTriggered(ctx, SYNC_REQUEST_OBJECT_DIM_CHANGE);
             }
         } else if (msg instanceof GameJoinS2CPacket packet) {
-            this.dimension = packet.dimensionId().getValue();
+            this.dimension = packet.commonPlayerSpawnInfo().dimension().getValue();
             int lastViewDistance = this.serverViewDistance;
             this.serverViewDistance = packet.viewDistance() + 1;
             if (lastViewDistance != this.serverViewDistance) ensureChunkInVD(ctx);
         } else if (msg instanceof ChunkDataS2CPacket packet) {
-            if (isInRange(packet.getX(), packet.getZ())) {
-                final long pos = ChunkPos.toLong(packet.getX(), packet.getZ());
+            if (isInRange(packet.getChunkX(), packet.getChunkZ())) {
+                final long pos = ChunkPos.toLong(packet.getChunkX(), packet.getChunkZ());
                 sentChunkPacketHashes.put(pos, System.identityHashCode(packet));
                 clearChunkUpdateQueue(pos);
             } else {
-                System.err.println("Not sending chunk [%d, %d] as it is not in view distance".formatted(packet.getX(), packet.getZ()));
+                System.err.println("Not sending chunk [%d, %d] as it is not in view distance".formatted(packet.getChunkX(), packet.getChunkZ()));
             }
         } else if (msg instanceof UnloadChunkS2CPacket packet) {
-            final long pos = ChunkPos.toLong(packet.getX(), packet.getZ());
+            final long pos = ChunkPos.toLong(packet.pos().x, packet.pos().z);
             sentChunkPacketHashes.remove(pos);
             actuallySentChunks.remove(pos);
             clearChunkUpdateQueue(pos);
@@ -376,7 +376,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
 
     private boolean shouldDropPacket(Object msg) {
         if (msg instanceof ChunkDataS2CPacket packet) {
-            final long coord = ChunkPos.toLong(packet.getX(), packet.getZ());
+            final long coord = ChunkPos.toLong(packet.getChunkX(), packet.getChunkZ());
             final int hash = sentChunkPacketHashes.getOrDefault(coord, Integer.MIN_VALUE);
             boolean isValidHash = hash != Integer.MIN_VALUE || sentChunkPacketHashes.containsKey(coord);
             if (!isValidHash)
@@ -404,7 +404,7 @@ public class PacketPriorityHandler extends ChannelDuplexHandler {
             final int z = ChunkPos.getPackedZ(pos);
             if (!isInRange(x, z)) {
                 iterator.remove();
-                ctx.write(new UnloadChunkS2CPacket(x, z));
+                ctx.write(new UnloadChunkS2CPacket(new ChunkPos(x, z)));
                 actuallySentChunks.remove(pos);
                 clearChunkUpdateQueue(pos);
             }

@@ -2,7 +2,7 @@ package com.ishland.vmp.mixins.networking.priority.sync;
 
 import com.ishland.vmp.common.networking.priority.PacketPriorityHandler;
 import com.ishland.vmp.mixins.access.IClientConnection;
-import com.ishland.vmp.mixins.access.IServerPlayNetworkHandler;
+import com.ishland.vmp.mixins.access.IServerCommonNetworkHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.SocketChannel;
 import net.minecraft.entity.Entity;
@@ -32,7 +32,7 @@ public class MixinServerPlayerEntity {
     }
 
     private void vmp$startPriorityHandler() {
-        final Channel channel = ((IClientConnection) ((IServerPlayNetworkHandler) this.networkHandler).getConnection()).getChannel();
+        final Channel channel = ((IClientConnection) ((IServerCommonNetworkHandler) this.networkHandler).getConnection()).getChannel();
         if (channel == null) {
             //noinspection RedundantStringFormatCall
             System.err.println("VMP: Warning: %s don't have valid channel when teleporting to another dimension, not starting priority handling".formatted(this));

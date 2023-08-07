@@ -1,15 +1,14 @@
 package com.ishland.vmp.mixins.access;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.network.NetworkState;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.network.listener.PacketListener;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(NetworkState.PacketHandler.class)
-public interface INetworkStatePacketHandler {
+public interface INetworkStatePacketHandler<T extends PacketListener> {
 
     @Accessor
-    Object2IntMap<Class<? extends Packet<?>>> getPacketIds();
-    
+    NetworkState.InternalPacketHandler<T> getBackingHandler();
+
 }

@@ -6,8 +6,8 @@ import com.ishland.vmp.mixins.access.IEntityTrackerEntry;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.EntityTrackerEntry;
+import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.EntityTrackingListener;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -27,7 +27,7 @@ import java.util.Set;
 public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements EntityTrackerExtension {
 
     @Shadow @Final private Entity entity;
-    @Shadow @Final private Set<EntityTrackingListener> listeners;
+    @Shadow @Final private Set<PlayerAssociatedNetworkHandler> listeners;
 
     @Shadow public abstract void updateTrackedStatus(ServerPlayerEntity player);
 
@@ -68,7 +68,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
 
     @Override
     public void updateListeners(Set<ServerPlayerEntity> triedPlayers) {
-        for (EntityTrackingListener listener : this.listeners.toArray(EntityTrackingListener[]::new)) {
+        for (PlayerAssociatedNetworkHandler listener : this.listeners.toArray(PlayerAssociatedNetworkHandler[]::new)) {
             final ServerPlayerEntity player = listener.getPlayer();
             if (triedPlayers != null) triedPlayers.add(player);
             if (player != null) this.updateTrackedStatus(player);

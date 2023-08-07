@@ -1,6 +1,5 @@
 package com.ishland.vmp.mixins;
 
-import com.ishland.vmp.common.chunk.sending.PlayerChunkSendingSystem;
 import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.logging.AsyncAppenderBootstrap;
 import net.fabricmc.loader.api.FabricLoader;
@@ -27,8 +26,7 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.carpet."))
             return FabricLoader.getInstance().isModLoaded("carpet");
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.sending."))
-            return PlayerChunkSendingSystem.ENABLED;
+
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups"))
             return Config.USE_OPTIMIZED_ENTITY_TRACKING;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.eventloops."))

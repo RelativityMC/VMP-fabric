@@ -1,6 +1,7 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_player_lookups;
 
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
+import com.ishland.vmp.common.playerwatching.TACSExtension;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.SpawnGroup;
@@ -39,7 +40,7 @@ public abstract class MixinSpawnDensityCapper {
 
     @Unique
     private Object[] getMobSpawnablePlayersArray(ChunkPos chunkPos) {
-        final AreaPlayerChunkWatchingManager manager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) this.threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
+        final AreaPlayerChunkWatchingManager manager = ((TACSExtension) this.threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         return manager.getPlayersInGeneralAreaMap(chunkPos.toLong());
     }
 

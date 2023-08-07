@@ -1,6 +1,7 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_player_lookups;
 
 import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
+import com.ishland.vmp.common.playerwatching.TACSExtension;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.MCUtil;
 import net.minecraft.entity.Entity;
@@ -41,7 +42,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
     @Override
     public PlayerEntity getClosestPlayer(double x, double y, double z, double maxDistance, @Nullable Predicate<Entity> targetPredicate) {
         final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
-        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
+        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
         final int chunkZ = ChunkSectionPos.getSectionCoord(z);
 
@@ -76,15 +77,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
     @Nullable
     @Override
     public PlayerEntity getClosestPlayer(TargetPredicate targetPredicate, LivingEntity entity, double x, double y, double z) {
-        final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
-        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
-        final int chunkX = ChunkSectionPos.getSectionCoord(x);
-        final int chunkZ = ChunkSectionPos.getSectionCoord(z);
-
-        // no maxDistance here so just search within the range,
-        // and hopefully it works
-
-        final Object[] playersWatchingChunkArray = playerChunkWatchingManager.getPlayersInGeneralAreaMap(MCUtil.getCoordinateKey(chunkX, chunkZ));
+        final Object[] playersWatchingChunkArray = getPlayersWatchingChunkArray(x, z);
 
         ServerPlayerEntity nearestPlayer = null;
         double nearestDistance = Double.MAX_VALUE;
@@ -103,6 +96,19 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
         return nearestPlayer;
     }
 
+    private Object[] getPlayersWatchingChunkArray(double x, double z) {
+        final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
+        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
+        final int chunkX = ChunkSectionPos.getSectionCoord(x);
+        final int chunkZ = ChunkSectionPos.getSectionCoord(z);
+
+        // no maxDistance here so just search within the range,
+        // and hopefully it works
+
+        final Object[] playersWatchingChunkArray = playerChunkWatchingManager.getPlayersInGeneralAreaMap(MCUtil.getCoordinateKey(chunkX, chunkZ));
+        return playersWatchingChunkArray;
+    }
+
     @Nullable
     @Override
     public PlayerEntity getClosestPlayer(TargetPredicate targetPredicate, double x, double y, double z) {
@@ -112,7 +118,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
     @Override
     public boolean isPlayerInRange(double x, double y, double z, double range) {
         final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
-        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = (AreaPlayerChunkWatchingManager) ((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getPlayerChunkWatchingManager();
+        final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
         final int chunkZ = ChunkSectionPos.getSectionCoord(z);
 

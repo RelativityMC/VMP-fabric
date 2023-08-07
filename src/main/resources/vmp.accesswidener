@@ -11,7 +11,7 @@ accessible    class    net/minecraft/network/NetworkState$PacketHandler
 accessible    class    net/minecraft/server/command/SpreadPlayersCommand$Pile
 accessible    class    net/minecraft/server/command/TeleportCommand$LookTarget
 
-extendable    class    net/minecraft/network/NetworkState$PacketHandler
+extendable    class    net/minecraft/network/NetworkState$InternalPacketHandler
 extendable    class    net/minecraft/server/world/ChunkTicket
 extendable    class    net/minecraft/server/world/PlayerChunkWatchingManager
 

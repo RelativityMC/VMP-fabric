@@ -11,6 +11,6 @@ import java.util.Map;
 public interface INetworkState {
 
     @Accessor
-    Map<NetworkSide, ? extends NetworkState.PacketHandler<?>> getPacketHandlers();
+    Map<NetworkSide, ? extends NetworkState.InternalPacketHandler<?>> getPacketHandlers();
 
 }

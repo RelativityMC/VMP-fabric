@@ -4,9 +4,13 @@ import com.ishland.vmp.common.chunk.loading.async_chunks_on_player_login.AsyncCh
 import com.ishland.vmp.common.chunk.loading.async_chunks_on_player_login.IAsyncChunkPlayer;
 import com.ishland.vmp.common.config.Config;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.listener.ServerPlayPacketListener;
+import net.minecraft.network.listener.TickablePacketListener;
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
+import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
+import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -24,17 +28,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayNetworkHandler.class)
-public abstract class MixinServerPlayNetworkHandler {
+public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkHandler
+        implements ServerPlayPacketListener,
+        PlayerAssociatedNetworkHandler,
+        TickablePacketListener {
+
+    public MixinServerPlayNetworkHandler(MinecraftServer server, ClientConnection connection, int keepAliveId) {
+        super(server, connection, keepAliveId);
+    }
 
     @Shadow public ServerPlayerEntity player;
-
-    @Shadow @Final private MinecraftServer server;
 
     @Shadow public abstract void onClientStatus(ClientStatusC2SPacket packet);
 
     @Shadow @Final private static Logger LOGGER;
-
-    @Shadow @Final public ClientConnection connection;
 
     @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updatePositionAndAngles(DDDFF)V"))
     private void suppressUpdatePositionDuringChunkLoad(ServerPlayerEntity instance, double x, double y, double z, float yaw, float pitch) {
