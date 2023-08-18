@@ -46,7 +46,7 @@ public class AsyncChunkLoadUtil {
                 .toCompletableFuture()
                 .thenComposeAsync(unused -> {
                     ticketManager.addTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
-                    ((IServerChunkManager) chunkManager).invokeTick();
+                    ((IServerChunkManager) chunkManager).invokeUpdateChunks();
                     final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.threadedAnvilChunkStorage).invokeGetCurrentChunkHolder(pos.toLong());
                     if (chunkHolder == null) {
                         throw new IllegalStateException("Chunk not there when requested");

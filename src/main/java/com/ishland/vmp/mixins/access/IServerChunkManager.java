@@ -13,6 +13,6 @@ public interface IServerChunkManager {
     ChunkTicketManager getTicketManager();
 
     @Invoker
-    boolean invokeTick();
+    boolean invokeUpdateChunks();
 
 }

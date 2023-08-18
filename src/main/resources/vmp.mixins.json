@@ -56,6 +56,7 @@
     "networking.priority.MixinClientConnection",
     "networking.priority.sync.MixinPlayerManager",
     "networking.priority.sync.MixinServerPlayerEntity",
+    "playerwatching.MixinChunkFilter",
     "playerwatching.MixinServerPlayerEntity",
     "playerwatching.MixinTACSCancelSending",
     "playerwatching.MixinTACSCancelSendingKrypton",

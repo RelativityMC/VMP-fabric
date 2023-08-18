@@ -53,6 +53,14 @@ public class AreaPlayerChunkWatchingManager {
     }
 
     public void tick() {
+        for (Object2LongMap.Entry<ServerPlayerEntity> entry : this.positions.object2LongEntrySet()) {
+            final PlayerClientVDTracking vdTracking = (PlayerClientVDTracking) entry.getKey();
+            if (vdTracking.isClientViewDistanceChanged()) {
+                vdTracking.getClientViewDistance();
+                this.movePlayer(entry.getLongValue(), entry.getKey());
+            }
+        }
+
     }
 
     public void setWatchDistance(int watchDistance) {

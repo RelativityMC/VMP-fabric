@@ -30,7 +30,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -47,9 +46,9 @@ public abstract class MixinChunkTicketManager {
     @Shadow protected @Nullable abstract ChunkHolder setLevel(long pos, int level, @Nullable ChunkHolder holder, int i);
 
     @Shadow @Final private ChunkTicketManager.NearbyChunkTicketUpdater nearbyChunkTicketUpdater;
-    @Shadow @Final private Set<ChunkHolder> chunkHolders;
+    @Shadow @Final private Set<ChunkHolder> chunkHoldersWithPendingUpdates;
     @Shadow @Final private Executor mainThreadExecutor;
-    @Shadow @Final private LongSet chunkPositions;
+    @Shadow @Final private LongSet freshPlayerTicketPositions;
 
     @Shadow protected abstract SortedArraySet<ChunkTicket<?>> getTicketSet(long position);
 
@@ -139,7 +138,7 @@ public abstract class MixinChunkTicketManager {
 
     }
 
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
+    @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
     public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
         if (!((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getMainThreadExecutor().isOnThread()) {
             throw new ConcurrentModificationException("Attempted to tick tickets asynchronously");
@@ -172,7 +171,7 @@ public abstract class MixinChunkTicketManager {
         }
 
         while (!this.pendingChunkHolderUpdates.isEmpty()) {
-            ((IChunkHolder) this.pendingChunkHolderUpdates.dequeue()).invokeTick1(threadedAnvilChunkStorage, this.mainThreadExecutor);
+            ((IChunkHolder) this.pendingChunkHolderUpdates.dequeue()).invokeUpdateFutures(threadedAnvilChunkStorage, this.mainThreadExecutor);
         }
 
         return hasUpdates ? distance - 1 : distance;

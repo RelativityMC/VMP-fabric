@@ -5,6 +5,7 @@ import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.playerwatching.TACSExtension;
 import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
+import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
@@ -43,6 +44,8 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
     }
 
     @Shadow protected abstract void updateWatchedSection(ServerPlayerEntity player);
+
+    @Shadow abstract int getViewDistance(ServerPlayerEntity player);
 
     @Unique
     private AreaPlayerChunkWatchingManager areaPlayerChunkWatchingManager;
@@ -173,6 +176,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
     private void vmp$updateWatchedSection(ServerPlayerEntity player) {
         this.updateWatchedSection(player);
         player.networkHandler.sendPacket(new ChunkRenderDistanceCenterS2CPacket(player.getWatchedSection().getSectionX(), player.getWatchedSection().getSectionZ()));
+        player.setChunkFilter(ChunkFilter.cylindrical(player.getWatchedSection().toChunkPos(), this.getViewDistance(player)));
     }
 
 }

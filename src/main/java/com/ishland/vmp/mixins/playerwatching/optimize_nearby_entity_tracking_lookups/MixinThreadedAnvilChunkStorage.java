@@ -75,10 +75,10 @@ public class MixinThreadedAnvilChunkStorage {
      */
     @Overwrite
     public void tickEntityMovement() {
-        for(ServerPlayerEntity serverPlayerEntity : this.playerChunkWatchingManager.getPlayersWatchingChunk()) {
-//            this.sendWatchPackets(serverPlayerEntity); // done with distance maps
-            serverPlayerEntity.networkHandler.chunkDataSender.sendChunkBatches(serverPlayerEntity);
-        }
+//        for(ServerPlayerEntity serverPlayerEntity : this.playerChunkWatchingManager.getPlayersWatchingChunk()) {
+////            this.sendWatchPackets(serverPlayerEntity); // done with distance maps
+//            serverPlayerEntity.networkHandler.chunkDataSender.sendChunkBatches(serverPlayerEntity);
+//        }
 
         try {
             this.nearbyEntityTracking.tick(this.ticketManager);

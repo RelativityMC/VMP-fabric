@@ -10,7 +10,7 @@ import java.util.concurrent.Executor;
 @Mixin(ChunkHolder.class)
 public interface IChunkHolder {
 
-    @Invoker("tick")
-    void invokeTick1(ThreadedAnvilChunkStorage chunkStorage, Executor executor); // no compiler please dont do stupid shit
+    @Invoker
+    void invokeUpdateFutures(ThreadedAnvilChunkStorage chunkStorage, Executor executor);
 
 }
