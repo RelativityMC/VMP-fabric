@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkPos;
@@ -54,10 +55,13 @@ public class AreaPlayerChunkWatchingManager {
 
     public void tick() {
         for (Object2LongMap.Entry<ServerPlayerEntity> entry : this.positions.object2LongEntrySet()) {
-            final PlayerClientVDTracking vdTracking = (PlayerClientVDTracking) entry.getKey();
+            final ServerPlayerEntity player = entry.getKey();
+            final PlayerClientVDTracking vdTracking = (PlayerClientVDTracking) player;
             if (vdTracking.isClientViewDistanceChanged()) {
                 vdTracking.getClientViewDistance();
-                this.movePlayer(entry.getLongValue(), entry.getKey());
+                final long pos = entry.getLongValue();
+                this.movePlayer(pos, player);
+                player.setChunkFilter(ChunkFilter.cylindrical(new ChunkPos(pos), this.getViewDistance(player)));
             }
         }
 
