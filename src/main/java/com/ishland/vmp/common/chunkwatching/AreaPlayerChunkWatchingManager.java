@@ -136,7 +136,7 @@ public class AreaPlayerChunkWatchingManager {
     }
 
     private int getViewDistance(ServerPlayerEntity player) {
-        return MathHelper.clamp(player.getViewDistance().orElse(2), 2, this.watchDistance);
+        return MathHelper.clamp(player.getViewDistance(), 2, this.watchDistance);
     }
 
     public interface Listener {

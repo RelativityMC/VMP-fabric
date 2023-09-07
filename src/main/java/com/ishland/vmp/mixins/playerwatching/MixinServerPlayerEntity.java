@@ -1,7 +1,7 @@
 package com.ishland.vmp.mixins.playerwatching;
 
 import com.ishland.vmp.common.chunkwatching.PlayerClientVDTracking;
-import net.minecraft.network.packet.c2s.play.ClientSettingsC2SPacket;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,8 +18,8 @@ public class MixinServerPlayerEntity implements PlayerClientVDTracking {
     @Unique
     private int clientVD = -1;
 
-    @Inject(method = "setClientSettings", at = @At("HEAD"))
-    private void onClientSettingsChanged(ClientSettingsC2SPacket packet, CallbackInfo ci) {
+    @Inject(method = "setClientOptions", at = @At("HEAD"))
+    private void onClientSettingsChanged(SyncedClientOptions packet, CallbackInfo ci) {
         final int currentVD = packet.viewDistance();
         if (currentVD != this.clientVD) this.vdChanged = true;
         this.clientVD = Math.max(2, currentVD);

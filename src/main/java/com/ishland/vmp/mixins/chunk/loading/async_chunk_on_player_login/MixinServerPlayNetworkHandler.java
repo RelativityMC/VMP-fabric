@@ -9,6 +9,7 @@ import net.minecraft.network.listener.TickablePacketListener;
 import net.minecraft.network.packet.c2s.play.ClientStatusC2SPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerTask;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerCommonNetworkHandler;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
@@ -33,8 +34,8 @@ public abstract class MixinServerPlayNetworkHandler extends ServerCommonNetworkH
         PlayerAssociatedNetworkHandler,
         TickablePacketListener {
 
-    public MixinServerPlayNetworkHandler(MinecraftServer server, ClientConnection connection, int keepAliveId) {
-        super(server, connection, keepAliveId);
+    public MixinServerPlayNetworkHandler(MinecraftServer server, ClientConnection connection, ConnectedClientData arg) {
+        super(server, connection, arg);
     }
 
     @Shadow public ServerPlayerEntity player;
