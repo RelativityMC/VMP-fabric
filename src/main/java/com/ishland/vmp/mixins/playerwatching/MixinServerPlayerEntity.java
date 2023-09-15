@@ -25,6 +25,12 @@ public class MixinServerPlayerEntity implements PlayerClientVDTracking {
         this.clientVD = Math.max(2, currentVD);
     }
 
+    @Inject(method = "copyFrom", at = @At("RETURN"))
+    private void onPlayerCopy(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        this.clientVD = ((PlayerClientVDTracking) oldPlayer).getClientViewDistance();
+        this.vdChanged = true;
+    }
+
     @Unique
     @Override
     public boolean isClientViewDistanceChanged() {
