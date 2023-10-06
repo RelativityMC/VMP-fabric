@@ -114,30 +114,6 @@ public abstract class MixinChunkTicketManager {
         this.updateTicketLevel(l, i);
     }
 
-    /**
-     * @author ishland
-     * @reason workaround for lithium compat
-     */
-    @Overwrite
-    public void purge() {
-        ++this.age;
-
-        final Predicate<ChunkTicket<?>> predicate = chunkTicket -> ((IChunkTicket) chunkTicket).invokeIsExpired1(this.age);
-        ObjectIterator<Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>>> objectIterator = this.ticketsByPosition.long2ObjectEntrySet().fastIterator();
-
-        while(objectIterator.hasNext()) {
-            Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>> entry = objectIterator.next();
-            if (entry.getValue().removeIf(predicate)) {
-                this.updateTicketLevel(entry.getLongKey(), getLevel(entry.getValue())); // modified
-            }
-
-            if (entry.getValue().isEmpty()) {
-                objectIterator.remove();
-            }
-        }
-
-    }
-
     @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
     public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
         if (!((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getMainThreadExecutor().isOnThread()) {
