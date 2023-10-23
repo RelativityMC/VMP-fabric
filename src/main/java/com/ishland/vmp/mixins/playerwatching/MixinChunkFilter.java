@@ -13,7 +13,7 @@ public interface MixinChunkFilter {
      */
     @Overwrite
     static boolean isWithinDistance(int centerX, int centerZ, int viewDistance, int x, int z, boolean includeEdge) {
-        int actualViewDistance = viewDistance + (includeEdge ? 0 : -1);
+        int actualViewDistance = viewDistance + (includeEdge ? 1 : 0);
         int xDistance = Math.abs(centerX - x);
         int zDistance = Math.abs(centerZ - z);
         return xDistance <= actualViewDistance && zDistance <= actualViewDistance;
