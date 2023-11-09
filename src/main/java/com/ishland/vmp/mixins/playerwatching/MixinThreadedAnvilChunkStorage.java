@@ -123,7 +123,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         } else {
             ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
 
-            for (Object __player : this.areaPlayerChunkWatchingManager.getPlayersWatchingChunkArray(l)) {
+            for (Object __player : this.areaPlayerChunkWatchingManager.getPlayersInGeneralAreaMap(l)) {
                 if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
                     if (this.canTickChunk(serverPlayerEntity, pos)) {
                         builder.add(serverPlayerEntity);
@@ -145,7 +145,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         if (!this.ticketManager.shouldTick(l)) {
             return false;
         } else {
-            for (Object __player : this.areaPlayerChunkWatchingManager.getPlayersWatchingChunkArray(l)) {
+            for (Object __player : this.areaPlayerChunkWatchingManager.getPlayersInGeneralAreaMap(l)) {
                 if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
                     if (this.canTickChunk(serverPlayerEntity, pos)) {
                         return true;

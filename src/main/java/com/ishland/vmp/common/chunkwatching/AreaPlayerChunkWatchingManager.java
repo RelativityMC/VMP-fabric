@@ -138,7 +138,7 @@ public class AreaPlayerChunkWatchingManager {
     }
 
     private int getViewDistance(ServerPlayerEntity player) {
-        return MathHelper.clamp(player.getViewDistance(), 2, this.watchDistance);
+        return MathHelper.clamp(player.getViewDistance(), 2, this.watchDistance) + 1; // edge chunks are required for rendering
     }
 
     public interface Listener {

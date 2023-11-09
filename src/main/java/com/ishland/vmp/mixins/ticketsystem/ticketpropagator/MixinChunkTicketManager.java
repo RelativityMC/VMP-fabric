@@ -109,33 +109,9 @@ public abstract class MixinChunkTicketManager {
         this.pendingChunkHolderUpdates = new ObjectArrayFIFOQueue<>();
     }
 
-    @Redirect(method = {"purge", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 3, expect = 3)
+    @Redirect(method = {"purge", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 4, expect = 4)
     private void redirectUpdate(ChunkTicketManager.TicketDistanceLevelPropagator instance, long l, int i, boolean b) {
         this.updateTicketLevel(l, i);
-    }
-
-    /**
-     * @author ishland
-     * @reason workaround for lithium compat
-     */
-    @Overwrite
-    public void purge() {
-        ++this.age;
-
-        final Predicate<ChunkTicket<?>> predicate = chunkTicket -> ((IChunkTicket) chunkTicket).invokeIsExpired1(this.age);
-        ObjectIterator<Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>>> objectIterator = this.ticketsByPosition.long2ObjectEntrySet().fastIterator();
-
-        while(objectIterator.hasNext()) {
-            Long2ObjectMap.Entry<SortedArraySet<ChunkTicket<?>>> entry = objectIterator.next();
-            if (entry.getValue().removeIf(predicate)) {
-                this.updateTicketLevel(entry.getLongKey(), getLevel(entry.getValue())); // modified
-            }
-
-            if (entry.getValue().isEmpty()) {
-                objectIterator.remove();
-            }
-        }
-
     }
 
     @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))

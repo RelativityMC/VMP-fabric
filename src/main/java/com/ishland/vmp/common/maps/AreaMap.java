@@ -31,7 +31,7 @@ public class AreaMap<T> {
                     ReferenceLinkedOpenHashSet::clear,
                     ts -> {
                         ts.clear();
-                        ts.trim(4);
+                        ts.trim(256);
                     },
                     8192
             );
