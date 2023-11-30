@@ -43,17 +43,7 @@ dependencies {
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	shadowInclude("com.github.RelativityMC.raknetify:fabric:${project.raknetify_version}") {
-		transitive = false
-	}
-	modImplementation ("com.github.RelativityMC.raknetify:fabric:${project.raknetify_version}")
-
-	shadowInclude implementation("com.github.RelativityMC.raknetify:common:${project.raknetify_version}") {
-		transitive = false
-	}
-
-	shadowInclude implementation("com.ibm.async:asyncutil:${async_util_version}")
-
+	include implementation("com.ibm.async:asyncutil:${async_util_version}")
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
