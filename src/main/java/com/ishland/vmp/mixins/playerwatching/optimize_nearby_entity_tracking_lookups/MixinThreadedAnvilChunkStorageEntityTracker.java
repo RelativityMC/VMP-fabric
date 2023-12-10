@@ -18,6 +18,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
@@ -104,6 +105,11 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
         if (this.listeners.isEmpty()) {
             ((EntityTrackerEntryExtension) this.entry).vmp$tickAlways();
         }
+    }
+
+    @Redirect(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;isTracked(Lnet/minecraft/server/network/ServerPlayerEntity;II)Z"))
+    private boolean assumeAlwaysTracked(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player, int chunkX, int chunkZ) {
+        return true;
     }
 
 }
