@@ -2,13 +2,15 @@ package com.ishland.vmp.common.chunk.loading.async_chunks_on_player_login;
 
 import net.minecraft.nbt.NbtCompound;
 
+import java.util.Optional;
+
 public interface IAsyncChunkPlayer {
 
     void markPlayerForAsyncChunkLoad();
 
-    void setPlayerData(NbtCompound nbtCompound);
+    void setPlayerData(Optional<NbtCompound> nbtCompound);
 
-    NbtCompound getPlayerData();
+    Optional<NbtCompound> getPlayerData();
 
     boolean isChunkLoadCompleted();
 

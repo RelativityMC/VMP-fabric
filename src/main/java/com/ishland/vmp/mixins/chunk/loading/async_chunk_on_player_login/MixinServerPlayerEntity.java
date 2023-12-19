@@ -9,11 +9,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Optional;
+
 @Mixin(ServerPlayerEntity.class)
 public class MixinServerPlayerEntity implements IAsyncChunkPlayer {
 
     @Unique
-    private NbtCompound playerData = null;
+    private Optional<NbtCompound> playerData = Optional.empty();
 
     @Unique
     private boolean chunkLoadCompleted = true;
@@ -24,12 +26,12 @@ public class MixinServerPlayerEntity implements IAsyncChunkPlayer {
     }
 
     @Override
-    public void setPlayerData(NbtCompound nbtCompound) {
+    public void setPlayerData(Optional<NbtCompound> nbtCompound) {
         this.playerData = nbtCompound;
     }
 
     @Override
-    public NbtCompound getPlayerData() {
+    public Optional<NbtCompound> getPlayerData() {
         return this.playerData;
     }
 
