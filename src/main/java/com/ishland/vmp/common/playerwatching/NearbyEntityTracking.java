@@ -1,19 +1,16 @@
 package com.ishland.vmp.common.playerwatching;
 
+import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.maps.AreaMap;
 import com.ishland.vmp.common.playerwatching.compat.EntityPositionTransformer;
 import com.ishland.vmp.common.util.SimpleObjectPool;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
-import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
-import it.unimi.dsi.fastutil.objects.Object2ObjectFunction;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.Reference2LongMap;
 import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import it.unimi.dsi.fastutil.objects.ReferenceLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,8 +21,9 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class NearbyEntityTracking {
 
@@ -60,12 +58,18 @@ public class NearbyEntityTracking {
                     8192
             );
 
+    // AreaMap implementation for long-lived entities
     private final AreaMap<ThreadedAnvilChunkStorage.EntityTracker> areaMap = new AreaMap<>();
-
     private final Reference2ReferenceLinkedOpenHashMap<ServerPlayerEntity, ReferenceLinkedOpenHashSet<ThreadedAnvilChunkStorage.EntityTracker>> playerTrackers = new Reference2ReferenceLinkedOpenHashMap<>();
     private final Reference2LongOpenHashMap<ThreadedAnvilChunkStorage.EntityTracker> tracker2ChunkPos = new Reference2LongOpenHashMap<>();
 
-    public void addEntityTracker(ThreadedAnvilChunkStorage.EntityTracker tracker) {
+    // vanilla-like implementation for short-lived entities
+    private static final int STAGING_TRACKER_LIFETIME = 200; // 10s
+    private final AtomicLong ticks = new AtomicLong(0L);
+    private final ObjectLinkedOpenHashSet<StagedTracker> stagingTrackers = new ObjectLinkedOpenHashSet<>();
+
+    private void addEntityTrackerAreaMap(ThreadedAnvilChunkStorage.EntityTracker tracker) {
+        // update is done lazily on next tickEntityMovement
         final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity());
         this.areaMap.add(
                 tracker,
@@ -76,7 +80,24 @@ public class NearbyEntityTracking {
         this.tracker2ChunkPos.put(tracker, pos.toLong());
     }
 
+    public void addEntityTracker(ThreadedAnvilChunkStorage.EntityTracker tracker) {
+        if (Config.OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA) {
+            stagingTrackers.addAndMoveToLast(new StagedTracker(tracker, ticks.get()));
+            for (ServerPlayerEntity player : this.playerTrackers.keySet()) {
+                tracker.updateTrackedStatus(player);
+            }
+        } else {
+            this.addEntityTrackerAreaMap(tracker);
+        }
+    }
+
     public void removeEntityTracker(ThreadedAnvilChunkStorage.EntityTracker tracker) {
+        // remove from staging
+        if (this.stagingTrackers.remove(new StagedTracker(tracker, 0L))) { // 0L is a dummy value (not used in equals(..) and hashCode())
+            tracker.stopTracking();
+        }
+
+        // remove from AreaMap
         this.areaMap.remove(tracker);
         this.tracker2ChunkPos.removeLong(tracker);
     }
@@ -86,6 +107,12 @@ public class NearbyEntityTracking {
     }
 
     public void removePlayer(ServerPlayerEntity player) {
+        // remove player in staging
+        for (StagedTracker stagingTracker : this.stagingTrackers) {
+            stagingTracker.tracker().stopTracking(player);
+        }
+
+        // remove player in AreaMap
         final ReferenceLinkedOpenHashSet<ThreadedAnvilChunkStorage.EntityTracker> originalTrackers = this.playerTrackers.remove(player);
         if (originalTrackers != null) {
             for (ThreadedAnvilChunkStorage.EntityTracker tracker : originalTrackers) {
@@ -113,6 +140,8 @@ public class NearbyEntityTracking {
     }
 
     public void tick(ThreadedAnvilChunkStorage.TicketManager ticketManager) {
+        tickStaging(ticketManager);
+
         for (Reference2LongMap.Entry<ThreadedAnvilChunkStorage.EntityTracker> entry : this.tracker2ChunkPos.reference2LongEntrySet()) {
             final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) entry.getKey()).getEntity());
             if (pos.toLong() != entry.getLongValue()) {
@@ -155,6 +184,38 @@ public class NearbyEntityTracking {
         }
     }
 
+    private void tickStaging(ThreadedAnvilChunkStorage.TicketManager ticketManager) {
+        // migrate staging trackers to AreaMap
+        final long currentTicks = this.ticks.incrementAndGet();
+        for (ObjectListIterator<StagedTracker> iterator = this.stagingTrackers.iterator(); iterator.hasNext(); ) {
+            StagedTracker stagingTracker = iterator.next();
+            if (currentTicks - stagingTracker.tickAdded() >= STAGING_TRACKER_LIFETIME) {
+                iterator.remove();
+//                System.out.println(String.format("Migrating staging tracker %s", ((IThreadedAnvilChunkStorageEntityTracker) stagingTracker.tracker()).getEntity()));
+                addEntityTrackerAreaMap(stagingTracker.tracker());
+            } else {
+                break;
+            }
+        }
+
+        final List<ServerPlayerEntity> players = List.copyOf(this.playerTrackers.keySet());
+        for(StagedTracker staged : this.stagingTrackers) {
+            final ThreadedAnvilChunkStorage.EntityTracker entityTracker = staged.tracker();
+            ChunkSectionPos chunkSectionPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
+            final Entity entity = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getEntity();
+            ChunkSectionPos chunkSectionPos2 = ChunkSectionPos.from(entity);
+            boolean bl = !Objects.equals(chunkSectionPos, chunkSectionPos2);
+            entityTracker.updateTrackedStatus(players);
+            if (bl) {
+                ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).setTrackedSection(chunkSectionPos2);
+            }
+
+            if (bl || ticketManager.shouldTickEntities(chunkSectionPos2.toChunkPos().toLong())) {
+                ((EntityTrackerExtension) entityTracker).tryTick();
+            }
+        }
+    }
+
     private void handleTracker(ThreadedAnvilChunkStorage.TicketManager ticketManager, ServerPlayerEntity player, boolean isPlayerPositionUpdated, ThreadedAnvilChunkStorage.EntityTracker entityTracker) {
         final ChunkSectionPos trackedPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
         if (trackerTickList.add(entityTracker) && ticketManager.shouldTickEntities(ChunkPos.toLong(trackedPos.getSectionX(), trackedPos.getSectionZ()))) {
@@ -175,6 +236,21 @@ public class NearbyEntityTracking {
 
     private int getChunkViewDistance(ThreadedAnvilChunkStorage.EntityTracker tracker) {
         return (int) Math.ceil(((IThreadedAnvilChunkStorageEntityTracker) tracker).invokeGetMaxTrackDistance() / 16.0) + 1;
+    }
+
+    private record StagedTracker(ThreadedAnvilChunkStorage.EntityTracker tracker, long tickAdded) {
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            StagedTracker that = (StagedTracker) o;
+            return tracker == that.tracker;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(tracker);
+        }
     }
 
 }

@@ -16,6 +16,9 @@ public interface IThreadedAnvilChunkStorageEntityTracker {
     @Accessor
     ChunkSectionPos getTrackedSection();
 
+    @Accessor
+    void setTrackedSection(ChunkSectionPos trackedSection);
+
     @Invoker
     int invokeGetMaxTrackDistance();
 

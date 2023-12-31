@@ -22,6 +22,7 @@ public class Config {
     public static final boolean USE_OPTIMIZED_CHUNK_TICKING_ITERATION;
     public static final boolean USE_ASYNC_LOGGING;
     public static final boolean USE_OPTIMIZED_ENTITY_TRACKING;
+    public static final boolean OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA;
     public static final boolean USE_MULTIPLE_NETTY_EVENT_LOOPS;
     public static final boolean USE_ASYNC_PORTALS;
     public static final boolean USE_ASYNC_CHUNKS_ON_LOGIN;
@@ -45,6 +46,7 @@ public class Config {
         USE_OPTIMIZED_CHUNK_TICKING_ITERATION = getBoolean(properties, newProperties, "exp_use_optimized_chunk_ticking_iteration", false);
         USE_ASYNC_LOGGING = getBoolean(properties, newProperties, "use_async_logging", true);
         USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, newProperties, "use_optimized_entity_tracking", true);
+        OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA = getBoolean(properties, newProperties, "optimized_entity_tracking_use_staging_area", true);
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
         USE_ASYNC_PORTALS = getBoolean(properties, newProperties, "use_async_portals", true);
         USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", true);
