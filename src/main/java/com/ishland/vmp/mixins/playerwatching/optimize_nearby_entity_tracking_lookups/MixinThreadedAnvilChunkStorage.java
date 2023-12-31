@@ -36,7 +36,6 @@ public class MixinThreadedAnvilChunkStorage {
             this.nearbyEntityTracking.addPlayer(player);
         }
         this.nearbyEntityTracking.addEntityTracker(instance);
-        // update is done lazily on next tickEntityMovement
     }
 
     @Redirect(method = "loadEntity", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;values()Lit/unimi/dsi/fastutil/objects/ObjectCollection;"))
