@@ -10,7 +10,7 @@ import io.netty.channel.nio.NioEventLoop;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.util.concurrent.FastThreadLocalThread;
-import net.minecraft.network.NetworkState;
+import net.minecraft.network.NetworkPhase;
 
 import java.util.function.Supplier;
 
@@ -60,17 +60,17 @@ public class VMPEventLoops {
                     )
             );
 
-    public static EventLoopGroup getEventLoopGroup(Channel channel, NetworkState state) {
+    public static EventLoopGroup getEventLoopGroup(Channel channel, NetworkPhase state) {
         if (channel instanceof NioSocketChannel) {
-            if (state == NetworkState.LOGIN) {
+            if (state == NetworkPhase.LOGIN) {
                 return NIO_LOGIN_EVENT_LOOP_GROUP.get();
-            } else if (state == NetworkState.PLAY) {
+            } else if (state == NetworkPhase.PLAY) {
                 return NIO_PLAY_EVENT_LOOP_GROUP.get();
             }
         } else if (channel instanceof EpollSocketChannel) {
-            if (state == NetworkState.LOGIN) {
+            if (state == NetworkPhase.LOGIN) {
                 return EPOLL_LOGIN_EVENT_LOOP_GROUP.get();
-            } else if (state == NetworkState.PLAY) {
+            } else if (state == NetworkPhase.PLAY) {
                 return EPOLL_PLAY_EVENT_LOOP_GROUP.get();
             }
         }

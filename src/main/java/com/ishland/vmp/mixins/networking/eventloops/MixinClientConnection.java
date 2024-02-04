@@ -6,7 +6,6 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.NetworkState;
 import net.minecraft.network.listener.PacketListener;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -38,7 +37,7 @@ public class MixinClientConnection {
 //        } else {
 //            return instance.setAutoRead(b);
 //        }
-        final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, packetListener.getState());
+        final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, packetListener.getPhase());
         if (group != null) {
             reregister(group);
         }

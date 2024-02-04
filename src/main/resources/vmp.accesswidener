@@ -7,11 +7,9 @@ accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$Enti
 accessible    class    net/minecraft/server/world/ThreadedAnvilChunkStorage$TicketManager
 accessible    class    net/minecraft/recipe/Ingredient$Entry
 accessible    class    net/minecraft/world/SpawnDensityCapper$DensityCap
-accessible    class    net/minecraft/network/NetworkState$PacketHandler
 accessible    class    net/minecraft/server/command/SpreadPlayersCommand$Pile
 accessible    class    net/minecraft/server/command/TeleportCommand$LookTarget
 
-extendable    class    net/minecraft/network/NetworkState$InternalPacketHandler
 extendable    class    net/minecraft/server/world/ChunkTicket
 extendable    class    net/minecraft/server/world/PlayerChunkWatchingManager
 

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.4-SNAPSHOT'
+	id 'fabric-loom' version '1.5-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.github.johnrengelman.shadow' version '7.1.0'
 	id 'com.modrinth.minotaur' version '2.+'
@@ -25,11 +25,16 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 
+	mavenCentral()
 	maven { url 'https://jitpack.io' }
 }
 
 loom {
 	accessWidenerPath = file("src/main/resources/vmp.accesswidener")
+}
+
+repositories.named("Mojang", MavenArtifactRepository) {
+	artifactUrls ArtifactRepositoryContainer.MAVEN_CENTRAL_URL
 }
 
 configurations {
