@@ -21,7 +21,7 @@ public class VMPEventLoops {
                     2,
                     new ThreadFactoryBuilder()
                             .setThreadFactory(FastThreadLocalThread::new)
-                            .setNameFormat("Netty Login IO Thread #%d")
+                            .setNameFormat("Netty Server Login IO #%d")
                             .setDaemon(true)
                             .build()
                     )
@@ -32,7 +32,7 @@ public class VMPEventLoops {
                             0,
                             new ThreadFactoryBuilder()
                                     .setThreadFactory(FastThreadLocalThread::new)
-                                    .setNameFormat("Netty Play IO Thread #%d")
+                                    .setNameFormat("Netty Server Play IO #%d")
                                     .setDaemon(true)
                                     .build()
                     )
@@ -43,7 +43,7 @@ public class VMPEventLoops {
                             2,
                             new ThreadFactoryBuilder()
                                     .setThreadFactory(FastThreadLocalThread::new)
-                                    .setNameFormat("Netty Epoll Login IO Thread #%d")
+                                    .setNameFormat("Netty Epoll Server Login IO #%d")
                                     .setDaemon(true)
                                     .build()
                     )
@@ -54,7 +54,7 @@ public class VMPEventLoops {
                             0,
                             new ThreadFactoryBuilder()
                                     .setThreadFactory(FastThreadLocalThread::new)
-                                    .setNameFormat("Netty Epoll Play IO Thread #%d")
+                                    .setNameFormat("Netty Epoll Server Play IO #%d")
                                     .setDaemon(true)
                                     .build()
                     )
