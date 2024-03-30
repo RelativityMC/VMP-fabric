@@ -1,5 +1,6 @@
 package com.ishland.vmp.mixins.carpet;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
@@ -15,6 +16,10 @@ import org.spongepowered.asm.mixin.Pseudo;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 @Pseudo
 @Mixin(targets = "carpet.patches.EntityPlayerMPFake")
@@ -39,6 +44,12 @@ public abstract class MixinEntityPlayerMPFake extends ServerPlayerEntity {
             vmp_lastZ = pos.z;
             serverChunkManager.updatePosition(this);
         }
+    }
+
+    @Dynamic
+    @ModifyExpressionValue(method = "createFake", at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;fetchGameProfile(Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;"), require = 0)
+    private static CompletableFuture<Optional<GameProfile>> modifyGameProfileFuture(CompletableFuture<Optional<GameProfile>> original, String username, MinecraftServer server) {
+        return original.thenApplyAsync(Function.identity(), server);
     }
 
 }

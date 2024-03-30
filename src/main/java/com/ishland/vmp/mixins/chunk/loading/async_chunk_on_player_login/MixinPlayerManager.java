@@ -80,10 +80,11 @@ public abstract class MixinPlayerManager {
             LOGGER.info("Async chunk loading for player {} completed", instance.player.getName().getString());
         };
 
-        if (instance.player.getClass() != ServerPlayerEntity.class) {
-            action.accept(null, null);
-            return;
-        }
+        // TODO immediate player spawning for potentially fake players provided by mods
+//        if (instance.player.getClass() != ServerPlayerEntity.class) {
+//            action.accept(null, null);
+//            return;
+//        }
 
         AsyncChunkLoadUtil.scheduleChunkLoad(instance.player.getServerWorld(), pos).whenCompleteAsync(action, runnable -> server.send(new ServerTask(0, runnable)));
     }
