@@ -46,10 +46,4 @@ public abstract class MixinEntityPlayerMPFake extends ServerPlayerEntity {
         }
     }
 
-    @Dynamic
-    @ModifyExpressionValue(method = "createFake", at = @At(value = "INVOKE", target = "Lcarpet/patches/EntityPlayerMPFake;fetchGameProfile(Ljava/lang/String;)Ljava/util/concurrent/CompletableFuture;"), require = 0)
-    private static CompletableFuture<Optional<GameProfile>> modifyGameProfileFuture(CompletableFuture<Optional<GameProfile>> original, String username, MinecraftServer server) {
-        return original.thenApplyAsync(Function.identity(), server);
-    }
-
 }
