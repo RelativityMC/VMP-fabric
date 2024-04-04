@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketManager;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -58,7 +59,7 @@ public abstract class MixinPlayerManager {
         instance.player.notInAnyWorld = true; // suppress move packets
 
         final MinecraftServer server = instance.player.server;
-        final BiConsumer<Either<Chunk, ChunkHolder.Unloaded>, Throwable> action = (worldChunkUnloadedEither, throwable) -> {
+        final BiConsumer<OptionalChunk<Chunk>, Throwable> action = (worldChunkUnloadedEither, throwable) -> {
             if (throwable != null) {
                 LOGGER.error("Error while loading chunks", throwable);
                 return;

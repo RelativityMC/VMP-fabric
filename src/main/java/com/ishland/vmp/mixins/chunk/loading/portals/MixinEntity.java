@@ -301,12 +301,9 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                     return AsyncIterator
                             .fromIterator(iterator)
                             .filterCompose(poi -> AsyncChunkLoadUtil.scheduleChunkLoadWithRadius(destination, new ChunkPos(poi.getPos()), 0)
-                                    .thenApplyAsync(either -> either.map(
-                                            chunk -> chunk.getBlockState(poi.getPos()).contains(Properties.HORIZONTAL_AXIS) ? Optional.of(poi) : Optional.empty(),
-                                            unloaded -> {
-                                                throw new IllegalStateException();
-                                            }
-                                    ), destination.getServer())
+                                    .thenApplyAsync(either -> either.orElseThrow(RuntimeException::new)
+                                                    .getBlockState(poi.getPos()).contains(Properties.HORIZONTAL_AXIS) ? Optional.of(poi) : Optional.empty(),
+                                            destination.getServer())
                             )
                             .take(1)
                             .thenComposeAsync(poi -> {

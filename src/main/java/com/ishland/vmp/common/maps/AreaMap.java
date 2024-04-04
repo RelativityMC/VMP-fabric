@@ -258,7 +258,7 @@ public class AreaMap<T> {
         }
     }
 
-    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ReferenceLinkedOpenHashSet<E> implements List<E> {
+    private static class RawObjectLinkedOpenIdentityHashSet<E> extends ReferenceLinkedOpenHashSet<E> {
 
         public RawObjectLinkedOpenIdentityHashSet() {
         }
@@ -272,59 +272,6 @@ public class AreaMap<T> {
             if (newN > n) { // don't shrink automatically
                 super.rehash(newN);
             }
-        }
-
-        @Override
-        public boolean addAll(int index, @NotNull Collection<? extends E> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public E get(int index) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public E set(int index, E element) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void add(int index, E element) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public E remove(int index) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int indexOf(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int lastIndexOf(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @NotNull
-        @Override
-        public ListIterator<E> listIterator() {
-            throw new UnsupportedOperationException();
-        }
-
-        @NotNull
-        @Override
-        public ListIterator<E> listIterator(int index) {
-            throw new UnsupportedOperationException();
-        }
-
-        @NotNull
-        @Override
-        public List<E> subList(int fromIndex, int toIndex) {
-            throw new UnsupportedOperationException();
         }
     }
 

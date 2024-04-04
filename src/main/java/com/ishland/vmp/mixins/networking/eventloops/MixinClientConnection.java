@@ -6,6 +6,7 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.NetworkState;
 import net.minecraft.network.listener.PacketListener;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -24,8 +25,8 @@ public class MixinClientConnection {
 
     @Shadow private volatile @Nullable PacketListener packetListener;
 
-    @Inject(method = "setPacketListener", at = @At(value = "FIELD", target = "Lnet/minecraft/network/ClientConnection;packetListener:Lnet/minecraft/network/listener/PacketListener;", opcode = Opcodes.PUTFIELD))
-    private void onSetState(PacketListener packetListener, CallbackInfo ci) {
+    @Inject(method = "setPacketListener", at = @At(value = "RETURN"))
+    private void onSetState(NetworkState<?> state, PacketListener listener, CallbackInfo ci) {
 //        if (this.channel.config() == instance) {
 //            final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state);
 //            if (group != null) {
@@ -37,7 +38,7 @@ public class MixinClientConnection {
 //        } else {
 //            return instance.setAutoRead(b);
 //        }
-        final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, packetListener.getPhase());
+        final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state.id());
         if (group != null) {
             reregister(group);
         }

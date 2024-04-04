@@ -50,7 +50,7 @@ public abstract class MixinPointOfInterestStorage extends SerializingRegionBased
                 .filter(chunkPos -> !this.preloadedChunks.contains(chunkPos.toLong()))
                 .map(chunkPos ->
                         AsyncChunkLoadUtil.scheduleChunkLoadToStatus(world, chunkPos, ChunkStatus.EMPTY)
-                                .whenCompleteAsync((either, unused1) -> either.ifLeft(chunk -> this.preloadedChunks.add(chunk.getPos().toLong())), world.getServer())
+                                .whenCompleteAsync((either, unused1) -> either.ifPresent(chunk -> this.preloadedChunks.add(chunk.getPos().toLong())), world.getServer())
                 )
                 .toArray(CompletableFuture[]::new);
         return CompletableFuture.allOf(futures);

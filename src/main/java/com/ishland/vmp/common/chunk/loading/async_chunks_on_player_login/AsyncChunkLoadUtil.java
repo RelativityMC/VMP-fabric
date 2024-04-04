@@ -10,6 +10,7 @@ import net.minecraft.server.world.ChunkLevelType;
 import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Unit;
@@ -26,23 +27,23 @@ public class AsyncChunkLoadUtil {
 
     private static final AsyncSemaphore SEMAPHORE = new FairAsyncSemaphore(6);
 
-    public static CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> scheduleChunkLoad(ServerWorld world, ChunkPos pos) {
+    public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoad(ServerWorld world, ChunkPos pos) {
         return scheduleChunkLoadWithRadius(world, pos, 3);
     }
 
-    public static CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> scheduleChunkLoadWithRadius(ServerWorld world, ChunkPos pos, int radius) {
+    public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoadWithRadius(ServerWorld world, ChunkPos pos, int radius) {
         return scheduleChunkLoadWithLevel(world, pos, 33 - radius);
     }
 
-    public static CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> scheduleChunkLoadToStatus(ServerWorld world, ChunkPos pos, ChunkStatus status) {
+    public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoadToStatus(ServerWorld world, ChunkPos pos, ChunkStatus status) {
         return scheduleChunkLoadWithLevel(world, pos, 33 + ChunkStatus.getDistanceFromFull(status));
     }
 
-    public static CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> scheduleChunkLoadWithLevel(ServerWorld world, ChunkPos pos, int level) {
+    public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoadWithLevel(ServerWorld world, ChunkPos pos, int level) {
         final ServerChunkManager chunkManager = world.getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
 
-        final CompletableFuture<Either<Chunk, ChunkHolder.Unloaded>> future = SEMAPHORE.acquire()
+        final CompletableFuture<OptionalChunk<Chunk>> future = SEMAPHORE.acquire()
                 .toCompletableFuture()
                 .thenComposeAsync(unused -> {
                     ticketManager.addTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
@@ -54,9 +55,9 @@ public class AsyncChunkLoadUtil {
                     final ChunkLevelType levelType = ChunkLevels.getType(level);
                     return switch (levelType) {
                         case INACCESSIBLE -> chunkHolder.getChunkAt(ChunkLevels.getStatus(level), world.getChunkManager().threadedAnvilChunkStorage);
-                        case FULL -> chunkHolder.getAccessibleFuture().thenApply(either -> either.mapLeft(Function.identity()));
-                        case BLOCK_TICKING -> chunkHolder.getTickingFuture().thenApply(either -> either.mapLeft(Function.identity()));
-                        case ENTITY_TICKING -> chunkHolder.getEntityTickingFuture().thenApply(either -> either.mapLeft(Function.identity()));
+                        case FULL -> chunkHolder.getAccessibleFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
+                        case BLOCK_TICKING -> chunkHolder.getTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
+                        case ENTITY_TICKING -> chunkHolder.getEntityTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
                     };
                 }, world.getServer());
         future.whenCompleteAsync((unused, throwable) -> {

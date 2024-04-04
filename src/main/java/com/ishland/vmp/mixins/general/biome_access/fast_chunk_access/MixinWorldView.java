@@ -3,6 +3,7 @@ package com.ishland.vmp.mixins.general.biome_access.fast_chunk_access;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.OptionalChunk;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.WorldView;
@@ -23,10 +24,10 @@ public interface MixinWorldView {
         if (!create && instance instanceof ServerWorld world) {
             final ChunkHolder holder = ((IThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).invokeGetChunkHolder(ChunkPos.toLong(x, z));
             if (holder != null) {
-                final CompletableFuture<Either<WorldChunk, ChunkHolder.Unloaded>> future = holder.getAccessibleFuture();
-                final Either<WorldChunk, ChunkHolder.Unloaded> either = future.getNow(null);
+                final CompletableFuture<OptionalChunk<WorldChunk>> future = holder.getAccessibleFuture();
+                final OptionalChunk<WorldChunk> either = future.getNow(null);
                 if (either != null) {
-                    final WorldChunk chunk = either.left().orElse(null);
+                    final WorldChunk chunk = either.orElse(null);
                     if (chunk != null) return chunk;
                 }
             }
