@@ -25,7 +25,7 @@ public class MixinClientConnection {
 
     @Shadow private volatile @Nullable PacketListener packetListener;
 
-    @Inject(method = "setPacketListener", at = @At(value = "RETURN"))
+    @Inject(method = "transitionInbound", at = @At(value = "RETURN"))
     private void onSetState(NetworkState<?> state, PacketListener listener, CallbackInfo ci) {
 //        if (this.channel.config() == instance) {
 //            final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state);
@@ -40,7 +40,7 @@ public class MixinClientConnection {
 //        }
         final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state.id());
         if (group != null) {
-            reregister(group);
+            vmp$reregister(group);
         }
     }
 
@@ -50,7 +50,8 @@ public class MixinClientConnection {
     @Unique
     private EventLoopGroup pendingReregistration = null;
 
-    private synchronized void reregister(EventLoopGroup group) {
+    @Unique
+    private synchronized void vmp$reregister(EventLoopGroup group) {
         if (isReregistering) {
             pendingReregistration = group;
             return;
@@ -69,18 +70,23 @@ public class MixinClientConnection {
             }
         });
         promise.addListener(future -> {
-            isReregistering = false;
-            if (future.isSuccess()) {
+            synchronized (this) {
+                isReregistering = false;
+                if (future.isSuccess()) {
 //                System.out.println("Reregistered " + this.channel);
-                this.channel.config().setAutoRead(true);
-            } else {
-                this.channel.pipeline().fireExceptionCaught(future.cause());
-            }
-            if (pendingReregistration != null) {
-                reregister(pendingReregistration);
-                pendingReregistration = null;
+                    this.channel.config().setAutoRead(true);
+                } else {
+                    this.channel.pipeline().fireExceptionCaught(future.cause());
+                }
+                if (pendingReregistration != null) {
+                    vmp$reregister(pendingReregistration);
+                    pendingReregistration = null;
+                }
             }
         });
+        if (!promise.channel().eventLoop().inEventLoop()) {
+            promise.syncUninterruptibly();
+        }
     }
 
 }
