@@ -1,5 +1,6 @@
 package com.ishland.vmp.mixins.ticketsystem.ticketpropagator;
 
+import com.ishland.vmp.mixins.access.IAbstractChunkHolder;
 import com.ishland.vmp.mixins.access.IChunkHolder;
 import com.ishland.vmp.mixins.access.IChunkTicket;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
@@ -30,6 +31,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -146,8 +148,16 @@ public abstract class MixinChunkTicketManager {
             this.pendingChunkHolderUpdates.enqueue(holder);
         }
 
+        ArrayList<ChunkHolder> pending = new ArrayList<>(this.pendingChunkHolderUpdates.size());
         while (!this.pendingChunkHolderUpdates.isEmpty()) {
-            ((IChunkHolder) this.pendingChunkHolderUpdates.dequeue()).invokeUpdateFutures(threadedAnvilChunkStorage, this.mainThreadExecutor);
+            pending.add(this.pendingChunkHolderUpdates.dequeue());
+        }
+        this.pendingChunkHolderUpdates.clear();
+        for (ChunkHolder element : pending) {
+            ((IAbstractChunkHolder) element).invokeUpdateStatuses(threadedAnvilChunkStorage);
+        }
+        for (ChunkHolder element : pending) {
+            ((IChunkHolder) element).invokeUpdateFutures(threadedAnvilChunkStorage, this.mainThreadExecutor);
         }
 
         return hasUpdates ? distance - 1 : distance;

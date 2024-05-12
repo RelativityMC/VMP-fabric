@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixinPriority": 1050,
   "mixins": [
+    "access.IAbstractChunkHolder",
     "access.IChunkDeltaUpdateS2CPacket",
     "access.IChunkHolder",
     "access.IChunkTicket",
@@ -37,10 +38,6 @@
     "entitytracker.MixinThreadedAnvilChunkStorageEntityTracker",
     "general.biome_access.MixinBiomeAccess",
     "general.biome_access.fast_chunk_access.MixinWorldView",
-    "general.cache_ops.biome.MixinFillBiomeCommand",
-    "general.cache_ops.biome.MixinServerWorld",
-    "general.cache_ops.biome.MixinThreadedAnvilChunkStorage",
-    "general.cache_ops.biome.MixinWorldChunk",
     "general.collections.MixinTypeFilterableList",
     "general.ingredient_matching.MixinIngredient",
     "general.no_locking.MixinPalettedContainer",

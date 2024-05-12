@@ -31,7 +31,7 @@ public class MixinThreadedAnvilChunkStorage implements ITickableChunkSource {
     private void listenChunkStatusChange(ChunkPos chunkPos, ChunkLevelType levelType, CallbackInfo ci) {
         final ChunkHolder chunkHolder = this.currentChunkHolders.get(chunkPos.toLong());
         if (chunkHolder == null) return;
-        if (chunkHolder.getLevelType().isAfter(ChunkLevelType.BLOCK_TICKING)) {
+        if (chunkHolder.method_60474().isAfter(ChunkLevelType.BLOCK_TICKING)) {
             this.vmp$tickingChunks.put(chunkPos.toLong(), chunkHolder);
         } else {
             this.vmp$tickingChunks.remove(chunkPos.toLong());

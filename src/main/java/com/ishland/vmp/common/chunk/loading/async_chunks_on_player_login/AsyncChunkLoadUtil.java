@@ -36,7 +36,7 @@ public class AsyncChunkLoadUtil {
     }
 
     public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoadToStatus(ServerWorld world, ChunkPos pos, ChunkStatus status) {
-        return scheduleChunkLoadWithLevel(world, pos, 33 + ChunkStatus.getDistanceFromFull(status));
+        return scheduleChunkLoadWithLevel(world, pos, ChunkLevels.getLevelFromStatus(status));
     }
 
     public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoadWithLevel(ServerWorld world, ChunkPos pos, int level) {
@@ -54,7 +54,7 @@ public class AsyncChunkLoadUtil {
                     }
                     final ChunkLevelType levelType = ChunkLevels.getType(level);
                     return switch (levelType) {
-                        case INACCESSIBLE -> chunkHolder.getChunkAt(ChunkLevels.getStatus(level), world.getChunkManager().threadedAnvilChunkStorage);
+                        case INACCESSIBLE -> chunkHolder.method_60458(ChunkLevels.getStatus(level), world.getChunkManager().threadedAnvilChunkStorage);
                         case FULL -> chunkHolder.getAccessibleFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
                         case BLOCK_TICKING -> chunkHolder.getTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
                         case ENTITY_TICKING -> chunkHolder.getEntityTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
