@@ -48,13 +48,13 @@ public class AsyncChunkLoadUtil {
                 .thenComposeAsync(unused -> {
                     ticketManager.addTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
                     ((IServerChunkManager) chunkManager).invokeUpdateChunks();
-                    final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.threadedAnvilChunkStorage).invokeGetCurrentChunkHolder(pos.toLong());
+                    final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.chunkLoadingManager).invokeGetCurrentChunkHolder(pos.toLong());
                     if (chunkHolder == null) {
                         throw new IllegalStateException("Chunk not there when requested");
                     }
                     final ChunkLevelType levelType = ChunkLevels.getType(level);
                     return switch (levelType) {
-                        case INACCESSIBLE -> chunkHolder.method_60458(ChunkLevels.getStatus(level), world.getChunkManager().threadedAnvilChunkStorage);
+                        case INACCESSIBLE -> chunkHolder.load(ChunkLevels.getStatus(level), world.getChunkManager().chunkLoadingManager);
                         case FULL -> chunkHolder.getAccessibleFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
                         case BLOCK_TICKING -> chunkHolder.getTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);
                         case ENTITY_TICKING -> chunkHolder.getEntityTickingFuture().thenApply(either -> (OptionalChunk<Chunk>) (Object) either);

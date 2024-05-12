@@ -6,7 +6,7 @@ import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.SpawnDensityCapper;
 import org.spongepowered.asm.mixin.Final;
@@ -27,7 +27,7 @@ public abstract class MixinSpawnDensityCapper {
 
     @Shadow
     @Final
-    private ThreadedAnvilChunkStorage threadedAnvilChunkStorage;
+    private ServerChunkLoadingManager threadedAnvilChunkStorage;
 
     @Mutable
     @Shadow @Final private Map<ServerPlayerEntity, SpawnDensityCapper.DensityCap> playersToDensityCap;

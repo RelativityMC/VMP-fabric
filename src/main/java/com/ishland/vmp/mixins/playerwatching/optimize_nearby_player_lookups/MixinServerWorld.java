@@ -12,9 +12,9 @@ import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.profiler.Profiler;
 import net.minecraft.world.MutableWorldProperties;
@@ -41,7 +41,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
     @Nullable
     @Override
     public PlayerEntity getClosestPlayer(double x, double y, double z, double maxDistance, @Nullable Predicate<Entity> targetPredicate) {
-        final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
+        final ServerChunkLoadingManager threadedAnvilChunkStorage = this.getChunkManager().chunkLoadingManager;
         final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
         final int chunkZ = ChunkSectionPos.getSectionCoord(z);
@@ -97,7 +97,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
     }
 
     private Object[] getPlayersWatchingChunkArray(double x, double z) {
-        final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
+        final ServerChunkLoadingManager threadedAnvilChunkStorage = this.getChunkManager().chunkLoadingManager;
         final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
         final int chunkZ = ChunkSectionPos.getSectionCoord(z);
@@ -117,7 +117,7 @@ public abstract class MixinServerWorld extends World implements StructureWorldAc
 
     @Override
     public boolean isPlayerInRange(double x, double y, double z, double range) {
-        final ThreadedAnvilChunkStorage threadedAnvilChunkStorage = this.getChunkManager().threadedAnvilChunkStorage;
+        final ServerChunkLoadingManager threadedAnvilChunkStorage = this.getChunkManager().chunkLoadingManager;
         final AreaPlayerChunkWatchingManager playerChunkWatchingManager = ((TACSExtension) threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
         final int chunkX = ChunkSectionPos.getSectionCoord(x);
         final int chunkZ = ChunkSectionPos.getSectionCoord(z);

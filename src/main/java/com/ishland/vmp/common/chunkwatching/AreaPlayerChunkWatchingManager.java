@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 
@@ -35,7 +35,7 @@ public class AreaPlayerChunkWatchingManager {
         this(null, null, null);
     }
 
-    public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener, ThreadedAnvilChunkStorage tacs) {
+    public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener, ServerChunkLoadingManager tacs) {
         this.addListener = addListener;
         this.removeListener = removeListener;
 

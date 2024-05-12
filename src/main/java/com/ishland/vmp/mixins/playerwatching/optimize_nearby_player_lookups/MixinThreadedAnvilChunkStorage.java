@@ -4,19 +4,19 @@ import com.ishland.vmp.common.chunkwatching.AreaPlayerChunkWatchingManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ServerChunkLoadingManager.class)
 public abstract class MixinThreadedAnvilChunkStorage {
 
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
 
-    @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
+    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
 
     @Shadow
     private static double getSquaredDistance(ChunkPos pos, Entity entity) {

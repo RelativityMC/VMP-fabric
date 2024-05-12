@@ -2,28 +2,24 @@ package com.ishland.vmp.mixins.ticketsystem.ticketpropagator;
 
 import com.ishland.vmp.mixins.access.IAbstractChunkHolder;
 import com.ishland.vmp.mixins.access.IChunkHolder;
-import com.ishland.vmp.mixins.access.IChunkTicket;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkLevels;
 import net.minecraft.server.world.ChunkTaskPrioritySystem;
 import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.collection.SortedArraySet;
 import net.minecraft.util.thread.MessageListener;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,7 +31,6 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.function.Predicate;
 
 @Mixin(ChunkTicketManager.class)
 public abstract class MixinChunkTicketManager {
@@ -117,7 +112,7 @@ public abstract class MixinChunkTicketManager {
     }
 
     @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
-    public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ThreadedAnvilChunkStorage threadedAnvilChunkStorage) {
+    public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ServerChunkLoadingManager threadedAnvilChunkStorage) {
         if (!((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getMainThreadExecutor().isOnThread()) {
             throw new ConcurrentModificationException("Attempted to tick tickets asynchronously");
         }
@@ -154,7 +149,7 @@ public abstract class MixinChunkTicketManager {
         }
         this.pendingChunkHolderUpdates.clear();
         for (ChunkHolder element : pending) {
-            ((IAbstractChunkHolder) element).invokeUpdateStatuses(threadedAnvilChunkStorage);
+            ((IAbstractChunkHolder) element).invokeUpdateStatus(threadedAnvilChunkStorage);
         }
         for (ChunkHolder element : pending) {
             ((IChunkHolder) element).invokeUpdateFutures(threadedAnvilChunkStorage, this.mainThreadExecutor);

@@ -8,7 +8,7 @@ import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.PlayerAssociatedNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.util.math.Vec3d;
@@ -24,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import java.util.Set;
 
-@Mixin(ThreadedAnvilChunkStorage.EntityTracker.class)
+@Mixin(ServerChunkLoadingManager.EntityTracker.class)
 public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements EntityTrackerExtension {
 
     @Shadow @Final private Entity entity;
@@ -108,7 +108,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     }
 
     @Redirect(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;isTracked(Lnet/minecraft/server/network/ServerPlayerEntity;II)Z"))
-    private boolean assumeAlwaysTracked(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player, int chunkX, int chunkZ) {
+    private boolean assumeAlwaysTracked(ServerChunkLoadingManager instance, ServerPlayerEntity player, int chunkX, int chunkZ) {
         return true;
     }
 

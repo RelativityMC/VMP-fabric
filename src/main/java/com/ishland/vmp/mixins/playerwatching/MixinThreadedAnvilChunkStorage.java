@@ -8,7 +8,7 @@ import net.minecraft.network.packet.s2c.play.ChunkRenderDistanceCenterS2CPacket;
 import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.slf4j.Logger;
@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ServerChunkLoadingManager.class)
 public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
 
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
@@ -32,7 +32,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
 
     @Shadow @Final private static Logger LOGGER;
 
-    @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
+    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
 
     @Shadow protected abstract boolean canTickChunk(ServerPlayerEntity player, ChunkPos pos);
 
@@ -60,7 +60,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         this.areaPlayerChunkWatchingManager = new AreaPlayerChunkWatchingManager(
                 (player, chunkX, chunkZ) -> this.track(player, new ChunkPos(chunkX, chunkZ)),
                 (player, chunkX, chunkZ) -> untrack(player, new ChunkPos(chunkX, chunkZ)),
-                (ThreadedAnvilChunkStorage) (Object) this);
+                (ServerChunkLoadingManager) (Object) this);
     }
 
     @Inject(method = "tick", at = @At("RETURN"))

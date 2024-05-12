@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ServerChunkLoadingManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -18,20 +18,20 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.util.List;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ServerChunkLoadingManager.class)
 public class MixinThreadedAnvilChunkStorage {
 
     @Shadow
     @Final
-    private Int2ObjectMap<ThreadedAnvilChunkStorage.EntityTracker> entityTrackers;
-    @Shadow @Final private ThreadedAnvilChunkStorage.TicketManager ticketManager;
+    private Int2ObjectMap<ServerChunkLoadingManager.EntityTracker> entityTrackers;
+    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
     @Unique
     private final NearbyEntityTracking nearbyEntityTracking = new NearbyEntityTracking();
 
 
     @Redirect(method = "loadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker;updateTrackedStatus(Ljava/util/List;)V"))
-    private void redirectUpdateOnAddEntity(ThreadedAnvilChunkStorage.EntityTracker instance, List<ServerPlayerEntity> players) {
+    private void redirectUpdateOnAddEntity(ServerChunkLoadingManager.EntityTracker instance, List<ServerPlayerEntity> players) {
         if (((IThreadedAnvilChunkStorageEntityTracker) instance).getEntity() instanceof ServerPlayerEntity player) {
             this.nearbyEntityTracking.addPlayer(player);
         }
@@ -51,7 +51,7 @@ public class MixinThreadedAnvilChunkStorage {
     }
 
     @Redirect(method = "unloadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage$EntityTracker;stopTracking()V"))
-    private void redirectUpdateOnRemoveEntity(ThreadedAnvilChunkStorage.EntityTracker instance) {
+    private void redirectUpdateOnRemoveEntity(ServerChunkLoadingManager.EntityTracker instance) {
         if (((IThreadedAnvilChunkStorageEntityTracker) instance).getEntity() instanceof ServerPlayerEntity player) {
             this.nearbyEntityTracking.removePlayer(player);
         }

@@ -22,7 +22,7 @@ public interface MixinWorldView {
     @Redirect(method = "getBiomeForNoiseGen", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/WorldView;getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;"))
     private Chunk redirectBiomeChunk(WorldView instance, int x, int z, ChunkStatus chunkStatus, boolean create) {
         if (!create && instance instanceof ServerWorld world) {
-            final ChunkHolder holder = ((IThreadedAnvilChunkStorage) world.getChunkManager().threadedAnvilChunkStorage).invokeGetChunkHolder(ChunkPos.toLong(x, z));
+            final ChunkHolder holder = ((IThreadedAnvilChunkStorage) world.getChunkManager().chunkLoadingManager).invokeGetChunkHolder(ChunkPos.toLong(x, z));
             if (holder != null) {
                 final CompletableFuture<OptionalChunk<WorldChunk>> future = holder.getAccessibleFuture();
                 final OptionalChunk<WorldChunk> either = future.getNow(null);
