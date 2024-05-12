@@ -15,7 +15,7 @@ import java.util.Set;
 @Mixin(value = ServerChunkLoadingManager.class, priority = 1005)
 public class MixinTACSCancelSending {
 
-//    @Redirect(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+//    @Redirect(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
 //    private void beforeWatchPacketsOnMoving(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player) {
 //        // Stop packet sending, handled by distance map
 //    }
@@ -25,7 +25,7 @@ public class MixinTACSCancelSending {
         return Collections.emptySet(); // Stop packet sending, handled by distance map
     }
 
-//    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+//    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
 //    private void redirectWatchPacketOnPlayerChanges0(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player) {
 //        // Stop packet sending, handled by distance map
 //    }
@@ -35,7 +35,7 @@ public class MixinTACSCancelSending {
         // Stop packet sending, handled by distance map
     }
 
-//    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/server/network/ChunkFilter;)V"))
+//    @Redirect(method = "handlePlayerAddedOrRemoved", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;sendWatchPackets(Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/server/network/ChunkFilter;)V"))
 //    private void redirectWatchPacketOnPlayerChanges1(ThreadedAnvilChunkStorage instance, ServerPlayerEntity player, ChunkFilter chunkFilter) {
 //        // Stop packet sending, handled by distance map
 //    }

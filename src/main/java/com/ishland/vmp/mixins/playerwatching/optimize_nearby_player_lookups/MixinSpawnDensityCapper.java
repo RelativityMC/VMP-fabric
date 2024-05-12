@@ -27,7 +27,7 @@ public abstract class MixinSpawnDensityCapper {
 
     @Shadow
     @Final
-    private ServerChunkLoadingManager threadedAnvilChunkStorage;
+    private ServerChunkLoadingManager chunkLoadingManager;
 
     @Mutable
     @Shadow @Final private Map<ServerPlayerEntity, SpawnDensityCapper.DensityCap> playersToDensityCap;
@@ -40,7 +40,7 @@ public abstract class MixinSpawnDensityCapper {
 
     @Unique
     private Object[] getMobSpawnablePlayersArray(ChunkPos chunkPos) {
-        final AreaPlayerChunkWatchingManager manager = ((TACSExtension) this.threadedAnvilChunkStorage).getAreaPlayerChunkWatchingManager();
+        final AreaPlayerChunkWatchingManager manager = ((TACSExtension) this.chunkLoadingManager).getAreaPlayerChunkWatchingManager();
         return manager.getPlayersInGeneralAreaMap(chunkPos.toLong());
     }
 

@@ -55,7 +55,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         return this.areaPlayerChunkWatchingManager;
     }
 
-    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;setViewDistance(I)V"))
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;setViewDistance(I)V"))
     private void redirectNewPlayerChunkWatchingManager(CallbackInfo ci) {
         this.areaPlayerChunkWatchingManager = new AreaPlayerChunkWatchingManager(
                 (player, chunkX, chunkZ) -> this.track(player, new ChunkPos(chunkX, chunkZ)),
@@ -166,7 +166,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         }
     }
 
-    @Inject(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;updateWatchedSection(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+    @Inject(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;updateWatchedSection(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
     private void onPlayerSectionChange(ServerPlayerEntity player, CallbackInfo ci) {
         this.vmp$updateWatchedSection(player);
         this.areaPlayerChunkWatchingManager.movePlayer(player.getWatchedSection().toChunkPos().toLong(), player);

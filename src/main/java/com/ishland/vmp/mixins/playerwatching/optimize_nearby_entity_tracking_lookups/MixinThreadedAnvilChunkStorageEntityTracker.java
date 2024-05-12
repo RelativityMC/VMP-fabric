@@ -107,7 +107,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
         }
     }
 
-    @Redirect(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;isTracked(Lnet/minecraft/server/network/ServerPlayerEntity;II)Z"))
+    @Redirect(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;isTracked(Lnet/minecraft/server/network/ServerPlayerEntity;II)Z"))
     private boolean assumeAlwaysTracked(ServerChunkLoadingManager instance, ServerPlayerEntity player, int chunkX, int chunkZ) {
         return true;
     }

@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(ServerChunkManager.class)
 public class MixinServerChunkManager {
 
-    @Redirect(method = "tickChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ThreadedAnvilChunkStorage;entryIterator()Ljava/lang/Iterable;"))
+    @Redirect(method = "tickChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;entryIterator()Ljava/lang/Iterable;"))
     private Iterable<ChunkHolder> redirectVisibleChunks(ServerChunkLoadingManager instance) {
         return ((ITickableChunkSource) instance).vmp$tickableChunksIterator();
     }
