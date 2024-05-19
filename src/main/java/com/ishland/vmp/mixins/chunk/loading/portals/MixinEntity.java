@@ -90,7 +90,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
     protected abstract TeleportTarget getTeleportTarget(ServerWorld destination);
 
     @Shadow
-    public abstract @Nullable Entity moveToWorld(ServerWorld destination);
+    public abstract @Nullable Entity moveToWorld(Entity.TeleportTargetSupplier teleportTargetSupplier);
 
     @Shadow
     protected BlockPos lastNetherPortalPosition;
@@ -150,9 +150,9 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                             getTeleportTargetAtAsync(destination)
                                     .thenComposeAsync(target -> {
                                         if (target != null) {
-                                            return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(BlockPos.ofFloored(target.position.x, target.position.y, target.position.z)))
+                                            return AsyncChunkLoadUtil.scheduleChunkLoad(destination, new ChunkPos(BlockPos.ofFloored(target.pos().x, target.pos().y, target.pos().z)))
                                                     .thenApplyAsync(unused -> {
-                                                        final BlockPos blockPos = BlockPos.ofFloored(target.position.x, target.position.y, target.position.z);
+                                                        final BlockPos blockPos = BlockPos.ofFloored(target.pos().x, target.pos().y, target.pos().z);
                                                         destination.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(blockPos), 3, blockPos); // for vanilla behavior and faster teleports
                                                         return target;
                                                     }, destination.getServer());
@@ -170,7 +170,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
                                         } else if (target != null) {
                                             if (Config.SHOW_ASYNC_LOADING_MESSAGES) {
                                                 LOGGER.info("Portal located for entity {} at {}", this, target);
-                                                final BlockPos blockPos = BlockPos.ofFloored(target.position.x, target.position.y, target.position.z);
+                                                final BlockPos blockPos = BlockPos.ofFloored(target.pos().x, target.pos().y, target.pos().z);
                                                 if ((Object) this instanceof ServerPlayerEntity player) {
                                                     player.sendMessage(Text.literal("Portal located after %.1fms, waiting for portal teleportation...".formatted((System.nanoTime() - startTime) / 1_000_000.0)), true);
                                                 }
@@ -280,7 +280,7 @@ public abstract class MixinEntity implements IEntityPortalInterface {
             }
 
             return CompletableFuture.completedFuture(new TeleportTarget(
-                    new Vec3d((double) blockPos.getX() + 0.5, blockPos.getY(), (double) blockPos.getZ() + 0.5), this.getVelocity(), this.getYaw(), this.getPitch()
+                    destination, new Vec3d((double) blockPos.getX() + 0.5, blockPos.getY(), (double) blockPos.getZ() + 0.5), this.getVelocity(), this.getYaw(), this.getPitch()
             ));
         }
     }

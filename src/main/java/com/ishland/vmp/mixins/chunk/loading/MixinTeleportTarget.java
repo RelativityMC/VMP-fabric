@@ -11,7 +11,7 @@ public class MixinTeleportTarget {
 
     @Shadow @Final public float pitch;
 
-    @Shadow @Final public Vec3d position;
+    @Shadow @Final public Vec3d pos;
 
     @Shadow @Final public Vec3d velocity;
 
@@ -20,10 +20,10 @@ public class MixinTeleportTarget {
     @Override
     public String toString() {
         return "TeleportTarget{" +
-                "pitch=" + pitch +
-                ", position=" + position +
-                ", velocity=" + velocity +
-                ", yaw=" + yaw +
-                '}';
+               "pitch=" + pitch +
+               ", pos=" + pos +
+               ", velocity=" + velocity +
+               ", yaw=" + yaw +
+               '}';
     }
 }
