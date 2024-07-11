@@ -4,7 +4,9 @@ import com.ishland.vmp.common.config.Config;
 import com.ishland.vmp.common.maps.AreaMap;
 import com.ishland.vmp.common.playerwatching.compat.EntityPositionTransformer;
 import com.ishland.vmp.common.util.SimpleObjectPool;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageTicketManager;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.Reference2LongMap;
@@ -70,6 +72,10 @@ public class NearbyEntityTracking {
     private final ObjectLinkedOpenHashSet<StagedTracker> stagingTrackers = new ObjectLinkedOpenHashSet<>();
 
     private void addEntityTrackerAreaMap(ServerChunkLoadingManager.EntityTracker tracker) {
+        if (((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity() instanceof ServerPlayerEntity player) {
+            this.addPlayer(player);
+        }
+
         // update is done lazily on next tickEntityMovement
         final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity());
         this.areaMap.add(
@@ -93,6 +99,10 @@ public class NearbyEntityTracking {
     }
 
     public void removeEntityTracker(ServerChunkLoadingManager.EntityTracker tracker) {
+        if (((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity() instanceof ServerPlayerEntity player) {
+            this.removePlayer(player);
+        }
+
         // remove from staging
         if (this.stagingTrackers.remove(new StagedTracker(tracker, 0L))) { // 0L is a dummy value (not used in equals(..) and hashCode())
             tracker.stopTracking();
@@ -199,7 +209,7 @@ public class NearbyEntityTracking {
             }
         }
 
-        final List<ServerPlayerEntity> players = List.copyOf(this.playerTrackers.keySet());
+        final List<ServerPlayerEntity> players = ((IThreadedAnvilChunkStorage) ((IThreadedAnvilChunkStorageTicketManager) ticketManager).getField_17443()).getWorld().getPlayers();
         for(StagedTracker staged : this.stagingTrackers) {
             final ServerChunkLoadingManager.EntityTracker entityTracker = staged.tracker();
             ChunkSectionPos chunkSectionPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();

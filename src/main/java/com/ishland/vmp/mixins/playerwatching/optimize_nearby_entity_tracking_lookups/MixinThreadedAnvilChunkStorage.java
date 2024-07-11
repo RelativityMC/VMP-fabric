@@ -32,9 +32,6 @@ public class MixinThreadedAnvilChunkStorage {
 
     @Redirect(method = "loadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager$EntityTracker;updateTrackedStatus(Ljava/util/List;)V"))
     private void redirectUpdateOnAddEntity(ServerChunkLoadingManager.EntityTracker instance, List<ServerPlayerEntity> players) {
-        if (((IThreadedAnvilChunkStorageEntityTracker) instance).getEntity() instanceof ServerPlayerEntity player) {
-            this.nearbyEntityTracking.addPlayer(player);
-        }
         this.nearbyEntityTracking.addEntityTracker(instance);
     }
 
@@ -52,9 +49,6 @@ public class MixinThreadedAnvilChunkStorage {
 
     @Redirect(method = "unloadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager$EntityTracker;stopTracking()V"))
     private void redirectUpdateOnRemoveEntity(ServerChunkLoadingManager.EntityTracker instance) {
-        if (((IThreadedAnvilChunkStorageEntityTracker) instance).getEntity() instanceof ServerPlayerEntity player) {
-            this.nearbyEntityTracking.removePlayer(player);
-        }
         this.nearbyEntityTracking.removeEntityTracker(instance);
         instance.stopTracking();
     }
