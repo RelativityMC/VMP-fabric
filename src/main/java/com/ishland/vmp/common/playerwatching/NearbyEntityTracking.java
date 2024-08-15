@@ -210,20 +210,24 @@ public class NearbyEntityTracking {
         }
 
         final List<ServerPlayerEntity> players = ((IThreadedAnvilChunkStorage) ((IThreadedAnvilChunkStorageTicketManager) ticketManager).getField_17443()).getWorld().getPlayers();
-        for(StagedTracker staged : this.stagingTrackers) {
+        for (StagedTracker staged : this.stagingTrackers) {
             final ServerChunkLoadingManager.EntityTracker entityTracker = staged.tracker();
             ChunkSectionPos chunkSectionPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
             final Entity entity = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getEntity();
             ChunkSectionPos chunkSectionPos2 = ChunkSectionPos.from(entity);
             boolean bl = !Objects.equals(chunkSectionPos, chunkSectionPos2);
-            entityTracker.updateTrackedStatus(players);
             if (bl) {
+                entityTracker.updateTrackedStatus(players);
                 ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).setTrackedSection(chunkSectionPos2);
             }
 
             if (bl || ticketManager.shouldTickEntities(chunkSectionPos2.toChunkPos().toLong())) {
                 ((EntityTrackerExtension) entityTracker).tryTick();
             }
+        }
+
+        for (StagedTracker staged : this.stagingTrackers) {
+            staged.tracker().updateTrackedStatus(players);
         }
     }
 

@@ -79,25 +79,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
     @Override
     public void tryTick() {
         this.trackedSection = ChunkSectionPos.from(this.entity);
-        if (!this.listeners.isEmpty()) {
-            this.entry.tick();
-        } else {
-            final List<Entity> currentPassegers = this.entity.getPassengerList();
-            if (!((IEntityTrackerEntry) this.entry).getLastPassengers().equals(currentPassegers)) {
-                ((IEntityTrackerEntry) this.entry).setLastPassengers(currentPassegers);
-            }
-
-            if (this.entity instanceof ServerPlayerEntity player) {
-                // for some reasons mojang decides to sync entity data here, so we need to do it manually
-
-                if (this.entity.velocityModified) {
-                    player.networkHandler.sendPacket(new EntityVelocityUpdateS2CPacket(this.entity));
-                    this.entity.velocityModified = false;
-                }
-
-                ((EntityTrackerEntryExtension) this.entry).vmp$syncEntityData();
-            }
-        }
+        this.entry.tick();
     }
 
     @Inject(method = "updateTrackedStatus(Lnet/minecraft/server/network/ServerPlayerEntity;)V", at = @At(value = "INVOKE", target = "Ljava/util/Set;add(Ljava/lang/Object;)Z", shift = At.Shift.BEFORE))
