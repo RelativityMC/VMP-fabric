@@ -55,6 +55,7 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
         this.prevX = pos.x;
         this.prevY = pos.y;
         this.prevZ = pos.z;
+        this.trackedSection = ChunkSectionPos.from(this.entity);
     }
 
     @Override
