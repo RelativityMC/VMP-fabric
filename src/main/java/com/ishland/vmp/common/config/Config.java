@@ -48,7 +48,7 @@ public class Config {
         OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA = getBoolean(properties, newProperties, "optimized_entity_tracking_use_staging_area", true);
         USE_MULTIPLE_NETTY_EVENT_LOOPS = getBoolean(properties, newProperties, "use_multiple_netty_event_loops", true);
         USE_ASYNC_PORTALS = getBoolean(properties, newProperties, "use_async_portals", true);
-        USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", true);
+        USE_ASYNC_CHUNKS_ON_LOGIN = getBoolean(properties, newProperties, "use_async_chunks_on_login", false);
         USE_ASYNC_CHUNKS_ON_SOME_COMMANDS = getBoolean(properties, newProperties, "use_async_chunks_on_some_commands", false);
         SHOW_ASYNC_LOADING_MESSAGES = getBoolean(properties, newProperties, "show_async_loading_messages", true);
         SHOW_CHUNK_TRACKING_MESSAGES = getBoolean(properties, newProperties, "show_chunk_tracking_messages", true);
