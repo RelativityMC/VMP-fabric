@@ -33,8 +33,6 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
             return Config.USE_MULTIPLE_NETTY_EVENT_LOOPS;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.portals."))
             return Config.USE_ASYNC_PORTALS;
-        if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.iteration."))
-            return Config.USE_OPTIMIZED_CHUNK_TICKING_ITERATION;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.async_chunk_on_player_login"))
             return Config.USE_ASYNC_CHUNKS_ON_LOGIN && !isClassExist("com.ishland.c2me.opts.chunkio.common.async_chunk_on_player_login.IAsyncChunkPlayer");
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.command"))

@@ -26,15 +26,16 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @Mixin(PointOfInterestStorage.class)
-public abstract class MixinPointOfInterestStorage extends SerializingRegionBasedStorage<PointOfInterestSet> implements IPOIAsyncPreload {
+public abstract class MixinPointOfInterestStorage extends SerializingRegionBasedStorage<PointOfInterestSet, PointOfInterestSet.Serialized> implements IPOIAsyncPreload {
 
     @Shadow @Final private LongSet preloadedChunks;
 
-    public MixinPointOfInterestStorage(ChunkPosKeyedStorage storageAccess, Function<Runnable, Codec<PointOfInterestSet>> codecFactory, Function<Runnable, PointOfInterestSet> factory, DynamicRegistryManager registryManager, ChunkErrorHandler errorHandler, HeightLimitView world) {
-        super(storageAccess, codecFactory, factory, registryManager, errorHandler, world);
+    public MixinPointOfInterestStorage(ChunkPosKeyedStorage storageAccess, Codec<PointOfInterestSet.Serialized> codec, Function<PointOfInterestSet, PointOfInterestSet.Serialized> serializer, BiFunction<PointOfInterestSet.Serialized, Runnable, PointOfInterestSet> deserializer, Function<Runnable, PointOfInterestSet> factory, DynamicRegistryManager registryManager, ChunkErrorHandler errorHandler, HeightLimitView world) {
+        super(storageAccess, codec, serializer, deserializer, factory, registryManager, errorHandler, world);
     }
 
     @Override

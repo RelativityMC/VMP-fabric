@@ -19,7 +19,6 @@ public class Config {
     private static final Logger LOGGER = LogManager.getLogger();
 
     public static final int TARGET_CHUNK_SEND_RATE;
-    public static final boolean USE_OPTIMIZED_CHUNK_TICKING_ITERATION;
     public static final boolean USE_ASYNC_LOGGING;
     public static final boolean USE_OPTIMIZED_ENTITY_TRACKING;
     public static final boolean OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA;
@@ -42,7 +41,6 @@ public class Config {
             }
         }
         TARGET_CHUNK_SEND_RATE = getInt(properties, newProperties, "target_chunk_send_rate", -1);
-        USE_OPTIMIZED_CHUNK_TICKING_ITERATION = getBoolean(properties, newProperties, "exp_use_optimized_chunk_ticking_iteration", false);
         USE_ASYNC_LOGGING = getBoolean(properties, newProperties, "use_async_logging", true);
         USE_OPTIMIZED_ENTITY_TRACKING = getBoolean(properties, newProperties, "use_optimized_entity_tracking", true);
         OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA = getBoolean(properties, newProperties, "optimized_entity_tracking_use_staging_area", true);
