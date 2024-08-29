@@ -106,7 +106,7 @@ public abstract class MixinChunkTicketManager {
         this.pendingChunkHolderUpdates = new ObjectArrayFIFOQueue<>();
     }
 
-    @Redirect(method = {"purge", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 4, expect = 4)
+    @Redirect(method = {"purgeExpiredTickets", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 4, expect = 4)
     private void redirectUpdate(ChunkTicketManager.TicketDistanceLevelPropagator instance, long l, int i, boolean b) {
         this.updateTicketLevel(l, i);
     }
