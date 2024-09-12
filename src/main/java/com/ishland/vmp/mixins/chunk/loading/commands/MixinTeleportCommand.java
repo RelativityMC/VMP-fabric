@@ -109,8 +109,8 @@ public abstract class MixinTeleportCommand {
             @Nullable PosArgument rotation,
             @Nullable TeleportCommand.LookTarget facingLocation
     ) throws CommandSyntaxException {
-        Vec3d vec3d = location.toAbsolutePos(source);
-        Vec2f vec2f = rotation == null ? null : rotation.toAbsoluteRotation(source);
+        Vec3d vec3d = location.getPos(source);
+        Vec2f vec2f = rotation == null ? null : rotation.getRotation(source);
         Set<PositionFlag> set = EnumSet.noneOf(PositionFlag.class);
         if (location.isXRelative()) {
             set.add(PositionFlag.X);

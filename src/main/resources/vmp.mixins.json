@@ -23,7 +23,6 @@
     "access.ITrackedPosition",
     "carpet.MixinEntityPlayerMPFake",
     "chunk.loading.MixinPointOfInterestStorage",
-    "chunk.loading.MixinTeleportTarget",
     "chunk.loading.commands.MixinCommandFunctionManager",
     "chunk.loading.commands.MixinSpreadPlayersCommand",
     "chunk.loading.commands.MixinTeleportCommand",

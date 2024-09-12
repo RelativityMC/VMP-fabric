@@ -10,12 +10,10 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkLevels;
-import net.minecraft.server.world.ChunkTaskPrioritySystem;
 import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ServerChunkLoadingManager;
 import net.minecraft.util.collection.SortedArraySet;
-import net.minecraft.util.thread.MessageListener;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,10 +46,6 @@ public abstract class MixinChunkTicketManager {
     @Shadow @Final private LongSet freshPlayerTicketPositions;
 
     @Shadow protected abstract SortedArraySet<ChunkTicket<?>> getTicketSet(long position);
-
-    @Shadow @Final private MessageListener<ChunkTaskPrioritySystem.UnblockingMessage> playerTicketThrottlerUnblocker;
-    @Shadow private long age;
-    @Shadow @Final private Long2ObjectOpenHashMap<SortedArraySet<ChunkTicket<?>>> ticketsByPosition;
 
     @Shadow
     protected static int getLevel(SortedArraySet<ChunkTicket<?>> sortedArraySet) {
