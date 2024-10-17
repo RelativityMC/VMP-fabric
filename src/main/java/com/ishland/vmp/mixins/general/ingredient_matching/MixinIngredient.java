@@ -25,7 +25,7 @@ public abstract class MixinIngredient {
     @Final
     private RegistryEntryList<Item> entries;
 
-    @Shadow public abstract List<RegistryEntry<Item>> getMatchingStacks();
+    @Shadow public abstract List<RegistryEntry<Item>> getMatchingItems();
 
     @Unique
     private Set<RegistryEntry<Item>> matchingItems = null;
@@ -45,7 +45,7 @@ public abstract class MixinIngredient {
             Set<RegistryEntry<Item>> matchingItems = this.matchingItems;
             boolean isEmptyMatch = this.isEmptyMatch;
             if (matchingItems == null) {
-                matchingItems = this.matchingItems = new HashSet<>(this.getMatchingStacks());
+                matchingItems = this.matchingItems = new HashSet<>(this.getMatchingItems());
                 isEmptyMatch = this.isEmptyMatch = this.matchingItems.isEmpty();
             }
             if (itemStack.isEmpty()) {
