@@ -72,10 +72,6 @@ public class NearbyEntityTracking {
     private final ObjectLinkedOpenHashSet<StagedTracker> stagingTrackers = new ObjectLinkedOpenHashSet<>();
 
     private void addEntityTrackerAreaMap(ServerChunkLoadingManager.EntityTracker tracker) {
-        if (((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity() instanceof ServerPlayerEntity player) {
-            this.addPlayer(player);
-        }
-
         // update is done lazily on next tickEntityMovement
         final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity());
         this.areaMap.add(
@@ -88,6 +84,9 @@ public class NearbyEntityTracking {
     }
 
     public void addEntityTracker(ServerChunkLoadingManager.EntityTracker tracker) {
+        if (((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity() instanceof ServerPlayerEntity player) {
+            this.addPlayer(player);
+        }
         if (Config.OPTIMIZED_ENTITY_TRACKING_USE_STAGING_AREA) {
             stagingTrackers.addAndMoveToLast(new StagedTracker(tracker, ticks.get()));
             for (ServerPlayerEntity player : this.playerTrackers.keySet()) {
@@ -202,7 +201,7 @@ public class NearbyEntityTracking {
             StagedTracker stagingTracker = iterator.next();
             if (currentTicks - stagingTracker.tickAdded() >= STAGING_TRACKER_LIFETIME) {
                 iterator.remove();
-//                System.out.println(String.format("Migrating staging tracker %s", ((IThreadedAnvilChunkStorageEntityTracker) stagingTracker.tracker()).getEntity()));
+//                System.out.println(String.format("Migrating staging tracker %s", ((IThreadedAnvilChunkStorageEntityTracker) stagingTracker.tracker()).getEntity().getUuidAsString()));
                 addEntityTrackerAreaMap(stagingTracker.tracker());
             } else {
                 break;
