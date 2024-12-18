@@ -25,7 +25,7 @@ public class AsyncChunkLoadUtil {
 
     private static final ChunkTicketType<Unit> ASYNC_CHUNK_LOAD = ChunkTicketType.create("vmp_async_chunk_load", (unit, unit2) -> 0);
 
-    private static final AsyncSemaphore SEMAPHORE = new FairAsyncSemaphore(6);
+    public static final AsyncSemaphore SEMAPHORE = new FairAsyncSemaphore(12);
 
     public static CompletableFuture<OptionalChunk<Chunk>> scheduleChunkLoad(ServerWorld world, ChunkPos pos) {
         return scheduleChunkLoadWithRadius(world, pos, 3);
