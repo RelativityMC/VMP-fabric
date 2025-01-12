@@ -233,7 +233,7 @@ public class AreaMap<T> {
     }
 
     private static int chebyshevDistance(int x0, int z0, int x1, int z1) {
-        return Math.min(Math.abs(x0 - x1), Math.abs(z0 - z1));
+        return Math.max(Math.abs(x0 - x1), Math.abs(z0 - z1));
     }
 
     // only for debugging
