@@ -6,6 +6,7 @@ import io.netty.channel.ChannelConfig;
 import io.netty.channel.ChannelPromise;
 import io.netty.channel.EventLoopGroup;
 import net.minecraft.network.ClientConnection;
+import net.minecraft.network.NetworkSide;
 import net.minecraft.network.NetworkState;
 import net.minecraft.network.listener.PacketListener;
 import org.jetbrains.annotations.Nullable;
@@ -19,11 +20,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientConnection.class)
-public class MixinClientConnection {
+public abstract class MixinClientConnection {
 
     @Shadow private Channel channel;
 
     @Shadow private volatile @Nullable PacketListener packetListener;
+
+    @Shadow public abstract NetworkSide getSide();
 
     @Inject(method = "transitionInbound", at = @At(value = "RETURN"))
     private void onSetState(NetworkState<?> state, PacketListener listener, CallbackInfo ci) {
@@ -38,6 +41,9 @@ public class MixinClientConnection {
 //        } else {
 //            return instance.setAutoRead(b);
 //        }
+        if (this.getSide() == NetworkSide.CLIENTBOUND) {
+            return;
+        }
         final EventLoopGroup group = VMPEventLoops.getEventLoopGroup(this.channel, state.id());
         if (group != null) {
             vmp$reregister(group);
