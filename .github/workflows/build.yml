@@ -43,7 +43,7 @@ jobs:
           GITHUB_EVENT_RAW_PATH: ${{ github.event_path }}
         continue-on-error: true
       - name: capture build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Artifacts
           path: build/libs/
