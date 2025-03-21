@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.predicate.entity.EntityPredicates;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -25,9 +26,12 @@ public abstract class MixinMobEntity extends LivingEntity {
         if (closestPlayer != null) {
             return closestPlayer;
         } else {
-            final List<? extends PlayerEntity> players = this.getWorld().getPlayers();
-            if (players.isEmpty()) return null;
-            return players.get(0);
+            for (PlayerEntity player : this.getWorld().getPlayers()) {
+                if (EntityPredicates.EXCEPT_SPECTATOR.test(player)) {
+                    return player;
+                }
+            }
+            return null;
         }
     }
 
