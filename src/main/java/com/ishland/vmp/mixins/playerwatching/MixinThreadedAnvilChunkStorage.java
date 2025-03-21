@@ -9,6 +9,7 @@ import net.minecraft.server.network.ChunkFilter;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.PlayerChunkWatchingManager;
 import net.minecraft.server.world.ServerChunkLoadingManager;
+import net.minecraft.util.TriState;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
 
     @Shadow @Final private static Logger LOGGER;
 
-    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
+    @Shadow @Final private ServerChunkLoadingManager.LevelManager levelManager;
 
     @Shadow protected abstract boolean canTickChunk(ServerPlayerEntity player, ChunkPos pos);
 
@@ -118,7 +119,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
     @Overwrite
     public List<ServerPlayerEntity> getPlayersWatchingChunk(ChunkPos pos) {
         long l = pos.toLong();
-        if (!this.ticketManager.shouldTick(l)) {
+        if (!this.levelManager.shouldTick(l).asBoolean(true)) {
             return List.of();
         } else {
             ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
@@ -142,8 +143,9 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
     @Overwrite
     public boolean shouldTick(ChunkPos pos) {
         long l = pos.toLong();
-        if (!this.ticketManager.shouldTick(l)) {
-            return false;
+        TriState triState = this.levelManager.shouldTick(l);
+        if (triState != TriState.DEFAULT) {
+            return triState.asBoolean(true);
         } else {
             for (Object __player : this.areaPlayerChunkWatchingManager.getPlayersInGeneralAreaMap(l)) {
                 if (__player instanceof ServerPlayerEntity serverPlayerEntity) {

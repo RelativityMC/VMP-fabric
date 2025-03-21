@@ -1,7 +1,6 @@
 package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups;
 
 import com.ishland.vmp.common.playerwatching.NearbyEntityTracking;
-import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -24,7 +23,7 @@ public class MixinThreadedAnvilChunkStorage {
     @Shadow
     @Final
     private Int2ObjectMap<ServerChunkLoadingManager.EntityTracker> entityTrackers;
-    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
+    @Shadow @Final private ServerChunkLoadingManager.LevelManager levelManager;
     @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
     @Unique
     private final NearbyEntityTracking nearbyEntityTracking = new NearbyEntityTracking();
@@ -74,7 +73,7 @@ public class MixinThreadedAnvilChunkStorage {
 //        }
 
         try {
-            this.nearbyEntityTracking.tick(this.ticketManager);
+            this.nearbyEntityTracking.tick(this.levelManager);
         } catch (Throwable t) {
             t.printStackTrace();
         }

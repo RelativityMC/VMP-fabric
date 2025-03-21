@@ -14,15 +14,6 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ServerChunkLoadingManager.class)
 public abstract class MixinThreadedAnvilChunkStorage {
 
-    @Shadow @Final private PlayerChunkWatchingManager playerChunkWatchingManager;
-
-    @Shadow @Final private ServerChunkLoadingManager.TicketManager ticketManager;
-
-    @Shadow
-    private static double getSquaredDistance(ChunkPos pos, Entity entity) {
-        throw new AbstractMethodError();
-    }
-
 //    /**
 //     * @author ishland
 //     * @reason optimize nearby player lookups

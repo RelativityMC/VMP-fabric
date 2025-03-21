@@ -5,15 +5,13 @@ import com.ishland.vmp.mixins.access.IChunkHolder;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.misc.Delayed8WayDistancePropagator2D;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ChunkLevelManager;
 import net.minecraft.server.world.ChunkLevels;
-import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ServerChunkLoadingManager;
-import net.minecraft.util.collection.SortedArraySet;
+import net.minecraft.server.world.TicketDistanceLevelPropagator;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -27,30 +25,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
-@Mixin(ChunkTicketManager.class)
-public abstract class MixinChunkTicketManager {
+@Mixin(ChunkLevelManager.class)
+public abstract class MixinChunkLevelManager {
 
     @Mutable
-    @Shadow @Final private ChunkTicketManager.TicketDistanceLevelPropagator distanceFromTicketTracker;
+    @Shadow @Final private TicketDistanceLevelPropagator ticketDistanceLevelPropagator;
 
     @Shadow protected @Nullable abstract ChunkHolder getChunkHolder(long pos);
 
     @Shadow protected @Nullable abstract ChunkHolder setLevel(long pos, int level, @Nullable ChunkHolder holder, int i);
 
-    @Shadow @Final private ChunkTicketManager.NearbyChunkTicketUpdater nearbyChunkTicketUpdater;
-    @Shadow @Final private Set<ChunkHolder> chunkHoldersWithPendingUpdates;
     @Shadow @Final private Executor mainThreadExecutor;
-    @Shadow @Final private LongSet freshPlayerTicketPositions;
-
-    @Shadow protected abstract SortedArraySet<ChunkTicket<?>> getTicketSet(long position);
-
-    @Shadow
-    protected static int getLevel(SortedArraySet<ChunkTicket<?>> sortedArraySet) {
-        throw new AbstractMethodError();
-    }
 
     @Unique
     protected Long2IntLinkedOpenHashMap ticketLevelUpdates;
@@ -80,8 +67,8 @@ public abstract class MixinChunkTicketManager {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(Executor workerExecutor, Executor mainThreadExecutor, CallbackInfo ci) {
-        this.distanceFromTicketTracker = null; // fail-fast incompatibility
+    private void onInit(ChunkTicketManager ticketManager, Executor executor, Executor mainThreadExecutor, CallbackInfo ci) {
+        this.ticketDistanceLevelPropagator = null; // fail-fast incompatibility
 
         this.ticketLevelUpdates = new Long2IntLinkedOpenHashMap() {
             @Override
@@ -98,15 +85,12 @@ public abstract class MixinChunkTicketManager {
                 }
         );
         this.pendingChunkHolderUpdates = new ObjectArrayFIFOQueue<>();
+
+        ticketManager.setLoadingLevelUpdater((pos, level, added) -> this.updateTicketLevel(pos, level));
     }
 
-    @Redirect(method = {"purgeExpiredTickets", "addTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removeTicket(JLnet/minecraft/server/world/ChunkTicket;)V", "removePersistentTickets"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;updateLevel(JIZ)V"), require = 4, expect = 4)
-    private void redirectUpdate(ChunkTicketManager.TicketDistanceLevelPropagator instance, long l, int i, boolean b) {
-        this.updateTicketLevel(l, i);
-    }
-
-    @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkTicketManager$TicketDistanceLevelPropagator;update(I)I"))
-    public int tickTickets(ChunkTicketManager.TicketDistanceLevelPropagator __, int distance, ServerChunkLoadingManager threadedAnvilChunkStorage) {
+    @Redirect(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/TicketDistanceLevelPropagator;update(I)I"))
+    public int tickTickets(TicketDistanceLevelPropagator instance, int distance, ServerChunkLoadingManager threadedAnvilChunkStorage) {
         if (!((IThreadedAnvilChunkStorage) threadedAnvilChunkStorage).getMainThreadExecutor().isOnThread()) {
             throw new ConcurrentModificationException("Attempted to tick tickets asynchronously");
         }

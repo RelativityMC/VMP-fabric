@@ -60,8 +60,9 @@ public abstract class MixinServerConfigurationNetworkHandler extends ServerCommo
     @Shadow private SyncedClientOptions syncedOptions;
 
     @Shadow @Final private static Text INVALID_PLAYER_DATA_TEXT;
+
     @Unique
-    private static final ChunkTicketType<Unit> VMP_PLAYER_ASYNC_CHUNKS = ChunkTicketType.create("vmp_player_async_chunk", (unit, unit2) -> 0);
+    private static final ChunkTicketType VMP_PLAYER_ASYNC_CHUNKS = new ChunkTicketType(0L, false, ChunkTicketType.Use.LOADING);
 
     @Unique
     private ChunkPos vmp$ticketHeld;
@@ -84,7 +85,7 @@ public abstract class MixinServerConfigurationNetworkHandler extends ServerCommo
     @Unique
     private void vmp$dropTicket() {
         if (this.vmp$ticketHeld != null && this.vmp$ticketHeldWorld != null) {
-            ((IServerChunkManager) this.vmp$ticketHeldWorld.getChunkManager()).getTicketManager().removeTicketWithLevel(VMP_PLAYER_ASYNC_CHUNKS, this.vmp$ticketHeld, 31, Unit.INSTANCE);
+            ((IServerChunkManager) this.vmp$ticketHeldWorld.getChunkManager()).getTicketManager().removeTicket(VMP_PLAYER_ASYNC_CHUNKS, this.vmp$ticketHeld, 2);
             this.vmp$ticketHeld = null;
             this.vmp$ticketHeldWorld = null;
         }
@@ -137,7 +138,7 @@ public abstract class MixinServerConfigurationNetworkHandler extends ServerCommo
             Stopwatch timing = Stopwatch.createStarted();
             AsyncChunkLoadUtil.SEMAPHORE.acquire().thenApplyAsync(unused -> {
                 try {
-                    ((IServerChunkManager) actualWorld.getChunkManager()).getTicketManager().addTicketWithLevel(VMP_PLAYER_ASYNC_CHUNKS, chunkPos, 31, Unit.INSTANCE);
+                    ((IServerChunkManager) actualWorld.getChunkManager()).getTicketManager().addTicket(VMP_PLAYER_ASYNC_CHUNKS, chunkPos, 2);
                     ((IServerChunkManager) actualWorld.getChunkManager()).invokeUpdateChunks();
                     final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) actualWorld.getChunkManager().chunkLoadingManager).invokeGetCurrentChunkHolder(chunkPos.toLong());
                     if (chunkHolder == null) {

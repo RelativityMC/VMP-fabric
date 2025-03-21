@@ -18,7 +18,7 @@
     "access.ISpreadPlayersCommandPile",
     "access.IThreadedAnvilChunkStorage",
     "access.IThreadedAnvilChunkStorageEntityTracker",
-    "access.IThreadedAnvilChunkStorageTicketManager",
+    "access.IThreadedAnvilChunkStorageLevelManager",
     "access.ITrackedPosition",
     "carpet.MixinEntityPlayerMPFake",
     "chunk.loading.MixinPointOfInterestStorage",
@@ -51,7 +51,7 @@
     "playerwatching.optimize_nearby_player_lookups.MixinServerWorld",
     "playerwatching.optimize_nearby_player_lookups.MixinSpawnDensityCapper",
     "playerwatching.optimize_nearby_player_lookups.MixinThreadedAnvilChunkStorage",
-    "ticketsystem.ticketpropagator.MixinChunkTicketManager"
+    "ticketsystem.ticketpropagator.MixinChunkLevelManager"
   ],
   "client": [
     "timesource.MixinMinecraftClient"

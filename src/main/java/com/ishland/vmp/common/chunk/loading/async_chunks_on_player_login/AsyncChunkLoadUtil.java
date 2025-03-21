@@ -6,8 +6,10 @@ import com.ishland.vmp.mixins.access.IServerChunkManager;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.server.world.ChunkHolder;
+import net.minecraft.server.world.ChunkLevelManager;
 import net.minecraft.server.world.ChunkLevelType;
 import net.minecraft.server.world.ChunkLevels;
+import net.minecraft.server.world.ChunkTicket;
 import net.minecraft.server.world.ChunkTicketManager;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.OptionalChunk;
@@ -23,7 +25,7 @@ import java.util.function.Function;
 
 public class AsyncChunkLoadUtil {
 
-    private static final ChunkTicketType<Unit> ASYNC_CHUNK_LOAD = ChunkTicketType.create("vmp_async_chunk_load", (unit, unit2) -> 0);
+    private static final ChunkTicketType ASYNC_CHUNK_LOAD = new ChunkTicketType(0L, false, ChunkTicketType.Use.LOADING);
 
     public static final AsyncSemaphore SEMAPHORE = new FairAsyncSemaphore(12);
 
@@ -43,10 +45,12 @@ public class AsyncChunkLoadUtil {
         final ServerChunkManager chunkManager = world.getChunkManager();
         final ChunkTicketManager ticketManager = ((IServerChunkManager) chunkManager).getTicketManager();
 
+        ChunkTicket chunkTicket = new ChunkTicket(ASYNC_CHUNK_LOAD, level);
+
         final CompletableFuture<OptionalChunk<Chunk>> future = SEMAPHORE.acquire()
                 .toCompletableFuture()
                 .thenComposeAsync(unused -> {
-                    ticketManager.addTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
+                    ticketManager.addTicket(chunkTicket, pos);
                     ((IServerChunkManager) chunkManager).invokeUpdateChunks();
                     final ChunkHolder chunkHolder = ((IThreadedAnvilChunkStorage) chunkManager.chunkLoadingManager).invokeGetCurrentChunkHolder(pos.toLong());
                     if (chunkHolder == null) {
@@ -63,7 +67,7 @@ public class AsyncChunkLoadUtil {
         future.whenCompleteAsync((unused, throwable) -> {
             SEMAPHORE.release();
             if (throwable != null) throwable.printStackTrace();
-            ticketManager.removeTicketWithLevel(ASYNC_CHUNK_LOAD, pos, level, Unit.INSTANCE);
+            ticketManager.removeTicket(chunkTicket, pos);
         }, world.getServer());
         return future;
     }

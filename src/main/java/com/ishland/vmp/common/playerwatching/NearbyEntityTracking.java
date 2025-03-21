@@ -6,7 +6,7 @@ import com.ishland.vmp.common.playerwatching.compat.EntityPositionTransformer;
 import com.ishland.vmp.common.util.SimpleObjectPool;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageEntityTracker;
-import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageTicketManager;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorageLevelManager;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import it.unimi.dsi.fastutil.objects.Reference2LongMap;
@@ -23,7 +23,6 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -149,7 +148,7 @@ public class NearbyEntityTracking {
         return new ChunkPos(ChunkSectionPos.getSectionCoord(pos.x), ChunkSectionPos.getSectionCoord(pos.z));
     }
 
-    public void tick(ServerChunkLoadingManager.TicketManager ticketManager) {
+    public void tick(ServerChunkLoadingManager.LevelManager ticketManager) {
         tickStaging(ticketManager);
 
         for (Reference2LongMap.Entry<ServerChunkLoadingManager.EntityTracker> entry : this.tracker2ChunkPos.reference2LongEntrySet()) {
@@ -194,7 +193,7 @@ public class NearbyEntityTracking {
         }
     }
 
-    private void tickStaging(ServerChunkLoadingManager.TicketManager ticketManager) {
+    private void tickStaging(ServerChunkLoadingManager.LevelManager ticketManager) {
         // migrate staging trackers to AreaMap
         final long currentTicks = this.ticks.incrementAndGet();
         for (ObjectListIterator<StagedTracker> iterator = this.stagingTrackers.iterator(); iterator.hasNext(); ) {
@@ -208,7 +207,7 @@ public class NearbyEntityTracking {
             }
         }
 
-        final List<ServerPlayerEntity> players = ((IThreadedAnvilChunkStorage) ((IThreadedAnvilChunkStorageTicketManager) ticketManager).getField_17443()).getWorld().getPlayers();
+        final List<ServerPlayerEntity> players = ((IThreadedAnvilChunkStorage) ((IThreadedAnvilChunkStorageLevelManager) ticketManager).getField_17443()).getWorld().getPlayers();
         for (StagedTracker staged : this.stagingTrackers) {
             final ServerChunkLoadingManager.EntityTracker entityTracker = staged.tracker();
             ChunkSectionPos chunkSectionPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
@@ -230,7 +229,7 @@ public class NearbyEntityTracking {
         }
     }
 
-    private void handleTracker(ServerChunkLoadingManager.TicketManager ticketManager, ServerPlayerEntity player, boolean isPlayerPositionUpdated, ServerChunkLoadingManager.EntityTracker entityTracker) {
+    private void handleTracker(ServerChunkLoadingManager.LevelManager ticketManager, ServerPlayerEntity player, boolean isPlayerPositionUpdated, ServerChunkLoadingManager.EntityTracker entityTracker) {
         final ChunkSectionPos trackedPos = ((IThreadedAnvilChunkStorageEntityTracker) entityTracker).getTrackedSection();
         if (trackerTickList.add(entityTracker) && ticketManager.shouldTickEntities(ChunkPos.toLong(trackedPos.getSectionX(), trackedPos.getSectionZ()))) {
             tryTickTracker(entityTracker);
