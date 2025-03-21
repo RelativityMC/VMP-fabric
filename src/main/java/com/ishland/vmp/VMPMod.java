@@ -17,6 +17,6 @@ public class VMPMod implements ModInitializer {
             NearbyEntityTracking.init();
         }
 
-        MixinEnvironment.getCurrentEnvironment().audit();
+//        MixinEnvironment.getCurrentEnvironment().audit();
     }
 }
