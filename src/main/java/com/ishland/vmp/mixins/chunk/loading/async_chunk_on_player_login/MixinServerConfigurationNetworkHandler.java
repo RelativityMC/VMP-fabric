@@ -32,6 +32,7 @@ import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.ErrorReporter;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
@@ -91,13 +92,13 @@ public abstract class MixinServerConfigurationNetworkHandler extends ServerCommo
         }
     }
 
-    @WrapOperation(method = "onReady", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;createPlayer(Lcom/mojang/authlib/GameProfile;Lnet/minecraft/network/packet/c2s/common/SyncedClientOptions;)Lnet/minecraft/server/network/ServerPlayerEntity;"))
-    private ServerPlayerEntity replacePlayer(PlayerManager instance, GameProfile profile, SyncedClientOptions syncedOptions, Operation<ServerPlayerEntity> original) {
+    @WrapOperation(method = "onReady", at = @At(value = "NEW", target = "(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/server/world/ServerWorld;Lcom/mojang/authlib/GameProfile;Lnet/minecraft/network/packet/c2s/common/SyncedClientOptions;)Lnet/minecraft/server/network/ServerPlayerEntity;"))
+    private ServerPlayerEntity replacePlayer(MinecraftServer server, ServerWorld world, GameProfile profile, SyncedClientOptions clientOptions, Operation<ServerPlayerEntity> original) {
         if (this.vmp$heldPlayer != null) {
             this.vmp$dropTicket();
             return this.vmp$heldPlayer;
         } else {
-            return original.call(instance, profile, syncedOptions);
+            return original.call(server, world, profile, clientOptions);
         }
     }
 
@@ -116,19 +117,20 @@ public abstract class MixinServerConfigurationNetworkHandler extends ServerCommo
                 return;
             }
 
-            ServerPlayerEntity player = playerManager.createPlayer(this.profile, this.syncedOptions);
+            ServerPlayerEntity player = new ServerPlayerEntity(this.server, this.server.getOverworld(), this.profile, this.syncedOptions);
             this.vmp$heldPlayer = player;
 
-            RegistryKey<World> registryKey = playerManager.loadPlayerData(player)
-                    .flatMap(nbt -> DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, nbt.get("Dimension"))).resultOrPartial(LOGGER::error))
-                    .orElse(World.OVERWORLD);
-            ServerWorld storedWorld = playerManager.getServer().getWorld(registryKey);
             ServerWorld actualWorld;
-            if (storedWorld == null) {
-                LOGGER.warn("Unknown respawn dimension {}, defaulting to overworld", registryKey);
-                actualWorld = playerManager.getServer().getOverworld();
-            } else {
-                actualWorld = storedWorld;
+            try (ErrorReporter.Logging logging = new ErrorReporter.Logging(player.getErrorReporterContext(), LOGGER)) {
+                RegistryKey<World> registryKey = playerManager.loadPlayerData(player, logging)
+                        .flatMap(view -> view.read("Dimension", World.CODEC)).orElse(World.OVERWORLD);
+                ServerWorld storedWorld = playerManager.getServer().getWorld(registryKey);
+                if (storedWorld == null) {
+                    LOGGER.warn("Unknown respawn dimension {}, defaulting to overworld", registryKey);
+                    actualWorld = playerManager.getServer().getOverworld();
+                } else {
+                    actualWorld = storedWorld;
+                }
             }
 
             ChunkPos chunkPos = new ChunkPos(player.getBlockPos());
