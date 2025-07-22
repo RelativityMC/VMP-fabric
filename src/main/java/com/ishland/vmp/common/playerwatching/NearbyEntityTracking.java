@@ -175,7 +175,7 @@ public class NearbyEntityTracking {
                 if (currentTrackers.contains(entityTracker)) {
                     handleTracker(ticketManager, player, isPlayerPositionUpdated, entityTracker);
                 } else {
-                    entityTracker.stopTracking(player);
+                    entityTracker.updateTrackedStatus(player); // instead of stopTracking() to handle player readded to staging
                     iterator.remove();
                 }
             }
