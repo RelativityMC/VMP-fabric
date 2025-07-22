@@ -95,15 +95,17 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         Object[] set = watchingManager.getPlayersWatchingChunkArray(chunkPos.toLong());
         ImmutableList.Builder<ServerPlayerEntity> builder = ImmutableList.builder();
 
+        int actualWatchDistance = this.watchDistance + 1;
+
         for (Object __player : set) {
             if (__player instanceof ServerPlayerEntity serverPlayerEntity) {
                 ChunkSectionPos watchedPos = serverPlayerEntity.getWatchedSection();
                 int chebyshevDistance = Math.max(Math.abs(watchedPos.getSectionX() - chunkPos.x), Math.abs(watchedPos.getSectionZ() - chunkPos.z));
-                if (chebyshevDistance > this.watchDistance) {
+                if (chebyshevDistance > actualWatchDistance) {
                     continue;
                 }
                 if (!serverPlayerEntity.networkHandler.chunkDataSender.isInNextBatch(chunkPos.toLong()) &&
-                    (!onlyOnWatchDistanceEdge || chebyshevDistance == this.watchDistance)) {
+                    (!onlyOnWatchDistanceEdge || chebyshevDistance == actualWatchDistance)) {
                     builder.add(serverPlayerEntity);
                 }
             }
