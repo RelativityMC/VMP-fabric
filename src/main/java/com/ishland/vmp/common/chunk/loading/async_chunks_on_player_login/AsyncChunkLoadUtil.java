@@ -25,7 +25,7 @@ import java.util.function.Function;
 
 public class AsyncChunkLoadUtil {
 
-    private static final ChunkTicketType ASYNC_CHUNK_LOAD = new ChunkTicketType(0L, false, ChunkTicketType.Use.LOADING);
+    private static final ChunkTicketType ASYNC_CHUNK_LOAD = new ChunkTicketType(0L, 2); // loading
 
     public static final AsyncSemaphore SEMAPHORE = new FairAsyncSemaphore(12);
 

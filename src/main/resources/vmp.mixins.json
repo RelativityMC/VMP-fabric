@@ -22,7 +22,6 @@
     "access.ITrackedPosition",
     "carpet.MixinEntityPlayerMPFake",
     "chunk.loading.MixinPointOfInterestStorage",
-    "chunk.loading.async_chunk_on_player_login.MixinServerConfigurationNetworkHandler",
     "chunk.loading.commands.MixinCommandFunctionManager",
     "chunk.loading.commands.MixinSpreadPlayersCommand",
     "chunk.ticking.MixinServerWorld",
