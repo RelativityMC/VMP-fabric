@@ -26,7 +26,7 @@ public abstract class MixinMobEntity extends LivingEntity {
         if (closestPlayer != null) {
             return closestPlayer;
         } else {
-            for (PlayerEntity player : this.getWorld().getPlayers()) {
+            for (PlayerEntity player : this.getEntityWorld().getPlayers()) {
                 if (EntityPredicates.EXCEPT_SPECTATOR.test(player)) {
                     return player;
                 }
