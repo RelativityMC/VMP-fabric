@@ -141,7 +141,7 @@ public class NearbyEntityTracking {
     };
 
     private static ChunkPos getEntityChunkPos(Entity entity) {
-        Vec3d pos = entity.getPos();
+        Vec3d pos = entity.getEntityPos();
         for (EntityPositionTransformer transformer : transformers) {
             pos = transformer.transform(entity, pos);
         }

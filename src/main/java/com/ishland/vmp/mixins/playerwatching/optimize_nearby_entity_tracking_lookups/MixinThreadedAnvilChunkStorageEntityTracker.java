@@ -45,13 +45,13 @@ public abstract class MixinThreadedAnvilChunkStorageEntityTracker implements Ent
 
     @Override
     public boolean isPositionUpdated() {
-        final Vec3d pos = this.entity.getPos();
+        final Vec3d pos = this.entity.getEntityPos();
         return pos.x != this.prevX || pos.y != this.prevY || pos.z != prevZ;
     }
 
     @Override
     public void updatePosition() {
-        final Vec3d pos = this.entity.getPos();
+        final Vec3d pos = this.entity.getEntityPos();
         this.prevX = pos.x;
         this.prevY = pos.y;
         this.prevZ = pos.z;

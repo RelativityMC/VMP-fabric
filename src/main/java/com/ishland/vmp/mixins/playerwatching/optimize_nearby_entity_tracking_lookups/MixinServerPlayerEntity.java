@@ -24,13 +24,13 @@ public abstract class MixinServerPlayerEntity extends PlayerEntity implements Se
 
     @Override
     public boolean vmpTracking$isPositionUpdated() {
-        final Vec3d pos = this.getPos();
+        final Vec3d pos = this.getEntityPos();
         return pos.x != this.vmpTracking$prevX || pos.y != this.vmpTracking$prevY || pos.z != this.vmpTracking$prevZ;
     }
 
     @Override
     public void vmpTracking$updatePosition() {
-        final Vec3d pos = this.getPos();
+        final Vec3d pos = this.getEntityPos();
         this.vmpTracking$prevX = pos.x;
         this.vmpTracking$prevY = pos.y;
         this.vmpTracking$prevZ = pos.z;
