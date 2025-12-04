@@ -18,8 +18,8 @@ import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.poi.PointOfInterestSet;
 import net.minecraft.world.poi.PointOfInterestStorage;
-import net.minecraft.world.storage.ChunkPosKeyedStorage;
 import net.minecraft.world.storage.SerializingRegionBasedStorage;
+import net.minecraft.world.storage.VersionedChunkStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -34,7 +34,7 @@ public abstract class MixinPointOfInterestStorage extends SerializingRegionBased
 
     @Shadow @Final private LongSet preloadedChunks;
 
-    public MixinPointOfInterestStorage(ChunkPosKeyedStorage storageAccess, Codec<PointOfInterestSet.Serialized> codec, Function<PointOfInterestSet, PointOfInterestSet.Serialized> serializer, BiFunction<PointOfInterestSet.Serialized, Runnable, PointOfInterestSet> deserializer, Function<Runnable, PointOfInterestSet> factory, DynamicRegistryManager registryManager, ChunkErrorHandler errorHandler, HeightLimitView world) {
+    public MixinPointOfInterestStorage(VersionedChunkStorage storageAccess, Codec<PointOfInterestSet.Serialized> codec, Function<PointOfInterestSet, PointOfInterestSet.Serialized> serializer, BiFunction<PointOfInterestSet.Serialized, Runnable, PointOfInterestSet> deserializer, Function<Runnable, PointOfInterestSet> factory, DynamicRegistryManager registryManager, ChunkErrorHandler errorHandler, HeightLimitView world) {
         super(storageAccess, codec, serializer, deserializer, factory, registryManager, errorHandler, world);
     }
 
