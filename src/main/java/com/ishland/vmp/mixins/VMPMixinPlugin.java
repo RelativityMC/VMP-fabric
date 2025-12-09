@@ -30,7 +30,7 @@ public class VMPMixinPlugin implements IMixinConfigPlugin {
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lookups"))
             return Config.USE_OPTIMIZED_ENTITY_TRACKING;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.networking.eventloops."))
-            return Config.USE_MULTIPLE_NETTY_EVENT_LOOPS;
+            return false;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.portals."))
             return Config.USE_ASYNC_PORTALS;
         if (mixinClassName.startsWith("com.ishland.vmp.mixins.chunk.loading.async_chunk_on_player_login"))
