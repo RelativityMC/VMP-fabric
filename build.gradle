@@ -97,18 +97,14 @@ java {
 }
 
 jar {
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+	from("LICENSE")
 }
 
 shadowJar {
 	archiveClassifier = "all-dev"
 	configurations = [ project.configurations.shadowInclude ]
 	minimize()
-	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
-	}
+	from("LICENSE")
 	exclude "/raknetify*"
 	relocate "com.ishland.raknetify", "com.ishland.vmp.deps.raknetify"
 }
