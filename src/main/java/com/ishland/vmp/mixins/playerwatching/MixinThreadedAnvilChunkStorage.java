@@ -74,7 +74,7 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
         if (Config.SHOW_CHUNK_TRACKING_MESSAGES) {
             LOGGER.info("Changing watch distance to {}", this.watchDistance);
         }
-        areaPlayerChunkWatchingManager.setWatchDistance(this.watchDistance);
+        areaPlayerChunkWatchingManager.onWatchDistanceChange();
     }
 
     /**

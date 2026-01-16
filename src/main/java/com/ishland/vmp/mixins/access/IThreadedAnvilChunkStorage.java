@@ -31,4 +31,7 @@ public interface IThreadedAnvilChunkStorage {
     @Accessor
     ThreadExecutor<Runnable> getMainThreadExecutor();
 
+    @Invoker
+    int invokeGetViewDistance(ServerPlayerEntity player);
+
 }

@@ -1,6 +1,7 @@
 package com.ishland.vmp.common.chunkwatching;
 
 import com.ishland.vmp.common.maps.AreaMap;
+import com.ishland.vmp.mixins.access.IThreadedAnvilChunkStorage;
 import io.papermc.paper.util.MCUtil;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -13,6 +14,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 public class AreaPlayerChunkWatchingManager {
@@ -26,10 +28,9 @@ public class AreaPlayerChunkWatchingManager {
     private final AreaMap<ServerPlayerEntity> playerAreaMap;
     private final AreaMap<ServerPlayerEntity> generalPlayerAreaMap = new AreaMap<>();
     private final Object2LongOpenHashMap<ServerPlayerEntity> positions = new Object2LongOpenHashMap<>();
+    private final ServerChunkLoadingManager tacs;
     private Listener addListener = null;
     private Listener removeListener = null;
-
-    private int watchDistance = 5;
 
     public AreaPlayerChunkWatchingManager() {
         this(null, null, null);
@@ -38,6 +39,7 @@ public class AreaPlayerChunkWatchingManager {
     public AreaPlayerChunkWatchingManager(Listener addListener, Listener removeListener, ServerChunkLoadingManager tacs) {
         this.addListener = addListener;
         this.removeListener = removeListener;
+        this.tacs = Objects.requireNonNull(tacs);
 
         this.playerAreaMap = new AreaMap<>(
                 (object, x, z) -> {
@@ -67,8 +69,7 @@ public class AreaPlayerChunkWatchingManager {
 
     }
 
-    public void setWatchDistance(int watchDistance) {
-        this.watchDistance = Math.max(2, watchDistance);
+    public void onWatchDistanceChange() {
         final ObjectIterator<Object2LongMap.Entry<ServerPlayerEntity>> iterator = positions.object2LongEntrySet().fastIterator();
         while (iterator.hasNext()) {
             final Object2LongMap.Entry<ServerPlayerEntity> entry = iterator.next();
@@ -88,10 +89,6 @@ public class AreaPlayerChunkWatchingManager {
                     MCUtil.getCoordinateZ(entry.getLongValue()),
                     GENERAL_PLAYER_AREA_MAP_DISTANCE);
         }
-    }
-
-    public int getWatchDistance() {
-        return watchDistance;
     }
 
     public Set<ServerPlayerEntity> getPlayersWatchingChunk(long l) {
@@ -138,7 +135,7 @@ public class AreaPlayerChunkWatchingManager {
     }
 
     private int getViewDistance(ServerPlayerEntity player) {
-        return MathHelper.clamp(player.getViewDistance(), 2, this.watchDistance) + 1; // edge chunks are required for rendering
+        return ((IThreadedAnvilChunkStorage) this.tacs).invokeGetViewDistance(player) + 1; // edge chunks are required for rendering
     }
 
     public interface Listener {
