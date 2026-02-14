@@ -172,8 +172,10 @@ public abstract class MixinThreadedAnvilChunkStorage implements TACSExtension {
 
     @Inject(method = "updatePosition", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerChunkLoadingManager;updateWatchedSection(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
     private void onPlayerSectionChange(ServerPlayerEntity player, CallbackInfo ci) {
-        this.vmp$updateWatchedSection(player);
+        this.updateWatchedSection(player);
+        player.setChunkFilter(ChunkFilter.cylindrical(player.getWatchedSection().toChunkPos(), this.getViewDistance(player)));
         this.areaPlayerChunkWatchingManager.movePlayer(player.getWatchedSection().toChunkPos().toLong(), player);
+        player.networkHandler.sendPacket(new ChunkRenderDistanceCenterS2CPacket(player.getWatchedSection().getSectionX(), player.getWatchedSection().getSectionZ()));
     }
 
     @Unique
