@@ -111,6 +111,10 @@ public class NearbyEntityTracking {
         // remove from AreaMap
         this.areaMap.remove(tracker);
         this.tracker2ChunkPos.removeLong(tracker);
+
+        if (((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity() instanceof ServerPlayerEntity && this.ticketManager != null) {
+            this.tick0();
+        }
     }
 
     public void addPlayer(ServerPlayerEntity player) {
@@ -130,9 +134,6 @@ public class NearbyEntityTracking {
                 tracker.stopTracking(player);
             }
             this.pooledHashSets.release(originalTrackers);
-        }
-        if (this.ticketManager != null) {
-            this.tick0();
         }
     }
 
