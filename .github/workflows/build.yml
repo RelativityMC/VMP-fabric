@@ -36,7 +36,7 @@ jobs:
         run: ./gradlew build
       - name: upload to modrinth and curseforge
         run: ./gradlew modrinth publishMainPublicationToCurseForge
-        if: github.ref == 'refs/heads/ver/1.21.11'
+        if: github.ref == 'refs/heads/ver/26.1.0'
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_UPLOAD_TOKEN }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}

@@ -7,7 +7,6 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.world.ChunkErrorHandler;
 import net.minecraft.server.world.ServerWorld;
@@ -45,7 +44,7 @@ public abstract class MixinPointOfInterestStorage extends SerializingRegionBased
                     .supplyAsync(() -> preloadChunksAtAsync(world, pos, radius), world.getServer())
                     .thenCompose(Function.identity());
         }
-        final CompletableFuture[] futures = ChunkSectionPos.stream(new ChunkPos(pos), Math.floorDiv(radius, 16), this.world.getBottomSectionCoord(), this.world.getTopSectionCoord())
+        final CompletableFuture[] futures = ChunkSectionPos.stream(ChunkPos.fromBlockPos(pos), Math.floorDiv(radius, 16), this.world.getBottomSectionCoord(), this.world.getTopSectionCoord())
                 .map(sectionPos -> Pair.of(sectionPos, this.get(sectionPos.asLong())))
                 .filter(pair -> !(pair.getSecond()).map(pointOfInterestSet -> ((IPointOfInterestSet) pointOfInterestSet).invokeIsValid()).orElse(false))
                 .map(pair -> pair.getFirst().toChunkPos())

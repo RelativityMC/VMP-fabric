@@ -13,7 +13,7 @@ public class MCUtil {
     }
 
     public static long getCoordinateKey(final ChunkPos pair) {
-        return ((long)pair.z << 32) | (pair.x & 0xFFFFFFFFL);
+        return ((long) pair.z() << 32) | (pair.x() & 0xFFFFFFFFL);
     }
 
     public static int getCoordinateX(final long key) {

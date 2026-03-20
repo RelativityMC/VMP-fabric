@@ -77,8 +77,8 @@ public class NearbyEntityTracking {
         final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) tracker).getEntity());
         this.areaMap.add(
                 tracker,
-                pos.x,
-                pos.z,
+                pos.x(),
+                pos.z(),
                 getChunkViewDistance(tracker)
         );
         this.tracker2ChunkPos.put(tracker, pos.toLong());
@@ -166,7 +166,7 @@ public class NearbyEntityTracking {
         for (Reference2LongMap.Entry<ServerChunkLoadingManager.EntityTracker> entry : this.tracker2ChunkPos.reference2LongEntrySet()) {
             final ChunkPos pos = getEntityChunkPos(((IThreadedAnvilChunkStorageEntityTracker) entry.getKey()).getEntity());
             if (pos.toLong() != entry.getLongValue()) {
-                this.areaMap.update(entry.getKey(), pos.x, pos.z, getChunkViewDistance(entry.getKey()));
+                this.areaMap.update(entry.getKey(), pos.x(), pos.z(), getChunkViewDistance(entry.getKey()));
                 entry.setValue(pos.toLong());
             }
         }

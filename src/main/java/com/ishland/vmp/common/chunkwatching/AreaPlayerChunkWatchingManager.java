@@ -62,7 +62,7 @@ public class AreaPlayerChunkWatchingManager {
             if (vdTracking.isClientViewDistanceChanged()) {
                 vdTracking.getClientViewDistance();
                 final long pos = entry.getLongValue();
-                player.setChunkFilter(ChunkFilter.cylindrical(new ChunkPos(pos), this.getViewDistance(player)));
+                player.setChunkFilter(ChunkFilter.cylindrical(ChunkPos.fromLong(pos), this.getViewDistance(player)));
                 this.movePlayer(pos, player);
             }
         }
@@ -75,7 +75,7 @@ public class AreaPlayerChunkWatchingManager {
             final Object2LongMap.Entry<ServerPlayerEntity> entry = iterator.next();
 //            if (this.isWatchDisabled(entry.getKey())) continue;
 
-            entry.getKey().setChunkFilter(ChunkFilter.cylindrical(new ChunkPos(entry.getLongValue()), this.getViewDistance(entry.getKey())));
+            entry.getKey().setChunkFilter(ChunkFilter.cylindrical(ChunkPos.fromLong(entry.getLongValue()), this.getViewDistance(entry.getKey())));
 
             this.playerAreaMap.update(
                     entry.getKey(),

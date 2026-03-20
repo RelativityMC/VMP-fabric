@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.14-SNAPSHOT'
+	id 'net.fabricmc.fabric-loom-remap' version '1.15-SNAPSHOT'
 	id 'maven-publish'
 	id 'com.gradleup.shadow' version '9.2.1'
 	id 'com.modrinth.minotaur' version '2.+'
@@ -30,11 +30,17 @@ repositories {
 	// for more information about repositories.
 
 	mavenCentral()
-	maven { url 'https://jitpack.io' }
+//	maven { url 'https://jitpack.io' }
+	maven {
+		url = "https://repo.codemc.io/repository/relativitymc/"
+	}
 }
 
 loom {
 	accessWidenerPath = file("src/main/resources/vmp.accesswidener")
+
+	useIntermediateMappings = true
+	intermediaryUrl = 'https://repo.codemc.io/repository/relativitymc/org/relativitymc/intermediary/%1$s/intermediary-%1$s-v2.jar'
 }
 
 repositories.named("Mojang", MavenArtifactRepository) {
@@ -49,7 +55,7 @@ configurations {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	mappings "org.relativitymc:modern-yarn:${project.yarn_mappings}:v2"
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	include implementation("com.ibm.async:asyncutil:${async_util_version}")
@@ -192,6 +198,7 @@ String getVersionSuffix() {
 	def stdout = providers.exec {
 		commandLine 'git', 'describe', '--tags', '--dirty', '--broken'
 	}.standardOutput.asText.get()
+	stdout = stdout.toString().strip()
 	def suffix = ""
 	if (stdout.endsWith("-dirty")) {
 		stdout = stdout.substring(0, stdout.length() - "-dirty".length())

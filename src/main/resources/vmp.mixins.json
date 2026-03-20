@@ -35,8 +35,6 @@
     "general.spawn_density_cap.MixinSpawnDensityCapperDensityCap",
     "networking.avoid_deadlocks.MixinClientConnection",
     "networking.config_enforce_main.MixinServerConfigurationNetworkHandler",
-    "networking.eventloops.MixinClientConnection",
-    "networking.eventloops.MixinServerNetworkIo",
     "networking.no_flush.MixinClientConnection",
     "playerwatching.MixinChunkFilter",
     "playerwatching.MixinServerPlayerEntity",
