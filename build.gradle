@@ -167,8 +167,7 @@ if (!project.minecraft_version.contains("w") && !project.minecraft_version.conta
 
 				gameVersion("minecraft-" + matcher.group(1) + "-" + matcher.group(2), project.minecraft_version.replace('.', '-'))
 				gameVersion("modloader", "fabric")
-				gameVersion("java", "java-22")
-				gameVersion("java", "java-21")
+				gameVersion("java", "java-25")
 				gameVersion("environment", "server")
 				gameVersion("environment", "client")
 
