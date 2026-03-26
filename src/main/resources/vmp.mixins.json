@@ -51,9 +51,6 @@
     "playerwatching.optimize_nearby_player_lookups.MixinThreadedAnvilChunkStorage",
     "ticketsystem.ticketpropagator.MixinChunkLevelManager"
   ],
-  "client": [
-    "timesource.MixinMinecraftClient"
-  ],
   "plugin": "com.ishland.vmp.mixins.VMPMixinPlugin",
   "injectors": {
     "defaultRequire": 1
