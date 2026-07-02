@@ -106,11 +106,14 @@ shadowJar {
 }
 
 //noinspection UnnecessaryQualifiedReference
-task("remapShadowJar", type: net.fabricmc.loom.task.RemapJarTask, dependsOn: shadowJar) {
+def remapShadowJarProvider = tasks.register("remapShadowJar", net.fabricmc.loom.task.RemapJarTask) {
 	input = shadowJar.archiveFile
 	archiveFileName = shadowJar.archiveFileName.get().replaceAll("-dev\\.jar\$", ".jar")
 	addNestedDependencies = true
+	dependsOn(shadowJar)
 }
+
+loom.nestJars(remapShadowJarProvider, project.configurations.include)
 
 assemble.dependsOn(remapShadowJar)
 
