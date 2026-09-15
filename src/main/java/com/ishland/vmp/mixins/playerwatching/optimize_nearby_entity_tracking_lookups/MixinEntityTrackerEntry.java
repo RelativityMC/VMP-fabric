@@ -2,6 +2,7 @@ package com.ishland.vmp.mixins.playerwatching.optimize_nearby_entity_tracking_lo
 
 import com.ishland.vmp.common.playerwatching.EntityTrackerEntryExtension;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.movement.TickInterval;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Final;
@@ -14,7 +15,7 @@ public abstract class MixinEntityTrackerEntry implements EntityTrackerEntryExten
 
     @Shadow private int trackingTick;
 
-    @Shadow @Final private int tickInterval;
+    @Shadow @Final private TickInterval tickInterval;
 
     @Shadow public abstract void tick();
 
@@ -26,7 +27,7 @@ public abstract class MixinEntityTrackerEntry implements EntityTrackerEntryExten
 
     @Override
     public void vmp$tickAlways() {
-        this.trackingTick = MathHelper.roundUpToMultiple(this.trackingTick, this.tickInterval);
+        this.trackingTick = this.tickInterval.getNextTrackingTick(this.trackingTick);
         this.updatesWithoutVehicle = 1 << 16;
         this.entity.velocityDirty = true;
         this.tick();
@@ -35,7 +36,7 @@ public abstract class MixinEntityTrackerEntry implements EntityTrackerEntryExten
     @Override
     public void vmp$syncEntityData() {
         trackingTick ++;
-        if (this.trackingTick % this.tickInterval == 0) { // [VanillaCopy]
+        if (this.tickInterval.isTrackingTick(this.trackingTick)) { // [VanillaCopy]
             this.syncEntityData();
         }
     }
