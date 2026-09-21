@@ -12,6 +12,8 @@
     "access.IClientConnection",
     "access.IEntityTrackerEntry",
     "access.IPointOfInterestSet",
+    "access.IPlayerManager",
+    "access.IPlayerSaveHandler",
     "access.IServerChunkManager",
     "access.IServerCommandSource",
     "access.IServerCommonNetworkHandler",
