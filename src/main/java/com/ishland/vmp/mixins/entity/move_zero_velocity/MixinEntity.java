@@ -20,10 +20,10 @@ public class MixinEntity {
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void onMove(MovementType movementType, Vec3d movement, CallbackInfo ci) {
-        if (this.vmp$boundingBoxChanged && movement.equals(Vec3d.ZERO)) {
+        if (!this.vmp$boundingBoxChanged && movement.equals(Vec3d.ZERO)) {
             ci.cancel();
-            this.vmp$boundingBoxChanged = false;
         }
+        this.vmp$boundingBoxChanged = false;
     }
 
     @Inject(method = "setBoundingBox", at = @At("HEAD"))
